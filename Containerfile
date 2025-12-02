@@ -7,8 +7,6 @@
 ##################################################################################
 ##################################################################################
 
-FROM ghcr.io/ublue-os/bazzite-deck:testing AS bazzite
-
 FROM docker.io/cachyos/cachyos-v3:latest AS output
 
 ENV DRACUT_NO_XATTR=1
@@ -183,11 +181,11 @@ RUN systemctl enable /usr/lib/systemd/system/fix-grub-link.service
 
 ###########_____________________________________________________________________________________________________________________________
 # service from bazzite to check for a successful boot
-#
-COPY --from="bazzite" /etc/sddm.conf.d/* /etc/sddm.conf.d/
-COPY --from="bazzite" /usr/lib/systemd/system/bazzite-* /usr/lib/systemd/system/
-COPY --from="bazzite" /usr/libexec/bazzite-* /usr/libexec/
-RUN chmod +x /usr/libexec/bazzite-*
+WORKDIR /tmp
+RUN git clone --depth 1 https://github.com/ublue-os/bazzite.git
+COPY /tmp/bazzite/system_files/deck/kinoite/ /
+COPY /tmp/bazzite/system_files/deck/shared/ /
+WORKDIR /
 #_______________________________________________________________________________________________________________________________________
 
 

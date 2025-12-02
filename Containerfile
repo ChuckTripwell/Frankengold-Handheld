@@ -7,6 +7,8 @@
 ##################################################################################
 ##################################################################################
 
+FROM ghcr.io/ublue-os/bazzite-deck:testing AS bazzite
+
 FROM docker.io/cachyos/cachyos-v3:latest AS output
 
 ENV DRACUT_NO_XATTR=1
@@ -178,16 +180,17 @@ RUN echo "WantedBy=multi-user.target" >> /usr/lib/systemd/system/fix-grub-link.s
 RUN systemctl enable /usr/lib/systemd/system/fix-grub-link.service
 #_______________________________________________________________________________________________________________________________________
 
+
 ###########_____________________________________________________________________________________________________________________________
-# bazzite stuff (wer'e lazy)
+# service from bazzite to check for a successful boot
 #
-RUN pacman --noconfirm -S rsync
-RUN cd /tmp && git clone https://github.com/ublue-os/bazzite/ && \
-    rsync -r ./bazzite/system_files/deck/kinoite/* / && \
-    rsync -r ./bazzite/system_files/deck/shared/* / && \
-    RUN chmod +x /usr/libexec/* && \
-    rm -r ./bazzite
+COPY --from="bazzite" /etc/sddm.conf.d/* /etc/sddm.conf.d/
+COPY --from="bazzite" /usr/lib/systemd/system/bazzite-* /usr/lib/systemd/system/
+COPY --from="bazzite" /usr/libexec/bazzite-* /usr/libexec/
+RUN chmod +x /usr/libexec/bazzite-*
 #_______________________________________________________________________________________________________________________________________
+
+
 
 ## enable your services
 #

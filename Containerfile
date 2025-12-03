@@ -164,19 +164,19 @@ net.ipv4.tcp_congestion_control=bbr' > /etc/sysctl.d/99-bbr3.conf
 #RUN pacman -Sy --noconfirm linux-cachyos-deckify linux-cachyos-deckify-headers
 
 #
-RUN bash -c 'BASE="https://build.cachyos.org/ISO/handheld"; \
-DATE=$(date +%y%m%d); \
-while ! curl --head --silent --fail "$BASE/$DATE/" >/dev/null 2>&1; do \
-  DATE=$(date -d "$DATE - 1 day" +%y%m%d); \
-done; \
-pacman -Sy --noconfirm --overwrite "*" --ask=4 $(curl -s "$BASE/$DATE/cachyos-handheld-linux-$DATE.pkgs.txt" | awk "{print \$1}" | grep -v firefox | grep -v cachyos-calamares-qt6-next-deckify | grep -v vim | grep -v vim-runtime | grep -v paru )'
+#RUN bash -c 'BASE="https://build.cachyos.org/ISO/handheld"; \
+#DATE=$(date +%y%m%d); \
+#while ! curl --head --silent --fail "$BASE/$DATE/" >/dev/null 2>&1; do \
+#  DATE=$(date -d "$DATE - 1 day" +%y%m%d); \
+#done; \
+#pacman -Sy --noconfirm --overwrite "*" --ask=4 $(curl -s "$BASE/$DATE/cachyos-handheld-linux-$DATE.pkgs.txt" | awk "{print \$1}" | grep -v firefox | grep -v cachyos-calamares-qt6-next-deckify | grep -v vim | grep -v vim-runtime | grep -v paru )'
 
 RUN pacman -S --noconfirm --overwrite "*" --ask=4 steamos-manager steamos-powerbuttond jupiter-fan-control steamdeck-dsp cachyos-handheld mesa lib32-mesa vulkan-radeon lib32-vulkan-radeon opencl-mesa lib32-opencl-mesa rocm-opencl-runtime
 
 RUN pacman -S --noconfirm amd-ucode intel-ucode efibootmgr shim mesa lib32-mesa libva-intel-driver libva-mesa-driver \
       vpl-gpu-rt vulkan-icd-loader vulkan-intel vulkan-radeon apparmor xf86-video-amdgpu lib32-vulkan-radeon 
 
-RUN pacman -S --noconfirm all-repository-fonts
+RUN pacman -S --noconfirm chaotic-aur/all-repository-fonts
 
 
 ###########_____________________________________________________________________________________________________________________________

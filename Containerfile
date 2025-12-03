@@ -176,12 +176,7 @@ RUN pacman -S --noconfirm --overwrite "*" --ask=4 steamos-manager steamos-powerb
 RUN pacman -S --noconfirm amd-ucode intel-ucode efibootmgr shim mesa lib32-mesa libva-intel-driver libva-mesa-driver \
       vpl-gpu-rt vulkan-icd-loader vulkan-intel vulkan-radeon apparmor xf86-video-amdgpu lib32-vulkan-radeon 
 
-RUN pacman -S --noconfirm ttf-bitstream-vera
-RUN pacman -S --noconfirm ttf-dejavu
-RUN pacman -S --noconfirm ttf-fantasque-nerd
-RUN pacman -S --noconfirm ttf-hack
-RUN pacman -S --noconfirm ttf-liberation
-RUN pacman -S --noconfirm ttf-opensans
+RUN pacman -S --noconfirm all-repository-fonts
 
 
 ###########_____________________________________________________________________________________________________________________________

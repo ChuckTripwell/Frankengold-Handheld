@@ -7,6 +7,8 @@
 ##################################################################################
 ##################################################################################
 
+
+
 FROM docker.io/cachyos/cachyos-v3:latest AS output
 
 ENV DRACUT_NO_XATTR=1
@@ -15,6 +17,26 @@ ENV DRACUT_NO_XATTR=1
 RUN grep "= */var" /etc/pacman.conf | sed "/= *\/var/s/.*=// ; s/ //" | xargs -n1 sh -c 'mkdir -p "/usr/lib/sysimage/$(dirname $(echo $1 | sed "s@/var/@@"))" && \
 mv -v "$1" "/usr/lib/sysimage/$(echo "$1" | sed "s@/var/@@")"' '' && \
     sed -i -e "/= *\/var/ s/^#//" -e "s@= */var@= /usr/lib/sysimage@g" -e "/DownloadUser/d" /etc/pacman.conf
+
+
+###
+# Create pacman hook to make pacman ephemeral
+RUN mkdir -p /etc/pacman.d/hooks && \
+    cat <<'EOF' > /etc/pacman.d/hooks/ephemeral-cache.hook
+[Trigger]
+Operation = Install
+Operation = Upgrade
+Operation = Remove
+Type = Package
+Target = *
+
+[Action]
+Description = Cleaning ephemeral pacman cache and DB...
+When = PostTransaction
+Exec = /bin/sh -c 'rm -rf /tmp/pman/db /tmp/pman/cache'
+EOF
+###
+
 
 # force-refresh and add the chaotic-aur (where we get 'bootc' from)
 RUN curl https://raw.githubusercontent.com/CachyOS/CachyOS-PKGBUILDS/master/cachyos-mirrorlist/cachyos-mirrorlist -o /etc/pacman.d/cachyos-mirrorlist

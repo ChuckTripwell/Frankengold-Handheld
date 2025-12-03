@@ -49,7 +49,7 @@ StartLimitBurst=3
 
 [Install]
 WantedBy=multi-user.target
-EOF && \
+EOF
 \
 # ZRAM & systemd-resolved
 echo -e '[zram0]\nzram-size = min(ram, 8192)' >> /usr/lib/systemd/zram-generator.conf && \
@@ -81,7 +81,7 @@ ExecStart=/usr/bin/touch /etc/.linuxbrew
 
 [Install]
 WantedBy=multi-user.target
-EOF && \
+EOF
 systemctl enable brew-setup.service && \
 \
 # os-group-fix function
@@ -89,74 +89,27 @@ mkdir -p /usr/lib/systemd/system-preset /usr/lib/systemd/system && \
 cat <<'EOF' > /usr/libexec/os-group-fix
 #!/bin/sh
 cat /usr/lib/sysusers.d/*.conf | grep -e "^g" | grep -v -e "^#" | awk "NF" | awk '{print $2}' | grep -v -e "wheel" -e "root" -e "sudo" | xargs -I{} sed -i "/{}/d" $1
-EOF && chmod +x /usr/libexec/os-group-fix && \
+EOF
+chmod +x /usr/libexec/os-group-fix && \
 cat <<'EOF' > /usr/lib/systemd/system/os-group-fix.service
 [Unit]
 Description=Fix groups
 Wants=local-fs.target
 After=local-fs.target
+
 [Service]
 Type=oneshot
 ExecStart=/usr/libexec/os-group-fix /etc/group
 ExecStart=/usr/libexec/os-group-fix /etc/gshadow
 ExecStart=systemd-sysusers
+
 [Install]
 WantedBy=default.target multi-user.target
-EOF && \
+EOF
 echo -e "enable os-group-fix.service" > /usr/lib/systemd/system-preset/01-os-group-fix.preset && \
 \
 # Sudo config
 echo -e '%wheel ALL=(ALL:ALL) ALL' && \
 \
 # Enable system services
-systemctl enable polkit.service NetworkManager.service firewalld.service flatpak-preinstall.service os-group-fix.service && \
-\
-# Kernel & packages (handheld-specific)
-bash -c 'BASE="https://build.cachyos.org/ISO/handheld"; DATE=$(date +%y%m%d); while ! curl --head --silent --fail "$BASE/$DATE/" >/dev/null 2>&1; do DATE=$(date -d "$DATE - 1 day" +%y%m%d); done; pacman -Sy --noconfirm --overwrite "*" --ask=4 $(curl -s "$BASE/$DATE/cachyos-handheld-linux-$DATE.pkgs.txt" | awk "{print \$1}" | grep -v firefox | grep -v calamares )' && \
-pacman -S --noconfirm --overwrite "*" --ask=4 steamos-manager steamos-powerbuttond jupiter-fan-control steamdeck-dsp cachyos-handheld mesa lib32-mesa vulkan-radeon lib32-vulkan-radeon opencl-mesa lib32-opencl-mesa rocm-opencl-runtime && \
-\
-# Grub fixes
-ln -s /usr/bin/grub-editenv /usr/bin/grub2-editenv && \
-mkdir -p /usr/lib/systemd/system && \
-cat <<'EOF' > /usr/lib/systemd/system/fix-grub-link.service
-[Unit]
-Description=Create /boot/grub symlink if missing
-ConditionPathExists=!/boot/grub
-
-[Service]
-Type=oneshot
-ExecStart=/bin/ln -s /boot/grub2 /boot/grub
-
-[Install]
-WantedBy=multi-user.target
-EOF && systemctl enable /usr/lib/systemd/system/fix-grub-link.service && \
-\
-# Bazzite scripts
-pacman -S --noconfirm --needed rsync && \
-cd /tmp && git clone --depth 1 https://github.com/ublue-os/bazzite.git && \
-rsync -a /tmp/bazzite/system_files/deck/kinoite/ / && \
-rsync -a /tmp/bazzite/system_files/deck/shared/ / && cd / && \
-systemctl enable sddm jupiter-fan-control podman bazzite-grub-boot-success.timer bazzite-grub-boot-success.service bazzite-autologin.service && \
-\
-# Flatpaks
-echo -e "[Flatpak Preinstall io.github.kolunmi.Bazaar]\nBranch=stable\nIsRuntime=false" > /usr/share/flatpak/preinstall.d/Bazaar.preinstall && \
-\
-# Plymouth logo
-mkdir -p /etc/plymouth && echo -e '[Daemon]\nTheme=spinner' | tee /etc/plymouth/plymouthd.conf && \
-wget --tries=5 -O /usr/share/plymouth/themes/spinner/watermark.png https://raw.githubusercontent.com/ChuckTripwell/cachyos-bootc-template/refs/heads/main/Text_Logo.png && \
-\
-# Finalize dracut & cleanup
-printf "systemdsystemconfdir=/etc/systemd/system\nsystemdsystemunitdir=/usr/lib/systemd/system\n" | tee /usr/lib/dracut/dracut.conf.d/30-bootcrew-fix-bootc-module.conf && \
-printf 'hostonly=no\nadd_dracutmodules+=" ostree bootc "' | tee /usr/lib/dracut/dracut.conf.d/30-bootcrew-bootc-modules.conf && \
-sh -c 'export KERNEL_VERSION="$(basename "$(find /usr/lib/modules -maxdepth 1 -type d | grep -v -E "*.img" | tail -n 1)")" && dracut --force --no-hostonly --reproducible --zstd --verbose --kver "$KERNEL_VERSION"  "/usr/lib/modules/$KERNEL_VERSION/initramfs.img"' && \
-rm -rf /home/build/.cache/* /tmp/* /var/cache/pacman/pkg/* && \
-sed -i 's|^HOME=.*|HOME=/var/home|' "/etc/default/useradd" && \
-rm -rf /boot /home /root /usr/local /srv /var /usr/lib/sysimage/log /usr/lib/sysimage/cache/pacman/pkg && \
-mkdir -p /sysroot /boot /usr/lib/ostree /var && \
-ln -s sysroot/ostree /ostree && ln -s var/roothome /root && ln -s var/srv /srv && ln -s var/opt /opt && ln -s var/mnt /mnt && ln -s var/home /home && \
-echo "$(for dir in opt home srv mnt usrlocal ; do echo "d /var/$dir 0755 root root -" ; done)" | tee -a "/usr/lib/tmpfiles.d/bootc-base-dirs.conf" && \
-printf "d /var/roothome 0700 root root -\nd /run/media 0755 root root -" | tee -a "/usr/lib/tmpfiles.d/bootc-base-dirs.conf" && \
-printf '[composefs]\nenabled = yes\n[sysroot]\nreadonly = true\n' | tee "/usr/lib/ostree/prepare-root.conf" && \
-\
-# Final lint
-bootc container lint
+systemctl enable polkit.service NetworkManager.service firewalld.service flatpak-preinstall.service os-group-fix.service

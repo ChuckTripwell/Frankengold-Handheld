@@ -20,21 +20,21 @@ mv -v "$1" "/usr/lib/sysimage/$(echo "$1" | sed "s@/var/@@")"' '' && \
 
 
 ###
-# Create pacman hook to make pacman ephemeral
-RUN mkdir -p /etc/pacman.d/hooks && \
-    cat <<'EOF' > /etc/pacman.d/hooks/ephemeral-cache.hook
-[Trigger]
-Operation = Install
-Operation = Upgrade
-Operation = Remove
-Type = Package
-Target = *
 
-[Action]
-Description = Cleaning ephemeral pacman cache and DB...
-When = PostTransaction
-Exec = /bin/sh -c 'rm -rf /tmp/pman/db /tmp/pman/cache'
-EOF
+# Create pacman hook to make it ephemeral
+RUN mkdir -p /etc/pacman.d/hooks && \
+    echo '[Trigger]' > /etc/pacman.d/hooks/ephemeral-cache.hook && \
+    echo 'Operation = Install' >> /etc/pacman.d/hooks/ephemeral-cache.hook && \
+    echo 'Operation = Upgrade' >> /etc/pacman.d/hooks/ephemeral-cache.hook && \
+    echo 'Operation = Remove' >> /etc/pacman.d/hooks/ephemeral-cache.hook && \
+    echo 'Type = Package' >> /etc/pacman.d/hooks/ephemeral-cache.hook && \
+    echo 'Target = *' >> /etc/pacman.d/hooks/ephemeral-cache.hook && \
+    echo '' >> /etc/pacman.d/hooks/ephemeral-cache.hook && \
+    echo '[Action]' >> /etc/pacman.d/hooks/ephemeral-cache.hook && \
+    echo 'Description = Cleaning ephemeral pacman cache and DB...' >> /etc/pacman.d/hooks/ephemeral-cache.hook && \
+    echo 'When = PostTransaction' >> /etc/pacman.d/hooks/ephemeral-cache.hook && \
+    echo 'Exec = /bin/sh -c "rm -rf /tmp/pman/db /tmp/pman/cache"' >> /etc/pacman.d/hooks/ephemeral-cache.hook
+
 ###
 
 

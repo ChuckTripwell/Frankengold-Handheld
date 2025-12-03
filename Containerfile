@@ -180,11 +180,12 @@ RUN systemctl enable /usr/lib/systemd/system/fix-grub-link.service
 
 
 ###########_____________________________________________________________________________________________________________________________
-# service from bazzite to check for a successful boot
+# services from bazzite
+RUN pacman -S --noconfirm --needed rsync 
 WORKDIR /tmp
 RUN git clone --depth 1 https://github.com/ublue-os/bazzite.git
-COPY /tmp/bazzite/system_files/deck/kinoite/ /
-COPY /tmp/bazzite/system_files/deck/shared/ /
+RUN rsync -a /tmp/bazzite/system_files/deck/kinoite/ /
+RUN rsync -a /tmp/bazzite/system_files/deck/shared/ /
 WORKDIR /
 #_______________________________________________________________________________________________________________________________________
 

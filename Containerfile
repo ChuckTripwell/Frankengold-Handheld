@@ -223,12 +223,15 @@ RUN printf "systemdsystemconfdir=/etc/systemd/system\nsystemdsystemunitdir=/usr/
       sh -c 'export KERNEL_VERSION="$(basename "$(find /usr/lib/modules -maxdepth 1 -type d | grep -v -E "*.img" | tail -n 1)")" && \
       dracut --force --no-hostonly --reproducible --zstd --verbose --kver "$KERNEL_VERSION"  "/usr/lib/modules/$KERNEL_VERSION/initramfs.img"'
 
-RUN pacman -cc --noconfirm
+RUN yes | pacman -Scc
+RUN yes | pacman -Scc
+RUN yes | paccache -ruk0
 
 RUN rm -rf /home/build/.cache/* && \
     rm -rf \
         /tmp/* \
-        /var/cache/pacman/pkg/*
+        /var/cache/pacman/pkg/* \
+        /var/lib/pacman/sync/*
 
 # Necessary for general behavior expected by image-based systems
 RUN sed -i 's|^HOME=.*|HOME=/var/home|' "/etc/default/useradd" && \

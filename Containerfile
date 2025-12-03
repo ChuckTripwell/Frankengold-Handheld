@@ -7,7 +7,7 @@
 ##################################################################################
 ##################################################################################
 
-FROM docker.io/cachyos/cachyos-v3:latest AS cachyos
+FROM docker.io/cachyos/cachyos-v3:latest AS output
 
 ENV DRACUT_NO_XATTR=1
 
@@ -147,7 +147,7 @@ DATE=$(date +%y%m%d); \
 while ! curl --head --silent --fail "$BASE/$DATE/" >/dev/null 2>&1; do \
   DATE=$(date -d "$DATE - 1 day" +%y%m%d); \
 done; \
-pacman -Sy --noconfirm --overwrite "*" --ask=4 $(curl -s "$BASE/$DATE/cachyos-handheld-linux-$DATE.pkgs.txt" | awk "{print \$1}" | grep -v firefox | grep -v calamares )'
+pacman -Sy --noconfirm --overwrite "*" --ask=4 $(curl -s "$BASE/$DATE/cachyos-handheld-linux-$DATE.pkgs.txt" | awk "{print \$1}" | grep -v firefox | grep -v cachyos-calamares-qt6-next-deckify | grep -v vim | grep -v vim-runtime | grep -v paru )'
 
 RUN pacman -S --noconfirm --overwrite "*" --ask=4 steamos-manager steamos-powerbuttond jupiter-fan-control steamdeck-dsp cachyos-handheld mesa lib32-mesa vulkan-radeon lib32-vulkan-radeon opencl-mesa lib32-opencl-mesa rocm-opencl-runtime
 
@@ -223,6 +223,9 @@ RUN printf "systemdsystemconfdir=/etc/systemd/system\nsystemdsystemunitdir=/usr/
       sh -c 'export KERNEL_VERSION="$(basename "$(find /usr/lib/modules -maxdepth 1 -type d | grep -v -E "*.img" | tail -n 1)")" && \
       dracut --force --no-hostonly --reproducible --zstd --verbose --kver "$KERNEL_VERSION"  "/usr/lib/modules/$KERNEL_VERSION/initramfs.img"'
 
+# remove packages that do nothing in an atomic system to reduce image size
+RUN pacman -Rdd base-devel cachyos-keyring cachyos-mirrorlist cachyos-v3-mirrorlist cachyos-v4-mirrorlist cachyos-hooks archlinux-keyring pacman-mirrorlist 
+
 RUN rm -rf /home/build/.cache/* && \
     rm -rf \
         /tmp/* \
@@ -236,8 +239,5 @@ RUN sed -i 's|^HOME=.*|HOME=/var/home|' "/etc/default/useradd" && \
     echo "$(for dir in opt home srv mnt usrlocal ; do echo "d /var/$dir 0755 root root -" ; done)" | tee -a "/usr/lib/tmpfiles.d/bootc-base-dirs.conf" && \
     printf "d /var/roothome 0700 root root -\nd /run/media 0755 root root -" | tee -a "/usr/lib/tmpfiles.d/bootc-base-dirs.conf" && \
     printf '[composefs]\nenabled = yes\n[sysroot]\nreadonly = true\n' | tee "/usr/lib/ostree/prepare-root.conf"
-
-FROM scratch AS output
-COPY --from="cachyos" / /
 
 RUN bootc container lint

@@ -176,9 +176,9 @@ RUN pacman -S --noconfirm --overwrite "*" --ask=4 steamos-manager steamos-powerb
 RUN pacman -S --noconfirm amd-ucode intel-ucode efibootmgr shim mesa lib32-mesa libva-intel-driver libva-mesa-driver \
       vpl-gpu-rt vulkan-icd-loader vulkan-intel vulkan-radeon apparmor xf86-video-amdgpu lib32-vulkan-radeon 
 
-RUN pacman -S --noconfirm chaotic-aur/all-repository-fonts
+#RUN pacman -S --noconfirm chaotic-aur/all-repository-fonts
 
-RUN pacman -S --noconfirm plasma-meta konsole plasma-nm plasma-pa sddm
+RUN pacman -S --noconfirm plasma-desktop konsole plasma-nm plasma-pa sddm
 
 ###########_____________________________________________________________________________________________________________________________
 # bazzite scripts need grub2-editenv

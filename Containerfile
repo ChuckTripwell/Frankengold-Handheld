@@ -35,7 +35,7 @@ RUN pacman -Syy --overwrite="*" --noconfirm --ask=4 --root /rootfs/ base dracut 
     fastfetch unzip linux-cachyos-deckify linux-cachyos-deckify-headers steamos-manager steamos-powerbuttond \
     jupiter-fan-control steamdeck-dsp cachyos-handheld amd-ucode intel-ucode efibootmgr shim mesa lib32-mesa \
     libva-intel-driver libva-mesa-driver vpl-gpu-rt vulkan-icd-loader vulkan-intel vulkan-radeon apparmor \
-    xf86-video-amdgpu lib32-vulkan-radeon \
+    xf86-video-amdgpu lib32-vulkan-radeon polkit \
     opencl-mesa lib32-opencl-mesa rocm-opencl-runtime \
     plasma-desktop konsole plasma-nm plasma-pa sddm chaotic-aur/bootc
 

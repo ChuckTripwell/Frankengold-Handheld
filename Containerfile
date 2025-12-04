@@ -10,7 +10,7 @@
 FROM docker.io/cachyos/cachyos-v3:latest AS builder
 
 RUN mkdir -p /rootfs
-COPY / /rootfs
+COPY /* /rootfs/
 RUN rm -rf /rootfs/rootfs
 RUN curl https://raw.githubusercontent.com/CachyOS/CachyOS-PKGBUILDS/master/cachyos-mirrorlist/cachyos-mirrorlist -o /etc/pacman.d/cachyos-mirrorlist
 RUN pacman -Syy --needed --overwrite "*" --noconfirm cachyos-keyring cachyos-mirrorlist cachyos-v3-mirrorlist cachyos-v4-mirrorlist cachyos-hooks archlinux-keyring pacman-mirrorlist

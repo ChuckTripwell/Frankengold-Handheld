@@ -182,7 +182,7 @@ net.ipv4.tcp_congestion_control=bbr' > /etc/sysctl.d/99-bbr3.conf
 
 # ONLY ADD ONE KERNEL!!!
 #
-RUN pacman -Sy --noconfirm linux-cachyos-deckify linux-cachyos-deckify-headers
+#RUN pacman -Sy --noconfirm linux-cachyos-deckify linux-cachyos-deckify-headers
 
 #
 #RUN bash -c 'BASE="https://build.cachyos.org/ISO/handheld"; \

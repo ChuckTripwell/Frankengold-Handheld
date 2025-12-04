@@ -7,18 +7,11 @@
 ##################################################################################
 ##################################################################################
 
-FROM docker.io/cachyos/cachyos-v3:latest AS rootfs
-
 FROM docker.io/cachyos/cachyos-v3:latest AS builder
 
-# Move everything from `/var` to `/usr/lib/sysimage` so behavior around pacman remains the same on `bootc usroverlay`'d systems
-RUN grep "= */var" /etc/pacman.conf | sed "/= *\/var/s/.*=// ; s/ //" | xargs -n1 sh -c 'mkdir -p "/usr/lib/sysimage/$(dirname $(echo $1 | sed "s@/var/@@"))" && \
-mv -v "$1" "/usr/lib/sysimage/$(echo "$1" | sed "s@/var/@@")"' '' && \
-    sed -i -e "/= *\/var/ s/^#//" -e "s@= */var@= /usr/lib/sysimage@g" -e "/DownloadUser/d" /etc/pacman.conf
-
-
 RUN mkdir -p /rootfs
-COPY --from='rootfs' / /rootfs
+COPY / /rootfs
+RUN rm -rf /rootfs/rootfs
 RUN curl https://raw.githubusercontent.com/CachyOS/CachyOS-PKGBUILDS/master/cachyos-mirrorlist/cachyos-mirrorlist -o /etc/pacman.d/cachyos-mirrorlist
 RUN pacman -Syy --needed --overwrite "*" --noconfirm cachyos-keyring cachyos-mirrorlist cachyos-v3-mirrorlist cachyos-v4-mirrorlist cachyos-hooks archlinux-keyring pacman-mirrorlist
 RUN pacman -Syy --noconfirm
@@ -41,8 +34,9 @@ RUN pacman -U 'https://cdn-mirror.chaotic.cx/chaotic-aur/chaotic-mirrorlist.pkg.
 RUN echo -e '[chaotic-aur]\nInclude = /etc/pacman.d/chaotic-mirrorlist' >> /etc/pacman.conf
 RUN pacman -Syy --overwrite="*" --noconfirm --ask=4 --root /rootfs/ chaotic-aur/bootc
 
+RUN rm -rf /*!(rootfs)
 
-FROM docker.io/cachyos/cachyos-v3:latest AS output
+FROM scratch AS output
 
 ENV DRACUT_NO_XATTR=1
 

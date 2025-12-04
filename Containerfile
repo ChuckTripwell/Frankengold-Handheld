@@ -24,7 +24,7 @@ RUN pacman -Syy --needed --overwrite "*" --noconfirm cachyos-keyring cachyos-mir
 RUN pacman -Syy --noconfirm
 RUN pacman -S --noconfirm base base-devel arch-install-scripts
 
-RUN pacstrap -c /rootfs/ base dracut linux-firmware ostree systemd btrfs-progs e2fsprogs xfsprogs binutils \
+RUN pacman --noconfirm -S --root /rootfs/ base dracut linux-firmware ostree systemd btrfs-progs e2fsprogs xfsprogs binutils \
     dosfstools skopeo dbus dbus-glib glib2 shadow udev wget crun librsvg libglvnd qt6-multimedia-ffmpeg \
     plymouth acpid ddcutil dmidecode mesa-utils ntfs-3g vulkan-tools wayland-utils playerctl curl cosig distrobox \
     podman shim networkmanager firewalld flatpak gamescope scx-scheds scx-manager sudo bash bash-completion \

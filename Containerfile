@@ -25,7 +25,7 @@ RUN pacman -Syy --noconfirm
 
 RUN pacman -Syy --overwrite="*" --noconfirm --ask=4 --root /rootfs/ base dracut linux-firmware ostree systemd btrfs-progs e2fsprogs xfsprogs binutils \
     dosfstools skopeo dbus dbus-glib glib2 shadow udev wget crun librsvg libglvnd qt6-multimedia-ffmpeg \
-    plymouth acpid ddcutil dmidecode mesa-utils ntfs-3g vulkan-tools wayland-utils playerctl curl cosig distrobox \
+    plymouth acpid ddcutil dmidecode mesa-utils ntfs-3g vulkan-tools wayland-utils playerctl curl cosign distrobox \
     podman shim networkmanager firewalld flatpak gamescope scx-scheds scx-manager sudo bash bash-completion \
     fastfetch unzip linux-cachyos-deckify linux-cachyos-deckify-headers steamos-manager steamos-powerbuttond \
     jupiter-fan-control steamdeck-dsp cachyos-handheld amd-ucode intel-ucode efibootmgr shim mesa lib32-mesa \

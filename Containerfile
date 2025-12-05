@@ -172,8 +172,8 @@ RUN pacman -Sy --noconfirm linux-cachyos-deckify linux-cachyos-deckify-headers
 #pacman -Sy --noconfirm --overwrite "*" --ask=4 $(curl -s "$BASE/$DATE/cachyos-handheld-linux-$DATE.pkgs.txt" | awk "{print \$1}" | grep -v firefox | grep -v cachyos-calamares-qt6-next-deckify | grep -v vim | grep -v vim-runtime | grep -v paru )'
 
 RUN pacman -S --noconfirm --overwrite "*" --ask=4 \
-    cachyos-handheld \
-    intel-ucode efibootmgr \
+        steamos-manager steamos-powerbuttond jupiter-fan-control steamdeck-dsp cachyos-handhel \
+    intel-ucode amd-ucode efibootmgr \
     plasma-desktop konsole plasma-nm plasma-pa sddm
 
 ###########_____________________________________________________________________________________________________________________________

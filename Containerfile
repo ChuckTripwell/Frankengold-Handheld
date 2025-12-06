@@ -137,12 +137,10 @@ RUN pacman -S --noconfirm \
 
 # get uupd
 RUN pacman -S --noconfirm go
-WORKDIR /tmp
-RUN git clone https://github.com/ublue-os/uupd && cd ./uupd && go build -o output/uupd && chmod +x ./output/uupd
-COPY /tmp/uupd/output/uupd /usr/bin/
+RUN cd /tmp && git clone https://github.com/ublue-os/uupd && cd ./uupd && go build -o output/uupd && chmod +x ./output/uupd
+RUN mv /tmp/uupd/output/uupd /usr/bin/
 RUN rm -rf /tmp/uupd/
 RUN pacman -Rns --noconfirm go
-WORKDIR /
 
 #######################################################################################################################################################
 #######################################################################################################################################################

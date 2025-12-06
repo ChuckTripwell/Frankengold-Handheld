@@ -268,7 +268,6 @@ application/x-tar=org.kde.ark.desktop\n\
 ENV QT_QPA_PLATFORMTHEME=qt6ct
 ENV LD_BIND_NOW=1
 ENV OBS_VKCAPTURE=1
-ENV QT_STYLE_OVERRIDE=Colloid-Orange-Dark-Catppuccin
 ENV XDG_MENU_PREFIX=arch-
 ENV XDG_MENU_PREFIX=plasma-
 RUN kbuildsycoca6

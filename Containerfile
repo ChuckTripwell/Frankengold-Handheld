@@ -41,8 +41,7 @@ RUN pacman -S --noconfirm librsvg libglvnd qt6-multimedia-ffmpeg plymouth acpid 
 # Fonts
 RUN pacman -S --noconfirm noto-fonts noto-fonts-cjk noto-fonts-emoji unicode-emoji noto-fonts-extra ttf-fira-code ttf-firacode-nerd \
     ttf-ibm-plex ttf-jetbrains-mono-nerd otf-font-awesome ttf-jetbrains-mono wqy-microhei ttf-nerd-fonts-symbols ttf-nerd-fonts-symbols-common \
-    ttf-nerd-fonts-symbols-mono
-RUN pacman -S --noconfirm \
+    ttf-nerd-fonts-symbols-mono \
     noto-fonts \
     noto-fonts-cjk \
     noto-fonts-emoji \
@@ -66,7 +65,7 @@ RUN pacman -S --noconfirm sudo bash bash-completion fastfetch btop jq less lsof 
 # Virtualization \ Containerization
 RUN pacman -S --noconfirm distrobox docker podman
 
-# Drivers \ "Business, business, business! Numbersss."
+# Drivers
 RUN pacman -S --noconfirm amd-ucode intel-ucode efibootmgr shim mesa lib32-mesa libva-intel-driver libva-mesa-driver \
       vpl-gpu-rt vulkan-icd-loader vulkan-intel vulkan-radeon apparmor xf86-video-amdgpu lib32-vulkan-radeon 
 
@@ -74,20 +73,14 @@ RUN pacman -S --noconfirm amd-ucode intel-ucode efibootmgr shim mesa lib32-mesa 
 RUN pacman -S --noconfirm libmtp networkmanager-openconnect networkmanager-openvpn nss-mdns samba smbclient networkmanager firewalld udiskie \
       udisks2
 
-# Accessibility
-RUN pacman -S --noconfirm espeak-ng orca
-
 # Pipewire
 RUN pacman -S --noconfirm pipewire pipewire-pulse pipewire-zeroconf pipewire-ffado pipewire-libcamera sof-firmware wireplumber \
     alsa-firmware lib32-pipewire pipewire-audio linux-firmware-intel
 
-# Printer
-RUN pacman -S --noconfirm cups cups-browsed hplip
-
 # Desktop Environment needs
-RUN pacman -S --noconfirm greetd xwayland-satellite xdg-desktop-portal-kde xdg-desktop-portal xdg-user-dirs xdg-desktop-portal-gnome \
-      ffmpegthumbs kdegraphics-thumbnailers kdenetwork-filesharing kio-admin chezmoi matugen accountsservice quickshell dgop cava dolphin \ 
-      breeze brightnessctl wlsunset ddcutil xdg-utils kservice5 archlinux-xdg-menu shared-mime-info kio glycin greetd-regreet
+#RUN pacman -S --noconfirm xwayland-satellite xdg-desktop-portal-kde xdg-desktop-portal xdg-user-dirs xdg-desktop-portal-gnome \
+#      ffmpegthumbs kdegraphics-thumbnailers kdenetwork-filesharing kio-admin chezmoi matugen accountsservice quickshell dgop cava \ 
+#      wlsunset ddcutil xdg-utils kservice5 archlinux-xdg-menu shared-mime-info kio glycin
 
 # User frontend programs/apps
 RUN pacman -S --noconfirm steam gamescope scx-scheds scx-manager gnome-disk-utility mangohud lib32-mangohud
@@ -100,7 +93,8 @@ RUN pacman -S --noconfirm \
   konsole  \
   micro  \
   dolphin  \
-  cosign
+  cosign \
+  breeze
 
 RUN pacman -S --noconfirm \
   crun \
@@ -117,13 +111,10 @@ RUN pacman -S --noconfirm --overwrite "*" --ask=4 cachyos-handheld \
 ##############################################################################################################################################
 
 RUN pacman-key --recv-key 3056513887B78AEB --keyserver keyserver.ubuntu.com
-
 RUN pacman-key --init && pacman-key --lsign-key 3056513887B78AEB
 
 RUN pacman -U 'https://cdn-mirror.chaotic.cx/chaotic-aur/chaotic-keyring.pkg.tar.zst' --noconfirm
-
 RUN pacman -U 'https://cdn-mirror.chaotic.cx/chaotic-aur/chaotic-mirrorlist.pkg.tar.zst' --noconfirm
-
 RUN echo -e '[chaotic-aur]\nInclude = /etc/pacman.d/chaotic-mirrorlist' >> /etc/pacman.conf
 
 RUN pacman -Sy --noconfirm

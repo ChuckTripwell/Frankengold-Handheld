@@ -102,13 +102,15 @@ RUN pacman -S --noconfirm \
 
 RUN pacman -S --noconfirm \
   crun \
-  ptyxis \
+  ptyxis
+
+RUN pacman -S --noconfirm --overwrite "*" --ask=4 cachyos-handheld \
   steamos-manager \
   steamos-powerbuttond \
   jupiter-fan-control \
   steamdeck-dsp 
 
-RUN pacman -S --noconfirm --overwrite "*" --ask=4 cachyos-handheld
+
 ##############################################################################################################################################
 ##############################################################################################################################################
 

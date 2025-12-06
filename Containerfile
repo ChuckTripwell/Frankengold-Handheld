@@ -23,8 +23,10 @@ When = PostTransaction\n\
 Exec = /usr/bin/rm -rf /var/cache/pacman/pkg" > /usr/share/libalpm/hooks/package-cleanup.hook
 
 # Initialize the database
-
-RUN pacman -Syu --noconfirm
+# force-refresh and add the chaotic-aur (where we get 'bootc' from)
+RUN curl https://raw.githubusercontent.com/CachyOS/CachyOS-PKGBUILDS/master/cachyos-mirrorlist/cachyos-mirrorlist -o /etc/pacman.d/cachyos-mirrorlist
+RUN pacman -Syy --needed --overwrite "*" --noconfirm cachyos-keyring cachyos-mirrorlist cachyos-v3-mirrorlist cachyos-v4-mirrorlist cachyos-hooks archlinux-keyring pacman-mirrorlist
+RUN pacman -Syyu --noconfirm --ask=4
 
 # Use the Arch mirrorlist that will be best at the moment for both the containerfile and user too!
 RUN pacman -S --noconfirm reflector

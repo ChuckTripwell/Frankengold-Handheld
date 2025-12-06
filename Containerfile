@@ -364,7 +364,7 @@ RUN sed -i 's|^HOME=.*|HOME=/var/home|' "/etc/default/useradd" && \
 #
 RUN pacman -S --noconfirm base-devel git sudo && \
     useradd -m aur && echo "aur ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
-RUN pacman -S paru
+RUN pacman -S --noconfirm paru
 USER aur
 WORKDIR /home/aur
     paru -Sy --noconfirm uupd krunner-bazaar

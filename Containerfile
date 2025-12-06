@@ -377,7 +377,7 @@ USER root
 RUN userdel -r aur || true && \
     rm -rf /home/aur && \
     rm -rf /var/cache/pacman/pkg/* /var/lib/pacman/sync/*
-RUN pacman -Rns base-devel paru
+RUN pacman --noconfirm -Rns base-devel paru
 
 RUN systemctl enable uupd.timer
 #_______________________________________________________________________________________________________________________________________

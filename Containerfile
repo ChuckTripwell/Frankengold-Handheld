@@ -135,15 +135,17 @@ RUN pacman -S --noconfirm \
     chaotic-aur/adwaita-qt6-git \
     chaotic-aur/bootc
 
-# get uupd
-#RUN pacman -S --noconfirm go
-#RUN cd /tmp && git clone https://github.com/ublue-os/uupd && cd ./uupd && go build -o output/uupd && chmod +x ./output/uupd
-#RUN mv /tmp/uupd/output/uupd /usr/bin/
-#RUN rm -rf /tmp/uupd/
-#RUN pacman -Rns --noconfirm go
-
-RUN pacman -Sy --noconfirm paru
-RUN paru -Sy --noconfirm uupd
+RUN useradd -m -s /bin/bash aur && \
+    echo "aur ALL=(ALL) NOPASSWD: ALL" > /etc/sudoers.d/aur && \
+    mkdir -p /tmp_aur_build && chown -R aur /tmp_aur_build && \
+    pacman -S --noconfirm git base-devel; \
+    runuser -u aur -- env -C /tmp_aur_build git clone 'https://aur.archlinux.org/paru-bin.git' && \
+    runuser -u aur -- env -C /tmp_aur_build/paru-bin makepkg -si --noconfirm && \
+    rm -rf /tmp_aur_build && \
+    runuser -u aur -- paru -S --noconfirm uupd; \
+    userdel -rf aur; rm -rf /home/aur /etc/sudoers.d/aur \
+    cd / \
+    pacman -Rns --noconfirm git base-devel
 
 #######################################################################################################################################################
 #######################################################################################################################################################

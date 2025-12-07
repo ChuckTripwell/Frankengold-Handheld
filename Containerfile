@@ -413,16 +413,16 @@ RUN systemctl enable bazzite-grub-boot-success.service
 #
 RUN pacman -S --noconfirm base-devel git sudo && \
     useradd -m aur && echo "aur ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
-RUN pacman --noconfirm -S paru
 USER aur
 WORKDIR /home/aur
-RUN paru -Sy --noconfirm uupd krunner-bazaar
+RUN curl -sL https://raw.githubusercontent.com/GIAGAMGEMES/box.sh/refs/heads/main/box.sh update | bash -s add uupd
+RUN curl -sL https://raw.githubusercontent.com/GIAGAMGEMES/box.sh/refs/heads/main/box.sh update | bash -s add krunner-bazaar
 RUN curl -sL https://raw.githubusercontent.com/GIAGAMGEMES/box.sh/refs/heads/main/box.sh update | bash -s add decky-loader-bin
 USER root
 RUN userdel -r aur || true && \
     rm -rf /home/aur && \
     rm -rf /var/cache/pacman/pkg/* /var/lib/pacman/sync/*
-RUN pacman --noconfirm -Rns base-devel paru
+RUN pacman --noconfirm -Rns base-devel
 
 RUN systemctl enable uupd.timer
 #_______________________________________________________________________________________________________________________________________

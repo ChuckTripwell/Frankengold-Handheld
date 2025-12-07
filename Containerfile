@@ -113,7 +113,7 @@ RUN pacman -S --noconfirm --overwrite "*" --ask=4 cachyos-handheld \
 ##############################################################################################################################################
 
 # themes:
-RUNcd /tmp && git clone https://github.com/ChuckTripwell/Afterglow-kde && cd Afterglow-kde && chmod +x ./install.sh && ./install.sh
+RUN cd /tmp && git clone https://github.com/ChuckTripwell/Afterglow-kde && cd Afterglow-kde && chmod +x ./install.sh && ./install.sh
 
 
 ##############################################################################################################################################

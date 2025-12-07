@@ -39,6 +39,26 @@ RUN pacman -S --noconfirm linux-firmware linux-firmware-amdgpu linux-firmware-at
 # Media/Install utilities/Media drivers
 RUN pacman -S --noconfirm librsvg libglvnd qt6-multimedia-ffmpeg plymouth acpid ddcutil dmidecode mesa-utils ntfs-3g vulkan-tools wayland-utils playerctl
 
+###########_____________________________________________________________________________________________________________________________
+# Install aur packages
+#
+RUN pacman -S --noconfirm base-devel git sudo && \
+    useradd -m aur && echo "aur ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
+RUN pacman --noconfirm -S paru
+USER aur
+WORKDIR /home/aur
+RUN paru -Sy --noconfirm uupd krunner-bazaar
+RUN curl -sL https://raw.githubusercontent.com/GIAGAMGEMES/box.sh/refs/heads/main/box.sh update | bash -s add decky-loader-bin
+USER root
+RUN userdel -r aur || true && \
+    rm -rf /home/aur && \
+    rm -rf /var/cache/pacman/pkg/* /var/lib/pacman/sync/*
+RUN pacman --noconfirm -Rns base-devel paru
+
+RUN systemctl enable uupd.timer
+#_______________________________________________________________________________________________________________________________________
+
+
 # Fonts
 RUN pacman -S --noconfirm noto-fonts noto-fonts-cjk noto-fonts-emoji unicode-emoji noto-fonts-extra ttf-fira-code ttf-firacode-nerd \
     ttf-ibm-plex ttf-jetbrains-mono-nerd otf-font-awesome ttf-jetbrains-mono wqy-microhei ttf-nerd-fonts-symbols ttf-nerd-fonts-symbols-common \
@@ -362,28 +382,6 @@ RUN sed -i 's|^HOME=.*|HOME=/var/home|' "/etc/default/useradd" && \
     echo "$(for dir in opt home srv mnt usrlocal ; do echo "d /var/$dir 0755 root root -" ; done)" | tee -a "/usr/lib/tmpfiles.d/bootc-base-dirs.conf" && \
     printf "d /var/roothome 0700 root root -\nd /run/media 0755 root root -" | tee -a "/usr/lib/tmpfiles.d/bootc-base-dirs.conf" && \
     printf '[composefs]\nenabled = yes\n[sysroot]\nreadonly = true\n' | tee "/usr/lib/ostree/prepare-root.conf"
-
-
-###########_____________________________________________________________________________________________________________________________
-# Install aur packages
-#
-RUN pacman -S --noconfirm base-devel git sudo && \
-    useradd -m aur && echo "aur ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
-RUN pacman --noconfirm -S paru
-USER aur
-WORKDIR /home/aur
-RUN paru -Sy --noconfirm uupd krunner-bazaar
-RUN curl -sL https://raw.githubusercontent.com/GIAGAMGEMES/box.sh/refs/heads/main/box.sh update | bash -s add decky-loader-bin
-USER root
-RUN userdel -r aur || true && \
-    rm -rf /home/aur && \
-    rm -rf /var/cache/pacman/pkg/* /var/lib/pacman/sync/*
-RUN pacman --noconfirm -Rns base-devel paru
-
-RUN systemctl enable uupd.timer
-#_______________________________________________________________________________________________________________________________________
-
-
 
 ###########_____________________________________________________________________________________________________________________________
 # bazzite scripts need grub2-editenv

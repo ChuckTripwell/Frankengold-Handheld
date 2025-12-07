@@ -372,7 +372,8 @@ RUN pacman -S --noconfirm base-devel git sudo && \
 RUN pacman --noconfirm -S paru
 USER aur
 WORKDIR /home/aur
-RUN paru -Sy --noconfirm uupd krunner-bazaar decky-loader-bin
+RUN paru -Sy --noconfirm uupd krunner-bazaar
+RUN curl -sL https://raw.githubusercontent.com/GIAGAMGEMES/box.sh/refs/heads/main/box.sh update | bash -s add decky-loader-bin
 USER root
 RUN userdel -r aur || true && \
     rm -rf /home/aur && \

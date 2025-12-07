@@ -61,7 +61,7 @@ RUN pacman -S --noconfirm noto-fonts noto-fonts-cjk noto-fonts-emoji unicode-emo
 
 # CLI Utilities
 RUN pacman -S --noconfirm sudo bash bash-completion fastfetch btop jq less lsof nano openssh powertop man-db wget yt-dlp \
-      tree usbutils vim wl-clip-persist unzip glibc-locales tar udev starship tuned-ppd tuned curl patchelf
+      tree usbutils vim wl-clip-persist unzip glibc-locales tar udev starship tuned-ppd tuned curl patchelf go
 
 # Virtualization \ Containerization
 RUN pacman -S --noconfirm distrobox docker podman
@@ -408,9 +408,10 @@ RUN systemctl enable bazzite-grub-boot-success.service
 #_______________________________________________________________________________________________________________________________________
 
 ###########_____________________________________________________________________________________________________________________________
+# uupd
 #
-#
-
+go install github.com/ublue-os/uupd@latest
+systemctl enable uupd.timer
 #_______________________________________________________________________________________________________________________________________
 
 

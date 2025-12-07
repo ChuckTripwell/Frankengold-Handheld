@@ -416,9 +416,9 @@ RUN pacman -S --noconfirm base-devel git sudo && \
     useradd -m aur && echo "aur ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
 USER aur
 WORKDIR /home/aur
-RUN curl -sL https://raw.githubusercontent.com/GIAGAMGEMES/box.sh/refs/heads/main/box.sh update | bash -s add uupd
-RUN curl -sL https://raw.githubusercontent.com/GIAGAMGEMES/box.sh/refs/heads/main/box.sh update | bash -s add krunner-bazaar
-RUN curl -sL https://raw.githubusercontent.com/GIAGAMGEMES/box.sh/refs/heads/main/box.sh update | bash -s add decky-loader-bin
+RUN curl -sL https://raw.githubusercontent.com/GIAGAMGEMES/box.sh/refs/heads/main/box.sh | bash -s add uupd
+RUN curl -sL https://raw.githubusercontent.com/GIAGAMGEMES/box.sh/refs/heads/main/box.sh | bash -s add krunner-bazaar
+RUN curl -sL https://raw.githubusercontent.com/GIAGAMGEMES/box.sh/refs/heads/main/box.sh | bash -s add decky-loader-bin
 USER root
 RUN userdel -r aur || true && \
     rm -rf /home/aur && \

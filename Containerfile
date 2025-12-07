@@ -63,8 +63,6 @@ RUN pacman -S --noconfirm noto-fonts noto-fonts-cjk noto-fonts-emoji unicode-emo
 RUN pacman -S --noconfirm sudo bash bash-completion fastfetch btop jq less lsof nano openssh powertop man-db wget yt-dlp \
       tree usbutils vim wl-clip-persist unzip glibc-locales tar udev starship tuned-ppd tuned curl patchelf
 
-RUN curl -sL https://raw.githubusercontent.com/GIAGAMGEMES/box.sh/refs/heads/main/box.sh update | bash -s add decky-loader-bin
-
 
 # Virtualization \ Containerization
 RUN pacman -S --noconfirm distrobox docker podman

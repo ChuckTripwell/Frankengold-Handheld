@@ -99,7 +99,8 @@ RUN pacman -S --noconfirm \
 
 RUN pacman -S --noconfirm \
     crun \
-    ptyxis
+    ptyxis \
+    fwupd
 
 RUN pacman -S --noconfirm --overwrite "*" --ask=4 cachyos-handheld \
     steamos-manager \
@@ -410,7 +411,25 @@ RUN systemctl enable bazzite-grub-boot-success.service
 ###########_____________________________________________________________________________________________________________________________
 # uupd
 #
-go install github.com/ublue-os/uupd@latest
+FROM archlinux:latest
+
+RUN pacman -Sy --noconfirm --needed base-devel git sudo \
+  && useradd -m builder \
+  && cd /home/builder \
+  && git clone https://aur.archlinux.org/uupd.git \
+  && cd uupd \
+  && sudo -u builder makepkg -si --noconfirm \
+  && userdel -r builder \
+  \
+  # remove base-devel \
+  && pacman -Rcns --noconfirm base-devel \
+  \
+  # clean unused dependencies / orphaned packages \
+  && pacman -Rns $(pacman -Qtdq) --noconfirm || true \
+  \
+  # clean pacman cache \
+  && pacman -Scc --noconfirm
+
 systemctl enable uupd.timer
 #_______________________________________________________________________________________________________________________________________
 

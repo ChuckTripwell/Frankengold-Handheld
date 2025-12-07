@@ -331,7 +331,7 @@ RUN systemctl enable polkit.service \
 
 
 RUN pacman --noconfirm -S sddm
-#UN systemctl enable sddm.service
+RUN systemctl enable sddm.service
 
 # Activate NTSync.
 RUN echo -e 'ntsync' > /etc/modules-load.d/ntsync.conf

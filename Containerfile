@@ -411,7 +411,7 @@ RUN systemctl enable bazzite-grub-boot-success.service
 ###########_____________________________________________________________________________________________________________________________
 # Install aur packages
 #
-RUN pacman -S --noconfirm base-devel git sudo && \
+RUN pacman -S --noconfirm base-devel git sudo go && \
     useradd -m aur && echo "aur ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
 USER aur
 WORKDIR /home/aur

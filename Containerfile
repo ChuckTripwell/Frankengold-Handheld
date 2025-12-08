@@ -58,7 +58,9 @@ pacman -Sy --needed --noconfirm --overwrite "*" --ask=4 $(curl -s "$BASE/$DATE/c
 RUN pacman -S --noconfirm --ask=4 base dracut linux-firmware ostree systemd btrfs-progs e2fsprogs xfsprogs binutils dosfstools skopeo dbus dbus-glib glib2 shadow jq crun firewalld tuned tuned-ppd networkmanager polkit sudo
 
 
+RUN pacman -S --noconfirm --ask=4 podman docker distrobox fastfetch dolphin konsole gamescope steam cachyos-handheld scx-scheds scx-manager ptyxis
 
+RUN pacman Rns --noconfirm firefox calamares
 
 
 
@@ -82,7 +84,7 @@ RUN echo -e '[chaotic-aur]\nInclude = /etc/pacman.d/chaotic-mirrorlist' >> /etc/
 RUN pacman -Sy --noconfirm
 
 RUN pacman -S --noconfirm \
-    chaotic-aur/bootc
+    chaotic-aur/bootc chaotic-aur/flatpak-git
 
 
 #######################################################################################################################################################

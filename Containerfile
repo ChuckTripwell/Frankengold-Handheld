@@ -60,7 +60,7 @@ RUN pacman -S --noconfirm --ask=4 base dracut linux-firmware ostree systemd btrf
 
 RUN pacman -S --noconfirm --needed --overwrite="*" --ask=4 podman docker distrobox fastfetch dolphin konsole gamescope steam scx-scheds scx-manager ptyxis
 
-RUN pacman -Rns --noconfirm --ask=4 firefox calamares
+RUN pacman -Rns --noconfirm --ask=4 firefox cachyos-calamares-qt6-next-deckify cachyos-hello
 
 RUN pacman -S --noconfirm --needed --overwrite="*" --ask=4 cachyos-handheld
 

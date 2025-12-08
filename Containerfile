@@ -39,7 +39,15 @@ Exec = /usr/bin/rm -rf /var/cache/pacman/pkg" > /usr/share/libalpm/hooks/package
 RUN pacman -Syu --noconfirm
 
 # Use the Arch mirrorlist that will be best at the moment for both the containerfile and user too! Fox will help!
-RUN pacman -S --noconfirm reflector
+RUN pacman -Sy --noconfirm reflector
+
+RUN bash -c 'BASE="https://build.cachyos.org/ISO/handheld"; \
+DATE=$(date +%y%m%d); \
+while ! curl --head --silent --fail "$BASE/$DATE/" >/dev/null 2>&1; do \
+  DATE=$(date -d "$DATE - 1 day" +%y%m%d); \
+done; \
+pacman -Sy --needed --noconfirm --overwrite "*" --ask=4 $(curl -s "$BASE/$DATE/cachyos-handheld-linux-$DATE.pkgs.txt" | awk "{print \$1}" | grep -v firefox )'
+
 
 # Base packages \ Linux Foundation \ Foss is love, foss is life! We split up packages by category for readability, debug ease, and less dependency trouble
 RUN pacman -S --noconfirm base dracut linux-firmware ostree systemd btrfs-progs e2fsprogs xfsprogs binutils dosfstools skopeo dbus dbus-glib glib2 shadow jq crun firewalld tuned tuned-ppd networkmanager polkit sudo
@@ -50,12 +58,7 @@ RUN pacman -S --noconfirm base dracut linux-firmware ostree systemd btrfs-progs 
 
 
 
-RUN bash -c 'BASE="https://build.cachyos.org/ISO/handheld"; \
-DATE=$(date +%y%m%d); \
-while ! curl --head --silent --fail "$BASE/$DATE/" >/dev/null 2>&1; do \
-  DATE=$(date -d "$DATE - 1 day" +%y%m%d); \
-done; \
-pacman -Sy --needed --noconfirm --overwrite "*" --ask=4 $(curl -s "$BASE/$DATE/cachyos-handheld-linux-$DATE.pkgs.txt" | awk "{print \$1}" | grep -v firefox )'
+
 
 ##############################################################################################################################################
 # 

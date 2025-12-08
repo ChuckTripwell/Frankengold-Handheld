@@ -43,7 +43,7 @@ RUN pacman -Syy --noconfirm
 # Initialize the database
 RUN pacman -Syu --noconfirm
 
-# Use the Arch mirrorlist that will be best at the moment for both the containerfile and user too! Fox will help!
+# Use the Arch mirrorlist that will be best at the moment for both the containerfile and user too!
 RUN pacman -Sy --noconfirm reflector
 
 RUN bash -c 'BASE="https://build.cachyos.org/ISO/handheld"; \

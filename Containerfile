@@ -51,7 +51,7 @@ DATE=$(date +%y%m%d); \
 while ! curl --head --silent --fail "$BASE/$DATE/" >/dev/null 2>&1; do \
   DATE=$(date -d "$DATE - 1 day" +%y%m%d); \
 done; \
-pacman -Sy --needed --noconfirm --overwrite "*" --ask=4 $(curl -s "$BASE/$DATE/cachyos-handheld-linux-$DATE.pkgs.txt" | awk "{print \$1}" | grep -v firefox )'
+pacman -Sy --needed --noconfirm --overwrite "*" --ask=4 $(curl -s "$BASE/$DATE/cachyos-handheld-linux-$DATE.pkgs.txt" )'
 
 
 # Base packages \ Linux Foundation \ Foss is love, foss is life! We split up packages by category for readability, debug ease, and less dependency trouble

@@ -1,6 +1,15 @@
-#FROM ghcr.io/ublue-os/bazzite:testing AS bazzite
+##################################################################################
+##################################################################################
+####                        this is just a template                            ###
+###   please go down to the "Changes go here" section to add your stuff!       ###
+##################################################################################
+###             a complete image will be published every week.                 ###
+##################################################################################
+##################################################################################
 
-FROM docker.io/cachyos/cachyos-v3:latest AS final
+
+
+FROM docker.io/cachyos/cachyos-v3:latest AS output
 
 ENV DRACUT_NO_XATTR=1
 
@@ -9,277 +18,75 @@ RUN grep "= */var" /etc/pacman.conf | sed "/= *\/var/s/.*=// ; s/ //" | xargs -n
 mv -v "$1" "/usr/lib/sysimage/$(echo "$1" | sed "s@/var/@@")"' '' && \
     sed -i -e "/= *\/var/ s/^#//" -e "s@= */var@= /usr/lib/sysimage@g" -e "/DownloadUser/d" /etc/pacman.conf
 
-# Set it up such that pacman is always cleaned after installs
-RUN echo -e "[Trigger]\n\
-Operation = Install\n\
-Operation = Upgrade\n\
-Type = Package\n\
-Target = *\n\
-\n\
-[Action]\n\
-Description = Cleaning up package cache...\n\
-Depends = coreutils\n\
-When = PostTransaction\n\
-Exec = /usr/bin/rm -rf /var/cache/pacman/pkg" > /usr/share/libalpm/hooks/package-cleanup.hook
 
-# Initialize the database
-# force-refresh
+###
+
+# Create pacman hook to make it ephemeral
+RUN mkdir -p /etc/pacman.d/hooks && \
+    echo '[Trigger]' > /etc/pacman.d/hooks/ephemeral-cache.hook && \
+    echo 'Operation = Install' >> /etc/pacman.d/hooks/ephemeral-cache.hook && \
+    echo 'Operation = Upgrade' >> /etc/pacman.d/hooks/ephemeral-cache.hook && \
+    echo 'Operation = Remove' >> /etc/pacman.d/hooks/ephemeral-cache.hook && \
+    echo 'Type = Package' >> /etc/pacman.d/hooks/ephemeral-cache.hook && \
+    echo 'Target = *' >> /etc/pacman.d/hooks/ephemeral-cache.hook && \
+    echo '' >> /etc/pacman.d/hooks/ephemeral-cache.hook && \
+    echo '[Action]' >> /etc/pacman.d/hooks/ephemeral-cache.hook && \
+    echo 'Description = Cleaning ephemeral pacman cache and DB...' >> /etc/pacman.d/hooks/ephemeral-cache.hook && \
+    echo 'When = PostTransaction' >> /etc/pacman.d/hooks/ephemeral-cache.hook && \
+    echo 'Exec = /bin/sh -c "rm -rf /tmp/pman/db /tmp/pman/cache"' >> /etc/pacman.d/hooks/ephemeral-cache.hook
+
+###
+
+
+# force-refresh and add the chaotic-aur (where we get 'bootc' from)
 RUN curl https://raw.githubusercontent.com/CachyOS/CachyOS-PKGBUILDS/master/cachyos-mirrorlist/cachyos-mirrorlist -o /etc/pacman.d/cachyos-mirrorlist
 RUN pacman -Syy --needed --overwrite "*" --noconfirm cachyos-keyring cachyos-mirrorlist cachyos-v3-mirrorlist cachyos-v4-mirrorlist cachyos-hooks archlinux-keyring pacman-mirrorlist
-RUN pacman -Syyu --noconfirm --ask=4
+RUN pacman -Syy --noconfirm
 
-# Use the Arch mirrorlist that will be best at the moment for both the containerfile and user too!
-RUN pacman -S --noconfirm reflector
-
-# Base packages \ Linux Foundation \ Foss is love, foss is life! We split up packages by category for readability, debug ease, and less dependency trouble
-RUN pacman -S --noconfirm base dracut linux-cachyos-deckify-headers linux-cachyos-deckify ostree systemd btrfs-progs e2fsprogs xfsprogs binutils dosfstools skopeo dbus dbus-glib glib2 shadow
-RUN pacman -S --noconfirm linux-firmware linux-firmware-amdgpu linux-firmware-atheros linux-firmware-broadcom linux-firmware-cirrus linux-firmware-intel linux-firmware-marvell \
-    linux-firmware-mediatek linux-firmware-nvidia linux-firmware-other linux-firmware-radeon linux-firmware-realtek linux-firmware-whence
-
-# Media/Install utilities/Media drivers
-RUN pacman -S --noconfirm librsvg libglvnd qt6-multimedia-ffmpeg plymouth acpid ddcutil dmidecode mesa-utils ntfs-3g vulkan-tools wayland-utils playerctl
-
-# Fonts
-RUN pacman -S --noconfirm noto-fonts noto-fonts-cjk noto-fonts-emoji unicode-emoji noto-fonts-extra ttf-fira-code ttf-firacode-nerd \
-    ttf-ibm-plex ttf-jetbrains-mono-nerd otf-font-awesome ttf-jetbrains-mono wqy-microhei ttf-nerd-fonts-symbols ttf-nerd-fonts-symbols-common \
-    ttf-nerd-fonts-symbols-mono \
-    noto-fonts \
-    noto-fonts-cjk \
-    noto-fonts-emoji \
-    opendesktop-fonts \
-    powerline-fonts \
-    xorg-fonts-encodings \
-    adwaita-fonts \
-    cantarell-fonts \
-    ttf-bitstream-vera \
-    ttf-dejavu \
-    ttf-fantasque-nerd \
-    ttf-hack \
-    ttf-liberation \
-    ttf-opensans
-
-
-# CLI Utilities
-RUN pacman -S --noconfirm sudo bash bash-completion fastfetch btop jq less lsof nano openssh powertop man-db wget yt-dlp \
-      tree usbutils vim wl-clip-persist unzip glibc-locales tar udev starship tuned-ppd tuned curl patchelf go
-
-# Virtualization \ Containerization
-RUN pacman -S --noconfirm distrobox docker podman
-
-# Drivers
-RUN pacman -S --noconfirm amd-ucode intel-ucode efibootmgr shim mesa lib32-mesa libva-intel-driver libva-mesa-driver \
-      vpl-gpu-rt vulkan-icd-loader vulkan-intel vulkan-radeon apparmor xf86-video-amdgpu lib32-vulkan-radeon 
-
-# Network / VPN / SMB / storage
-RUN pacman -S --noconfirm libmtp networkmanager-openconnect networkmanager-openvpn nss-mdns samba smbclient networkmanager firewalld udiskie udisks2
-
-# Pipewire
-RUN pacman -S --noconfirm pipewire pipewire-pulse pipewire-zeroconf pipewire-ffado pipewire-libcamera sof-firmware wireplumber \
-    alsa-firmware lib32-pipewire pipewire-audio linux-firmware-intel
-
-# Desktop Environment needs
-#RUN pacman -S --noconfirm xwayland-satellite xdg-desktop-portal-kde xdg-desktop-portal xdg-user-dirs \
-#      ffmpegthumbs kdegraphics-thumbnailers kdenetwork-filesharing kio-admin matugen accountsservice quickshell dgop cava \ 
-#      wlsunset ddcutil xdg-utils kservice5 archlinux-xdg-menu shared-mime-info kio glycin
-
-# User frontend programs/apps
-RUN pacman -S --noconfirm steam gamescope scx-scheds scx-manager gnome-disk-utility mangohud lib32-mangohud
-
-RUN pacman -S --noconfirm \
-    crun \
-    ptyxis \
-    fwupd
-
-RUN pacman -S --noconfirm --overwrite "*" --ask=4 cachyos-handheld \
-    steamos-manager \
-    steamos-powerbuttond \
-    jupiter-fan-control \
-    steamdeck-dsp \
-    qt6-virtualkeyboard
-
-RUN pacman -Sy --noconfirm --needed --ask=4 \
-    lib32-amdvlk \
-    lib32-glibc \
-    lib32-libva-intel-driver \
-    lib32-libva-mesa-driver \
-    lib32-libvdpau \
-    lib32-mangohud \
-    lib32-mesa-utils \
-    lib32-mesa \
-    lib32-vulkan-intel \
-    lib32-vulkan-mesa-layers \
-    lib32-vulkan-radeon \
-    lib32-vulkan-swrast \
-    libva-intel-driver \
-    libva-utils \
-    mesa-vdpau \
-    vulkan-swrast
-
-RUN pacman -Sy --noconfirm --needed --ask=4 \
-    dmidecode \
-    dolphin \
-    git \
-    gperftools \
-    jq \
-    kate \
-    konsole \
-    lib32-gamescope \
-    lib32-gcc-libs \
-    lib32-libpulse \
-    lib32-libunwind \
-    lib32-mesa \
-    lib32-opencl-mesa \
-    lib32-renderdoc-minimal \
-    mangohud \
-    noto-fonts-cjk \
-    plasma-desktop \
-    sddm \
-    steamdeck-kde-presets \
-    steam-jupiter-stable \
-    steamos-customizations \
-    unzip \
-    xdg-user-dirs \
-    xorg-xwayland \
-    zenity
-
-##############################################################################################################################################
-
-# themes:
-RUN cd /tmp && git clone https://github.com/ChuckTripwell/Afterglow-kde && cd Afterglow-kde && chmod +x ./install.sh && ./install.sh
-
-
-##############################################################################################################################################
-# add the chaotic-aur (where we get 'bootc' from)
+# install basic stuff
+RUN pacman -S --noconfirm base dracut linux-firmware ostree systemd btrfs-progs e2fsprogs xfsprogs binutils dosfstools skopeo dbus dbus-glib glib2 shadow udev wget crun
+RUN pacman -S --noconfirm qt6-multimedia-ffmpeg plymouth ntfs-3g wayland-utils curl cosign
+RUN pacman -S --noconfirm distrobox podman shim networkmanager firewalld gamescope scx-scheds scx-manager sudo bash bash-completion
 
 RUN pacman-key --recv-key 3056513887B78AEB --keyserver keyserver.ubuntu.com
 RUN pacman-key --init && pacman-key --lsign-key 3056513887B78AEB
-
 RUN pacman -U 'https://cdn-mirror.chaotic.cx/chaotic-aur/chaotic-keyring.pkg.tar.zst' --noconfirm
 RUN pacman -U 'https://cdn-mirror.chaotic.cx/chaotic-aur/chaotic-mirrorlist.pkg.tar.zst' --noconfirm
 RUN echo -e '[chaotic-aur]\nInclude = /etc/pacman.d/chaotic-mirrorlist' >> /etc/pacman.conf
+RUN pacman -Sy --noconfirm chaotic-aur/bootc chaotic-aur/flatpak-git
 
-RUN pacman -Sy --noconfirm
 
-RUN pacman -S --noconfirm \
-    chaotic-aur/bootc \
-    chaotic-aur/flatpak-git \
-    chaotic-aur/ttf-symbola \
-    chaotic-aur/opentabletdriver \
-    chaotic-aur/qt6ct-kde \
-    chaotic-aur/adwaita-qt5-git \
-    chaotic-aur/adwaita-qt6-git
-
-#######################################################################################################################################################
-#######################################################################################################################################################
-
+# add post-transaction flatpsks
 RUN mkdir -p /usr/share/flatpak/preinstall.d/
 
-# Bazaar | Get most of your software here, flatpaks that are easy to install and use~
-RUN echo -e "[Flatpak Preinstall io.github.kolunmi.Bazaar]\nBranch=stable\nIsRuntime=false" > /usr/share/flatpak/preinstall.d/Bazaar.preinstall
-
-# Elisa | Music player~
-RUN echo -e "[Flatpak Preinstall org.kde.elisa]\nBranch=stable\nIsRuntime=false" > /usr/share/flatpak/preinstall.d/Elisa.preinstall
-
-# Ark | For unzipping files and file compression!
-RUN echo -e "[Flatpak Preinstall org.kde.ark]\nBranch=stable\nIsRuntime=false" > /usr/share/flatpak/preinstall.d/Ark.preinstall
-
-# Faugus Launcher | This is fantastic for using windows software on linux, throwing exes at it and whatnot
-RUN echo -e "[Flatpak Preinstall io.github.faugus.faugus-launcher]\nBranch=stable\nIsRuntime=false" > /usr/share/flatpak/preinstall.d/FaugusLauncher.preinstall
-
-# ProtonUp-Qt | For installing different versions of proton! Emulation for windows games via Steam/Valve's work
-RUN echo -e "[Flatpak Preinstall net.davidotek.pupgui2]\nBranch=stable\nIsRuntime=false" > /usr/share/flatpak/preinstall.d/ProtonUp-Qt.preinstall
-
-# Kate | Writing documents~ Also can act as an IDE/development environment interestingly!
-RUN echo -e "[Flatpak Preinstall org.kde.kate]\nBranch=stable\nIsRuntime=false" > /usr/share/flatpak/preinstall.d/Kate.preinstall
-
-# Warehouse | Manage your flatpak apps, delete whatever you don"t need/use/want! It's YOUR computer.
-RUN echo -e "[Flatpak Preinstall io.github.flattool.Warehouse]\nBranch=stable\nIsRuntime=false" > /usr/share/flatpak/preinstall.d/Warehouse.preinstall
-
-# Gear Lever | Manage appimages!
-RUN echo -e "[Flatpak Preinstall it.mijorus.gearlever]\nBranch=stable\nIsRuntime=false" > /usr/share/flatpak/preinstall.d/GearLever.preinstall
-
-# Haruna | Watch video files! I actually personally like this better than VLC Media Player, nicer look/featureset
-RUN echo -e "[Flatpak Preinstall org.kde.haruna]\nBranch=stable\nIsRuntime=false" > /usr/share/flatpak/preinstall.d/Haruna.preinstall
-
-# Gwenview | View images!
-RUN echo -e "[Flatpak Preinstall org.kde.gwenview]\nBranch=stable\nIsRuntime=false" > /usr/share/flatpak/preinstall.d/Gwenview.preinstall
-
-
-RUN mkdir -p /etc/plymouth && \
-      echo -e '[Daemon]\nTheme=spinner' | tee /etc/plymouth/plymouthd.conf && \
-      wget --tries=5 -O /usr/share/plymouth/themes/spinner/watermark.png \
-      https://raw.githubusercontent.com/ChuckTripwell/Frankengold-Desktop/refs/heads/main/Text_Logo.png
-
-# All kindsa Sudo changes for ease and flavor
-RUN echo -e '%wheel ALL=(ALL:ALL) ALL\n\
+# Systemd flatpak preinstall service
+RUN echo -e '[Unit]\n\
+Description=Preinstall Flatpaks\n\
+After=network-online.target\n\
+Wants=network-online.target\n\
+ConditionPathExists=/usr/bin/flatpak\n\
+Documentation=man:flatpak-preinstall(1)\n\
 \n\
-Defaults insults\n\
-Defaults pwfeedback\n\
-Defaults secure_path="/usr/local/bin:/usr/bin:/bin:/home/linuxbrew/.linuxbrew/bin"\n\
-Defaults env_keep += "EDITOR VISUAL PATH"\n\
-Defaults timestamp_timeout=0' > /etc/sudoers.d/sudo-quiver && \
-    chmod 440 /etc/sudoers.d/sudo-quiver
+[Service]\n\
+Type=oneshot\n\
+ExecStart=/usr/bin/flatpak preinstall -y\n\
+RemainAfterExit=true\n\
+Restart=on-failure\n\
+RestartSec=30\n\
+\n\
+StartLimitIntervalSec=600\n\
+StartLimitBurst=3\n\
+\n\
+[Install]\n\
+WantedBy=multi-user.target' > /usr/lib/systemd/system/flatpak-preinstall.service
 
-# Set up zram, this will help users not run out of memory. Fox will fix!
+# Set up zram, this will help users not run out of memory.
 RUN echo -e '[zram0]\nzram-size = min(ram, 8192)' >> /usr/lib/systemd/zram-generator.conf
 RUN echo -e 'enable systemd-resolved.service' >> usr/lib/systemd/system-preset/91-resolved-default.preset
 RUN echo -e 'L /etc/resolv.conf - - - - ../run/systemd/resolve/stub-resolv.conf' >> /usr/lib/tmpfiles.d/resolved-default.conf
 RUN systemctl preset systemd-resolved.service
 
-# Symlink Vi to Vim / Make it to where a user can use vi in terminal command to use vim automatically | Thanks Tulip
-RUN ln -s ./vim /usr/bin/vi
-
-# System-wide default application associations for filetype calls
-RUN mkdir -p /etc/xdg/
-
-RUN echo -e '[Default Applications]\n\
-text/plain=org.kde.kate.desktop\n\
-application/json=org.kde.kate.desktop\n\
-\n\
-text/html=floorp.desktop\n\
-\n\
-video/mp4=haruna.desktop\n\
-video/x-matroska=haruna.desktop\n\
-video/webm=haruna.desktop\n\
-video/quicktime=haruna.desktop\n\
-\n\
-audio/mpeg=org.kde.elisa.desktop\n\
-audio/flac=org.kde.elisa.desktop\n\
-audio/ogg=org.kde.elisa.desktop\n\
-audio/wav=org.kde.elisa.desktop\n\
-\n\
-image/png=pinta.desktop\n\
-image/jpeg=pinta.desktop\n\
-image/gif=org.kde.gwenview.desktop\n\
-\n\
-application/zip=org.kde.ark.desktop\n\
-application/x-rar=org.kde.ark.desktop\n\
-application/x-tar=org.kde.ark.desktop\n\
-\n\
-[Added Associations]' > /etc/xdg/mimeapps.list
-
-# ENV default exports, QT theming 
-# Load shared objects immediately for better first time latency
-# Apply OBS_VK to all vulkan instances for better OBS game capture, some other windows may come along for the ride
-# Auto dark mode everywhere
-ENV QT_QPA_PLATFORMTHEME=qt6ct
-ENV LD_BIND_NOW=1
-ENV OBS_VKCAPTURE=1
-ENV XDG_MENU_PREFIX=arch-
-ENV XDG_MENU_PREFIX=plasma-
-RUN kbuildsycoca6
-
-# Set vm.max_map_count for stability/improved gaming performance
-# https://wiki.archlinux.org/title/Gaming#Increase_vm.max_map_count
-RUN echo -e "vm.max_map_count = 2147483642" > /etc/sysctl.d/80-gamecompatibility.conf
-
-# Automount ext4/btrfs drives, feel free to mount your own in fstab if you understand how to do so
-# To turn off, run sudo ln -s /dev/null /etc/media-automount.d/_all.conf
-RUN git clone --depth=1 https://github.com/Zeglius/media-automount-generator /tmp/media-automount-generator && \
-    cd /tmp/media-automount-generator && \
-    ./install.sh && \
-    rm -rf /tmp/media-automount-generator
-
+# brew setup 
 RUN curl -s https://api.github.com/repos/ublue-os/packages/releases/latest \
     | jq -r '.assets[] | select(.name | test("homebrew-x86_64.*\\.tar\\.zst")) | .browser_download_url' \
     | xargs -I {} wget -O /usr/share/homebrew.tar.zst {}
@@ -308,32 +115,9 @@ WantedBy=multi-user.target" > /usr/lib/systemd/system/brew-setup.service
 
 RUN systemctl enable brew-setup.service
 
-##############################################################################################################################################################################
-##############################################################################################################################################################################
-
-# Systemd flatpak preinstall service, thanks Aurora
-RUN echo -e '[Unit]\n\
-Description=Preinstall Flatpaks\n\
-After=network-online.target\n\
-Wants=network-online.target\n\
-ConditionPathExists=/usr/bin/flatpak\n\
-Documentation=man:flatpak-preinstall(1)\n\
-\n\
-[Service]\n\
-Type=oneshot\n\
-ExecStart=/usr/bin/flatpak preinstall -y\n\
-RemainAfterExit=true\n\
-Restart=on-failure\n\
-RestartSec=30\n\
-\n\
-StartLimitIntervalSec=600\n\
-StartLimitBurst=3\n\
-\n\
-[Install]\n\
-WantedBy=multi-user.target' > /usr/lib/systemd/system/flatpak-preinstall.service
 
 # This fixes a user/groups error with rebasing from other problematic images.
-# FIXME Do NOT remove until fixed upstream or fixed universally. Updating with new fix also fine. Script created by Tulip.
+# FIXME Do NOT remove until fixed upstream or fixed universally.
 RUN mkdir -p /usr/lib/systemd/system-preset /usr/lib/systemd/system
 
 RUN echo -e '#!/bin/sh\ncat /usr/lib/sysusers.d/*.conf | grep -e "^g" | grep -v -e "^#" | awk "NF" | awk '\''{print $2}'\'' | grep -v -e "wheel" -e "root" -e "sudo" | xargs -I{} sed -i "/{}/d" $1' > /usr/libexec/os-group-fix
@@ -352,36 +136,132 @@ WantedBy=default.target multi-user.target' > /usr/lib/systemd/system/os-group-fi
 
 RUN echo -e "enable os-group-fix.service" > /usr/lib/systemd/system-preset/01-os-group-fix.preset
 
-# System services
+# fix sudo
+RUN echo -e '%wheel ALL=(ALL:ALL) ALL'
+
+
+# System services (Machine Boot level)
 RUN systemctl enable polkit.service \
     NetworkManager.service \
-    tuned.service \
-    tuned-ppd.service \
     firewalld.service \
     flatpak-preinstall.service \
     os-group-fix.service
 
-
-#RUN pacman --noconfirm -S sddm
-RUN systemctl enable sddm.service
-
-# Activate NTSync.
+# Activate NTSync
 RUN echo -e 'ntsync' > /etc/modules-load.d/ntsync.conf
 
 # CachyOS bbr3 Config Option
 RUN echo -e 'net.core.default_qdisc=fq \n\
 net.ipv4.tcp_congestion_control=bbr' > /etc/sysctl.d/99-bbr3.conf
 
+########################################################################################################################################
+# Changes go here:
+# (for stability, it is recommended not to use the AUR - that's what distrobox is for.)
+########################################################################################################################################
+
+# ONLY ADD ONE KERNEL!!!
+#
+RUN pacman -Sy --noconfirm linux-cachyos-deckify linux-cachyos-deckify-headers
+
+#
+#RUN bash -c 'BASE="https://build.cachyos.org/ISO/handheld"; \
+#DATE=$(date +%y%m%d); \
+#while ! curl --head --silent --fail "$BASE/$DATE/" >/dev/null 2>&1; do \
+#  DATE=$(date -d "$DATE - 1 day" +%y%m%d); \
+#done; \
+#pacman -Sy --noconfirm --overwrite "*" --ask=4 $(curl -s "$BASE/$DATE/cachyos-handheld-linux-$DATE.pkgs.txt" | awk "{print \$1}" | grep -v firefox | grep -v cachyos-calamares-qt6-next-deckify | grep -v vim | grep -v vim-runtime | grep -v paru )'
+
+RUN pacman -S --noconfirm --overwrite "*" --ask=4 \
+        steamos-manager steamos-powerbuttond jupiter-fan-control steamdeck-dsp cachyos-handheld \
+    intel-ucode amd-ucode efibootmgr \
+    plasma-desktop konsole plasma-nm plasma-pa sddm
+
+###########_____________________________________________________________________________________________________________________________
+# bazzite scripts need grub2-editenv
+#
+#RUN ln -s /usr/bin/grub-editenv /usr/bin/grub2-editenv
+#_______________________________________________________________________________________________________________________________________
+
+###########_____________________________________________________________________________________________________________________________
+# create a /boot/grub to use bazzite scripts
+#
+#RUN mkdir -p /usr/lib/systemd/system
+#RUN touch /usr/lib/systemd/system/fix-grub-link.service
+#RUN echo "[Unit]" > /usr/lib/systemd/system/fix-grub-link.service
+#RUN echo "Description=Create /boot/grub symlink if missing" >> /usr/lib/systemd/system/fix-grub-link.service
+#RUN echo "ConditionPathExists=!/boot/grub" >> /usr/lib/systemd/system/fix-grub-link.service
+#RUN echo "" >> /usr/lib/systemd/system/fix-grub-link.service
+#RUN echo "[Service]" >> /usr/lib/systemd/system/fix-grub-link.service
+#RUN echo "Type=oneshot" >> /usr/lib/systemd/system/fix-grub-link.service
+#RUN echo "ExecStart=/bin/ln -s /boot/grub2 /boot/grub" >> /usr/lib/systemd/system/fix-grub-link.service
+#RUN echo "" >> /usr/lib/systemd/system/fix-grub-link.service
+#RUN echo "[Install]" >> /usr/lib/systemd/system/fix-grub-link.service
+#RUN echo "WantedBy=multi-user.target" >> /usr/lib/systemd/system/fix-grub-link.service
+#
+#RUN systemctl enable /usr/lib/systemd/system/fix-grub-link.service
+#_______________________________________________________________________________________________________________________________________
+
+
+###########_____________________________________________________________________________________________________________________________
+# services from bazzite
+#RUN pacman -S --noconfirm --needed rsync 
+#WORKDIR /tmp
+#RUN git clone --depth 1 https://github.com/ublue-os/bazzite.git
+#RUN rsync -a /tmp/bazzite/system_files/deck/kinoite/ /
+#RUN rsync -a /tmp/bazzite/system_files/deck/shared/ /
+#WORKDIR /
+#RUN rm -rf /tmp/bazzite
+#_______________________________________________________________________________________________________________________________________
+
+
+
+## enable your services
+#
+RUN systemctl enable sddm
+RUN systemctl enable jupiter-fan-control
+RUN systemctl enable podman
+#RUN systemctl enable bazzite-grub-boot-success.timer
+#RUN systemctl enable bazzite-grub-boot-success.service
+#RUN systemctl enable bazzite-autologin.service
+
+
+
+# add flatpaks
+RUN echo -e "[Flatpak Preinstall io.github.kolunmi.Bazaar]\nBranch=stable\nIsRuntime=false" > /usr/share/flatpak/preinstall.d/Bazaar.preinstall
+
+# Place logo at plymouth folder location to appear on boot and shutdown.
+#
+RUN mkdir -p /etc/plymouth && \
+      echo -e '[Daemon]\nTheme=spinner' | tee /etc/plymouth/plymouthd.conf && \
+      wget --tries=5 -O /usr/share/plymouth/themes/spinner/watermark.png \
+https://raw.githubusercontent.com/ChuckTripwell/cachyos-bootc-template/refs/heads/main/Text_Logo.png # this URL above leads to the logo shown on boot. you can use ours, or upload yours.
+
+
+########################################################################################################################################
+# end of changes
+########################################################################################################################################
+
+# finalize
 RUN printf "systemdsystemconfdir=/etc/systemd/system\nsystemdsystemunitdir=/usr/lib/systemd/system\n" | tee /usr/lib/dracut/dracut.conf.d/30-bootcrew-fix-bootc-module.conf && \
       printf 'hostonly=no\nadd_dracutmodules+=" ostree bootc "' | tee /usr/lib/dracut/dracut.conf.d/30-bootcrew-bootc-modules.conf && \
       sh -c 'export KERNEL_VERSION="$(basename "$(find /usr/lib/modules -maxdepth 1 -type d | grep -v -E "*.img" | tail -n 1)")" && \
       dracut --force --no-hostonly --reproducible --zstd --verbose --kver "$KERNEL_VERSION"  "/usr/lib/modules/$KERNEL_VERSION/initramfs.img"'
 
+RUN yes | pacman -Scc
+RUN yes | pacman -Scc
+RUN yes | paccache -ruk0
+
 RUN rm -rf /home/build/.cache/* && \
     rm -rf \
         /tmp/* \
-        /var/cache/pacman/pkg/*
-#RUN pacman -Rns --noconfirm git
+        /var/cache/pacman/pkg/* \
+        /var/lib/pacman/sync/* \
+        /var/log/* \
+        /var/cache/* \
+        /var/log/* \
+        /var/db/* \
+        /var/lib/*
+
 
 # Necessary for general behavior expected by image-based systems
 RUN sed -i 's|^HOME=.*|HOME=/var/home|' "/etc/default/useradd" && \
@@ -392,51 +272,4 @@ RUN sed -i 's|^HOME=.*|HOME=/var/home|' "/etc/default/useradd" && \
     printf "d /var/roothome 0700 root root -\nd /run/media 0755 root root -" | tee -a "/usr/lib/tmpfiles.d/bootc-base-dirs.conf" && \
     printf '[composefs]\nenabled = yes\n[sysroot]\nreadonly = true\n' | tee "/usr/lib/ostree/prepare-root.conf"
 
-###########_____________________________________________________________________________________________________________________________
-# bazzite scripts need grub2-editenv
-#
-RUN ln -s /usr/bin/grub-editenv /usr/bin/grub2-editenv
-#_______________________________________________________________________________________________________________________________________
-
-###########_____________________________________________________________________________________________________________________________
-# create a /boot/grub to use bazzite scripts
-#
-RUN mkdir -p /usr/lib/systemd/system
-RUN touch /usr/lib/systemd/system/fix-grub-link.service
-RUN echo "[Unit]" > /usr/lib/systemd/system/fix-grub-link.service
-RUN echo "Description=Create /boot/grub symlink if missing" >> /usr/lib/systemd/system/fix-grub-link.service
-RUN echo "ConditionPathExists=!/boot/grub" >> /usr/lib/systemd/system/fix-grub-link.service
-RUN echo "" >> /usr/lib/systemd/system/fix-grub-link.service
-RUN echo "[Service]" >> /usr/lib/systemd/system/fix-grub-link.service
-RUN echo "Type=oneshot" >> /usr/lib/systemd/system/fix-grub-link.service
-RUN echo "ExecStart=/bin/ln -s /boot/grub2 /boot/grub" >> /usr/lib/systemd/system/fix-grub-link.service
-RUN echo "" >> /usr/lib/systemd/system/fix-grub-link.service
-RUN echo "[Install]" >> /usr/lib/systemd/system/fix-grub-link.service
-RUN echo "WantedBy=multi-user.target" >> /usr/lib/systemd/system/fix-grub-link.service
-
-RUN systemctl enable /usr/lib/systemd/system/fix-grub-link.service
-#_______________________________________________________________________________________________________________________________________
-
-
-###########_____________________________________________________________________________________________________________________________
-# services from bazzite
-#RUN pacman -S --noconfirm --needed rsync
-#RUN cd /tmp && git clone --depth 1 https://github.com/ublue-os/bazzite.git && cd /
-#RUN chmod +x /tmp/bazzite/system_files/deck/kinoite/usr/bin/*
-#RUN chmod +x /tmp/bazzite/system_files/deck/shared/usr/bin/*
-#RUN rsync -a /tmp/bazzite/system_files/deck/kinoite/ /
-#RUN rsync -a /tmp/bazzite/system_files/deck/shared/ /
-#RUN rm -rf /tmp/bazzite
-#_______________________________________________________________________________________________________________________________________
-
-
-###########_____________________________________________________________________________________________________________________________
-# activate services from bazzite
-#RUN systemctl enable bazzite-grub-boot-success.timer
-#RUN systemctl enable bazzite-grub-boot-success.service
-#_______________________________________________________________________________________________________________________________________
-
-
-
-# finish
 RUN bootc container lint

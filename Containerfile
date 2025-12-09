@@ -49,7 +49,7 @@ RUN pacman -Syu --noconfirm
 # Base packages \ Linux Foundation \ Foss is love, foss is life! We split up packages by category for readability, debug ease, and less dependency trouble
 RUN pacman -S --noconfirm --ask=4 base dracut linux-firmware ostree systemd btrfs-progs e2fsprogs xfsprogs binutils dosfstools skopeo dbus dbus-glib glib2 shadow jq crun firewalld tuned tuned-ppd networkmanager polkit sudo
 
-RUN pacman -S --noconfirm --needed --overwrite="*" --ask=4 linux-cachyos-deckify linux-cachyos-deckify-headers
+RUN pacman -S --noconfirm --needed --overwrite="*" --ask=4 linux-cachyos-deckify linux-cachyos-deckify-headers amd-ucode intel-ucode 
 RUN pacman -S --noconfirm --needed --overwrite="*" --ask=4 plasma-desktop plasma-pa plasma-nm networkmanager konsole podman docker distrobox fastfetch dolphin konsole gamescope steam scx-scheds scx-manager ptyxis
 
 #RUN pacman -Rns --noconfirm --ask=4 firefox cachyos-calamares-qt6-next-deckify cachyos-hello brltty

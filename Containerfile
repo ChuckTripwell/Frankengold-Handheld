@@ -50,9 +50,12 @@ RUN pacman -Syu --noconfirm
 RUN pacman -S --noconfirm --ask=4 base dracut linux-firmware ostree systemd btrfs-progs e2fsprogs xfsprogs binutils dosfstools skopeo dbus dbus-glib glib2 shadow jq crun firewalld tuned tuned-ppd networkmanager polkit sudo
 
 RUN pacman -S --noconfirm --needed --overwrite="*" --ask=4 linux-cachyos-deckify linux-cachyos-deckify-headers amd-ucode intel-ucode 
+
+RUN pacman -U --noconfirm --needed --overwrite="*" --ask=4 https://iso.builds.garudalinux.org/iso/latest/garuda/kde-lite/latest.pkgs.txt
+
 RUN pacman -S --noconfirm --needed --overwrite="*" --ask=4 plasma-desktop plasma-pa plasma-nm networkmanager konsole podman docker distrobox fastfetch dolphin konsole gamescope steam scx-scheds scx-manager ptyxis
 
-#RUN pacman -Rns --noconfirm --ask=4 firefox cachyos-calamares-qt6-next-deckify cachyos-hello brltty
+#RUN pacman -Rns --noconfirm --ask=4 linux-zen
 
 #RUN pacman -S --noconfirm --needed --overwrite="*" --ask=4 cachyos-handheld
 

@@ -80,7 +80,7 @@ RUN pacman -S --noconfirm \
 
 RUN curl -L https://iso.builds.garudalinux.org/iso/latest/garuda/kde-lite/latest.pkgs.txt \
   | awk '{print $1}' \
-  | grep -Ev '^garuda-' \
+  | grep -v 'garuda' \
   | grep -Ev '^(linux|linux-zen|linux-lts|mkinitcpio|nvidia|snapper|linux-zen-headers)$' \
   > /tmp/pkglist
 RUN pacman -S --noconfirm --needed --overwrite="*" $(cat /tmp/pkglist)

@@ -75,14 +75,8 @@ RUN pacman -S --noconfirm distrobox docker podman
 # SDDM fix?
 ##############################################################################################################################################
 
-# ensure sddm user exists
-RUN printf "u sddm - \"SDDM user\" /var/lib/sddm\n" \
-    > /usr/lib/sysusers.d/sddm.conf
-
-# ensure /var/lib/sddm and .config exist at boot
-RUN printf "d /var/lib/sddm 0755 sddm sddm -\n\
-d /var/lib/sddm/.config 0755 sddm sddm -\n" \
-    > /usr/lib/tmpfiles.d/sddm.conf
+# SDDM fix?
+RUN chown -R sddm:sddm /var/lib/sddm/.config
 
 
 ##############################################################################################################################################

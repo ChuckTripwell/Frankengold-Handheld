@@ -79,6 +79,8 @@ RUN echo -e '[chaotic-aur]\nInclude = /etc/pacman.d/chaotic-mirrorlist' >> /etc/
 
 RUN pacman -Sy --noconfirm
 
+
+RUN pacman -Rdd --noconfirm flatpak || true
 RUN pacman -S --noconfirm \
     chaotic-aur/bootc chaotic-aur/flatpak-git
 

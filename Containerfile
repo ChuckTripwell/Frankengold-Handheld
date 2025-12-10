@@ -52,8 +52,7 @@ RUN pacman -S --noconfirm --ask=4 base dracut linux-firmware ostree systemd btrf
 
 
 # Pipewire
-#RUN pacman -S --noconfirm pipewire pipewire-pulse pipewire-zeroconf pipewire-ffado pipewire-libcamera sof-firmware wireplumber \
-    alsa-firmware lib32-pipewire pipewire-audio linux-firmware-intel
+#RUN pacman -S --noconfirm pipewire pipewire-pulse pipewire-zeroconf pipewire-ffado pipewire-libcamera sof-firmware wireplumber alsa-firmware lib32-pipewire pipewire-audio linux-firmware-intel
 
 # Network / VPN / SMB / storage
 #RUN pacman -S --noconfirm libmtp nss-mdns samba smbclient networkmanager firewalld udiskie udisks2

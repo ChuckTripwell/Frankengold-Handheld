@@ -50,26 +50,30 @@ RUN pacman -Sy --noconfirm reflector
 RUN pacman -S --noconfirm --needed --overwrite="*" --ask=4 base dracut linux-firmware ostree systemd btrfs-progs e2fsprogs xfsprogs binutils dosfstools skopeo dbus dbus-glib glib2 shadow jq crun firewalld tuned tuned-ppd networkmanager polkit sudo
 
 
-# Media/Install utilities/Media drivers
-RUN pacman -S --noconfirm librsvg libglvnd qt6-multimedia-ffmpeg plymouth acpid ddcutil dmidecode mesa-utils ntfs-3g \
-      vulkan-tools wayland-utils playerctl
+# Fonts
+RUN pacman -S --noconfirm noto-fonts noto-fonts-cjk noto-fonts-emoji unicode-emoji noto-fonts-extra ttf-fira-code ttf-firacode-nerd \
+    ttf-ibm-plex ttf-jetbrains-mono-nerd otf-font-awesome ttf-jetbrains-mono wqy-microhei ttf-nerd-fonts-symbols ttf-nerd-fonts-symbols-common \
+    ttf-nerd-fonts-symbols-mono ttf-fira-code ttf-firacode-nerd
+
+# CLI Utilities
+RUN pacman -S --noconfirm bash bash-completion less lsof openssh man-db wget \
+      tree usbutils wl-clip-persist cliphist unzip glibc-locales tar udev tuned-ppd tuned curl patchelf
+
+# Drivers
+RUN pacman -S --noconfirm amd-ucode intel-ucode efibootmgr shim mesa libva apparmor
 
 
-# Virtualization \ Containerization
-RUN pacman -S --noconfirm distrobox docker podman
-
-
-# Desktop Environment needs
-RUN pacman -S --noconfirm xwayland-satellite kio-admin kio matugen accountsservice quickshell brightnessctl xdg-utils
 
 
 # Others
-RUN pacman -S --noconfirm --needed --overwrite="*" --ask=4 plasma-meta
+RUN pacman -S --noconfirm --needed --overwrite="*" --ask=4 plasma-meta breeze
 RUN pacman -S --noconfirm --needed --overwrite="*" --ask=4 linux-cachyos-deckify linux-cachyos-deckify-headers
-RUN pacman -S --noconfirm --needed --overwrite="*" --ask=4 amd-ucode intel-ucode noto-fonts-cjk apparmor
-RUN pacman -S --noconfirm --needed --overwrite="*" --ask=4 podman docker distrobox ptyxis fastfetch micro gamescope steam scx-scheds scx-manager
+RUN pacman -S --noconfirm --needed --overwrite="*" --ask=4 amd-ucode intel-ucode apparmor
+RUN pacman -S --noconfirm --needed --overwrite="*" --ask=4 ptyxis fastfetch micro gamescope steam scx-scheds scx-manager
 RUN pacman -S --noconfirm --needed --overwrite="*" --ask=4 cachyos-handheld
 
+# Virtualization \ Containerization
+RUN pacman -S --noconfirm distrobox docker podman
 
 
 
@@ -92,7 +96,9 @@ RUN pacman -Sy --noconfirm
 
 RUN pacman -Rdd --noconfirm flatpak || true
 RUN pacman -S --noconfirm \
-    chaotic-aur/bootc chaotic-aur/flatpak-git
+    chaotic-aur/bootc chaotic-aur/flatpak-git chaotic-aur/opentabletdriver
+
+
 
 
 #######################################################################################################################################################

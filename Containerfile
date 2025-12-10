@@ -78,11 +78,11 @@ RUN pacman -S --noconfirm \
 
 #RUN pacman -S --noconfirm --needed --overwrite="*" $(curl -L https://iso.builds.garudalinux.org/iso/latest/garuda/kde-lite/latest.pkgs.txt | awk '{print $1}')
 
-RUN curl -L https://iso.builds.garudalinux.org/iso/latest/garuda/kde-lite/latest.pkgs.txt \
-    | awk '{print $1}' \
-    | grep -Ev '^(linux|linux-zen|linux-lts|mkinitcpio|garuda-*|nvidia|snapper|linux-zen-headers|garuda-bash-config|garuda-hooks|garuda-health|garuda-update|garuda-system-maintenance|garuda-dracut-support|garuda-common-settings|garuda-rani|garuda-icons|garuda-wallpapers|garuda-libs|garuda-migrations|garuda-setup-assistant|garuda-hardware-tool|garuda-hardware-profile-standard|garuda-starship-prompt)$' \
-    > /tmp/pkglist
-#RUN pacman -S --noconfirm --needed --overwrite="*" $(cat /tmp/pkglist)
+curl -L https://iso.builds.garudalinux.org/iso/latest/garuda/kde-lite/latest.pkgs.txt \
+  | awk '{print $1}' \
+  | grep -Ev '^garuda-' \
+  | grep -Ev '^(linux|linux-zen|linux-lts|mkinitcpio|nvidia|snapper|linux-zen-headers)$' \
+  > /tmp/pkglist
 RUN pacman -S --noconfirm --needed --overwrite="*" $(cat /tmp/pkglist)
 
 

@@ -55,26 +55,34 @@ RUN pacman -S --noconfirm noto-fonts noto-fonts-cjk noto-fonts-emoji unicode-emo
     ttf-ibm-plex ttf-jetbrains-mono-nerd otf-font-awesome ttf-jetbrains-mono wqy-microhei ttf-nerd-fonts-symbols ttf-nerd-fonts-symbols-common \
     ttf-nerd-fonts-symbols-mono ttf-fira-code ttf-firacode-nerd
 
-# CLI Utilities
-RUN pacman -S --noconfirm bash bash-completion less lsof openssh man-db wget \
-      tree usbutils wl-clip-persist cliphist unzip glibc-locales tar udev tuned-ppd tuned curl patchelf
-
-# Drivers
-RUN pacman -S --noconfirm amd-ucode intel-ucode efibootmgr shim mesa libva apparmor
-
-
-
 
 # Others
 RUN pacman -S --noconfirm --needed --overwrite="*" --ask=4 plasma-meta breeze
 RUN pacman -S --noconfirm --needed --overwrite="*" --ask=4 linux-cachyos-deckify linux-cachyos-deckify-headers
 RUN pacman -S --noconfirm --needed --overwrite="*" --ask=4 amd-ucode intel-ucode apparmor
 RUN pacman -S --noconfirm --needed --overwrite="*" --ask=4 ptyxis fastfetch micro gamescope steam scx-scheds scx-manager
+RUN pacman -S --noconfirm --needed --overwrite="*" --ask=4 cosign apparmor shim
 RUN pacman -S --noconfirm --needed --overwrite="*" --ask=4 cachyos-handheld
 
 # Virtualization \ Containerization
 RUN pacman -S --noconfirm distrobox docker podman
 
+
+
+
+
+##############################################################################################################################################
+# SDDM fix?
+##############################################################################################################################################
+
+# ensure sddm user exists
+RUN printf "u sddm - \"SDDM user\" /var/lib/sddm\n" \
+    > /usr/lib/sysusers.d/sddm.conf
+
+# ensure /var/lib/sddm and .config exist at boot
+RUN printf "d /var/lib/sddm 0755 sddm sddm -\n\
+d /var/lib/sddm/.config 0755 sddm sddm -\n" \
+    > /usr/lib/tmpfiles.d/sddm.conf
 
 
 ##############################################################################################################################################

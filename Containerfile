@@ -76,8 +76,15 @@ RUN pacman -Sy --noconfirm
 RUN pacman -S --noconfirm \
     chaotic-aur/bootc chaotic-aur/flatpak-git
 
-RUN pacman -S --noconfirm --needed --overwrite="*" $(curl -L https://iso.builds.garudalinux.org/iso/latest/garuda/kde-lite/latest.pkgs.txt | awk '{print $1}')
-RUN pacman -Rns --noconfirm --ask=4 linux-zen linux-zen-headers grub-garuda grub-theme-garuda 
+#RUN pacman -S --noconfirm --needed --overwrite="*" $(curl -L https://iso.builds.garudalinux.org/iso/latest/garuda/kde-lite/latest.pkgs.txt | awk '{print $1}')
+
+RUN curl -L https://iso.builds.garudalinux.org/iso/latest/garuda/kde-lite/latest.pkgs.txt \
+    | awk '{print $1}' \
+    | grep -Ev '^(linux|linux-zen|linux-lts|mkinitcpio|grub|plymouth|nvidia|snapper|linux-zen-headers|grub-garuda|grub-theme-garuda)$' \
+    > /tmp/pkglist
+RUN pacman -S --noconfirm --needed --overwrite="*" $(cat /tmp/pkglist)
+
+RUN pacman -Rns --noconfirm --ask=4 linux-zen
 RUN pacman -S --noconfirm --needed --overwrite="*" --ask=4 linux-cachyos-deckify linux-cachyos-deckify-headers amd-ucode intel-ucode
 RUN pacman -S --noconfirm --needed --overwrite="*" --ask=4 podman docker distrobox fastfetch gamescope steam scx-scheds scx-manager ptyxis
 RUN pacman -S --noconfirm --needed --overwrite="*" --ask=4 cachyos-handheld

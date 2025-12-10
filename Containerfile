@@ -50,8 +50,8 @@ RUN pacman -Sy --noconfirm reflector
 RUN pacman -S --noconfirm --ask=4 base dracut linux-firmware ostree systemd btrfs-progs e2fsprogs xfsprogs binutils dosfstools skopeo dbus dbus-glib glib2 shadow jq crun firewalld tuned tuned-ppd networkmanager polkit sudo
 
 # Drivers
-RUN pacman -S --noconfirm amd-ucode intel-ucode efibootmgr shim mesa lib32-mesa libva-intel-driver libva-mesa-driver \
-      vpl-gpu-rt vulkan-icd-loader vulkan-intel vulkan-radeon apparmor xf86-video-amdgpu lib32-vulkan-radeon 
+#RUN pacman -S --noconfirm amd-ucode intel-ucode efibootmgr shim mesa lib32-mesa libva-intel-driver libva-mesa-driver \
+#      vpl-gpu-rt vulkan-icd-loader vulkan-intel vulkan-radeon apparmor xf86-video-amdgpu lib32-vulkan-radeon 
 
 RUN pacman -S --noconfirm --needed --overwrite="*" --ask=4 plasma-meta
 RUN pacman -S --noconfirm --needed --overwrite="*" --ask=4 linux-cachyos-deckify linux-cachyos-deckify-headers
@@ -60,7 +60,7 @@ RUN pacman -S --noconfirm --needed --overwrite="*" --ask=4 podman docker distrob
 RUN pacman -S --noconfirm --needed --overwrite="*" --ask=4 cachyos-handheld
 
 
-RUN systemctl enable sddm
+
 
 ##############################################################################################################################################
 # 
@@ -216,7 +216,8 @@ RUN systemctl enable polkit.service \
     tuned-ppd.service \
     firewalld.service \
     flatpak-preinstall.service \
-    os-group-fix.service
+    os-group-fix.service \
+    sddm.service
 
 ########################################################################################################################################
 # Section 8 - CachyOS settings | Since we have the CachyOS kernel, we gotta put it to good use ≽^•⩊•^≼ ################################

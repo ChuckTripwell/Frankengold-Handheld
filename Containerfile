@@ -54,7 +54,7 @@ RUN curl -L https://iso.builds.garudalinux.org/iso/latest/garuda/kde-lite/latest
   | grep '^lib' \
   | grep -Ev '^(linux|linux-zen|linux-lts|nvidia|snapper|linux-zen-headers|pipewire-support)$' \
   > /tmp/pkglist
-RUN pacman -S --ask=4 --noconfirm --needed --overwrite="*" $(cat /tmp/pkglist)
+RUN yes '1' | pacman -S --noconfirm --needed --overwrite="*" $(cat /tmp/pkglist)
 
 
 

@@ -43,13 +43,7 @@ RUN pacman -Syy --noconfirm
 # Initialize the database
 RUN pacman -Syu --noconfirm
 
-RUN curl -L https://iso.builds.garudalinux.org/iso/latest/garuda/kde-lite/latest.pkgs.txt \
-  | awk '{print $1}' \
-  | grep -v 'garuda' \
-  | grep -v '^lib' \
-  | grep -Ev '^(linux|linux-zen|linux-lts|nvidia|snapper|linux-zen-headers|pipewire-support)$' \
-  > /tmp/pkglist
-RUN pacman -S --ask=4 --noconfirm --needed --overwrite="*" $(cat /tmp/pkglist)
+
 
 
 # Use the Arch mirrorlist that will be best at the moment for both the containerfile and user too!
@@ -87,6 +81,14 @@ RUN pacman -S --noconfirm \
 
 #RUN pacman -S --noconfirm --needed --overwrite="*" $(curl -L https://iso.builds.garudalinux.org/iso/latest/garuda/kde-lite/latest.pkgs.txt | awk '{print $1}')
 
+
+RUN curl -L https://iso.builds.garudalinux.org/iso/latest/garuda/kde-lite/latest.pkgs.txt \
+  | awk '{print $1}' \
+  | grep -v 'garuda' \
+  | grep -v '^lib' \
+  | grep -Ev '^(linux|linux-zen|linux-lts|nvidia|snapper|linux-zen-headers|pipewire-support)$' \
+  > /tmp/pkglist
+RUN pacman -S --ask=4 --noconfirm --needed --overwrite="*" $(cat /tmp/pkglist)
 
 
 RUN pacman -Rns --noconfirm --ask=4 linux-zen

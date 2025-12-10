@@ -49,20 +49,6 @@ RUN pacman -Sy --noconfirm reflector
 # Base packages \ Linux Foundation \ Foss is love, foss is life! We split up packages by category for readability, debug ease, and less dependency trouble
 RUN pacman -S --noconfirm --ask=4 base dracut linux-firmware ostree systemd btrfs-progs e2fsprogs xfsprogs binutils dosfstools skopeo dbus dbus-glib glib2 shadow jq crun firewalld tuned tuned-ppd networkmanager polkit sudo
 
-# Drivers
-RUN pacman -S --noconfirm librsvg libglvnd qt6-multimedia-ffmpeg plymouth acpid ddcutil dmidecode mesa-utils ntfs-3g \
-      vulkan-tools wayland-utils playerctl
-RUN pacman -S --noconfirm amd-ucode intel-ucode efibootmgr shim mesa lib32-mesa libva-intel-driver libva-mesa-driver \
-      vpl-gpu-rt vulkan-icd-loader vulkan-intel vulkan-radeon apparmor xf86-video-amdgpu lib32-vulkan-radeon 
-
-# Fonts
-RUN pacman -S --noconfirm noto-fonts noto-fonts-cjk noto-fonts-emoji unicode-emoji noto-fonts-extra ttf-fira-code ttf-firacode-nerd \
-    ttf-ibm-plex ttf-jetbrains-mono-nerd otf-font-awesome ttf-jetbrains-mono wqy-microhei ttf-nerd-fonts-symbols ttf-nerd-fonts-symbols-common \
-    ttf-nerd-fonts-symbols-mono ttf-fira-code ttf-firacode-nerd
-
-# Virtualization \ Containerization
-RUN pacman -S --noconfirm distrobox docker podman
-
 # Pipewire
 #RUN pacman -S --noconfirm pipewire pipewire-pulse pipewire-zeroconf pipewire-ffado pipewire-libcamera sof-firmware wireplumber alsa-firmware lib32-pipewire pipewire-audio linux-firmware-intel
 
@@ -70,10 +56,13 @@ RUN pacman -S --noconfirm distrobox docker podman
 #RUN pacman -S --noconfirm libmtp nss-mdns samba smbclient networkmanager firewalld udiskie udisks2
 
 
-RUN pacman -S --noconfirm --needed --overwrite="*" --ask=4 plasma-meta sddm
+
+RUN pacman -S --noconfirm --needed --overwrite="*" --ask=4 plasma-meta
 RUN pacman -S --noconfirm --needed --overwrite="*" --ask=4 linux-cachyos-deckify linux-cachyos-deckify-headers
-RUN pacman -S --noconfirm --needed --overwrite="*" --ask=4 fastfetch gamescope steam scx-scheds scx-manager ptyxis
+RUN pacman -S --noconfirm --needed --overwrite="*" --ask=4 amd-ucode intel-ucode
+RUN pacman -S --noconfirm --needed --overwrite="*" --ask=4 podman docker distrobox ptyxis fastfetch micro gamescope steam scx-scheds scx-manager
 RUN pacman -S --noconfirm --needed --overwrite="*" --ask=4 cachyos-handheld
+
 
 RUN systemctl enable sddm
 

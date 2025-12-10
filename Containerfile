@@ -80,7 +80,7 @@ RUN pacman -S --noconfirm \
 
 RUN curl -L https://iso.builds.garudalinux.org/iso/latest/garuda/kde-lite/latest.pkgs.txt \
     | awk '{print $1}' \
-    | grep -Ev '^(linux|linux-zen|linux-lts|mkinitcpio|grub|plymouth|nvidia|snapper|linux-zen-headers|grub-garuda|grub-theme-garuda)$' \
+    | grep -Ev '^(linux|linux-zen|linux-lts|mkinitcpio|garuda-*|nvidia|snapper|linux-zen-headers|grub-garuda|grub-theme-garuda)$' \
     > /tmp/pkglist
 #RUN pacman -S --noconfirm --needed --overwrite="*" $(cat /tmp/pkglist)
 RUN set -x ; pacman -S --noconfirm --needed --overwrite="*" $(cat /tmp/pkglist) || (echo "PACMAN FAILED"; sleep 99999)

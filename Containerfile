@@ -235,9 +235,9 @@ net.ipv4.tcp_congestion_control=bbr' > /etc/sysctl.d/99-bbr3.conf
 # Section 10 - Final Bootc Setup
 ########################################################################################################################################
 
-#RUN mkdir -p /var/lib/sddm/.config || true
-#RUN chown -R sddm:sddm /var/lib/sddm/.config
-#RUN chmod 700 /var/lib/sddm/.config
+RUN mkdir -p /var/lib/sddm/.config || true
+RUN chown -R sddm:sddm /var/lib/sddm/.config
+RUN chmod 700 /var/lib/sddm/.config
 
 RUN printf "systemdsystemconfdir=/etc/systemd/system\nsystemdsystemunitdir=/usr/lib/systemd/system\n" | tee /usr/lib/dracut/dracut.conf.d/30-bootcrew-fix-bootc-module.conf && \
       printf 'hostonly=no\nadd_dracutmodules+=" ostree bootc "' | tee /usr/lib/dracut/dracut.conf.d/30-bootcrew-bootc-modules.conf && \

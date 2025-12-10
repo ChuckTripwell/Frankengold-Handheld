@@ -78,9 +78,12 @@ RUN pacman -S --noconfirm \
 
 #RUN pacman -S --noconfirm --needed --overwrite="*" $(curl -L https://iso.builds.garudalinux.org/iso/latest/garuda/kde-lite/latest.pkgs.txt | awk '{print $1}')
 
+# Disable extra
+RUN sed -i 's/^\[extra\]/#[extra]/' /etc/pacman.conf \
+ && sed -i 's/^Include = \/etc\/pacman.d\/mirrorlist/#Include = \/etc\/pacman.d\/mirrorlist/' /etc/pacman.conf
 
-RUN comm -12 <(pacman -Qq | sort) <(curl -L https://iso.builds.garudalinux.org/iso/latest/garuda/kde-lite/latest.pkgs.txt | sort) \
-    | xargs -r pacman -Rdd --noconfirm
+#RUN comm -12 <(pacman -Qq | sort) <(curl -L https://iso.builds.garudalinux.org/iso/latest/garuda/kde-lite/latest.pkgs.txt | sort) \
+#    | xargs -r pacman -Rdd --noconfirm
 
 RUN curl -L https://iso.builds.garudalinux.org/iso/latest/garuda/kde-lite/latest.pkgs.txt \
   | awk '{print $1}' \
@@ -88,7 +91,8 @@ RUN curl -L https://iso.builds.garudalinux.org/iso/latest/garuda/kde-lite/latest
   | grep -v '^lib' \
   | grep -Ev '^(linux|linux-zen|linux-lts|nvidia|snapper|linux-zen-headers|pipewire-support)$' \
   > /tmp/pkglist
-RUN pacman -S --ask=4 --noconfirm --needed --overwrite="*" $(cat /tmp/pkglist)
+RUN pacman -Sw --ask=4 --noconfirm --needed --overwrite="*" $(cat /tmp/pkglist)
+RUN pacman -U --ask=4 --noconfirm --needed --overwrite="*"  /var/cache/pacman/pkg/*.pkg.tar.zst
 
 
 RUN pacman -Rns --noconfirm --ask=4 linux-zen

@@ -53,6 +53,10 @@ RUN pacman -S --noconfirm --needed --overwrite="*" --ask=4 base dracut linux-fir
 RUN pacman -S --noconfirm --needed --overwrite="*" --ask=4 amd-ucode intel-ucode efibootmgr shim mesa lib32-mesa libva-intel-driver libva-mesa-driver \
       vpl-gpu-rt vulkan-icd-loader vulkan-intel vulkan-radeon apparmor xf86-video-amdgpu lib32-vulkan-radeon 
 
+# Network / VPN / SMB / storage
+RUN pacman -S --noconfirm libmtp nss-mdns samba smbclient networkmanager firewalld udiskie udisks2
+
+
 # Others
 RUN pacman -S --noconfirm --needed --overwrite="*" --ask=4 plasma-meta
 RUN pacman -S --noconfirm --needed --overwrite="*" --ask=4 linux-cachyos-deckify linux-cachyos-deckify-headers
@@ -234,10 +238,6 @@ net.ipv4.tcp_congestion_control=bbr' > /etc/sysctl.d/99-bbr3.conf
 ########################################################################################################################################
 # Section 10 - Final Bootc Setup
 ########################################################################################################################################
-
-RUN mkdir -p /var/lib/sddm/.config || true
-RUN chown -R sddm:sddm /var/lib/sddm/.config
-RUN chmod 700 /var/lib/sddm/.config
 
 RUN printf "systemdsystemconfdir=/etc/systemd/system\nsystemdsystemunitdir=/usr/lib/systemd/system\n" | tee /usr/lib/dracut/dracut.conf.d/30-bootcrew-fix-bootc-module.conf && \
       printf 'hostonly=no\nadd_dracutmodules+=" ostree bootc "' | tee /usr/lib/dracut/dracut.conf.d/30-bootcrew-bootc-modules.conf && \

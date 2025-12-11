@@ -69,7 +69,7 @@ RUN pacman -S --noconfirm distrobox docker podman
 
 
 RUN pacman -S --noconfirm --needed --overwrite="*" --ask=4 \
-accountsservice \
+    accountsservice \
 	acpi_call-dkms \
 	acsccid \
 	alsa-firmware \
@@ -98,7 +98,7 @@ accountsservice \
 	fuse-zip \
 	fuse2 \
 	fwupd \
- fuse3 \
+    fuse3 \
 	git \
 	gst-plugin-pipewire \
 	gvfs-smb \
@@ -171,9 +171,7 @@ accountsservice \
 	xdg-desktop-portal-wlr \
 	xdg-user-dirs-gtk \
 	xf86-video-amdgpu \
-	xorg-server \
-	xz \
-	zip
+	xorg-server
 
 
 ##############################################################################################################################################

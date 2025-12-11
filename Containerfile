@@ -68,7 +68,7 @@ RUN pacman -S --noconfirm --needed --overwrite="*" --ask=4 cachyos-handheld
 RUN pacman -S --noconfirm distrobox docker podman
 
 
-RUN 
+RUN pacman -S --noconfirm --needed --overwrite="*" --ask=4 
 accountsservice \
 	acpi_call-dkms \
 	acsccid \

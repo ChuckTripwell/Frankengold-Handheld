@@ -51,15 +51,16 @@ RUN pacman -S --noconfirm --needed --overwrite="*" --ask=4 base dracut linux-fir
 
 
 # Fonts
-RUN pacman -S --noconfirm noto-fonts noto-fonts-cjk noto-fonts-emoji unicode-emoji noto-fonts-extra ttf-fira-code ttf-firacode-nerd \
-    ttf-ibm-plex ttf-jetbrains-mono-nerd otf-font-awesome ttf-jetbrains-mono wqy-microhei ttf-nerd-fonts-symbols ttf-nerd-fonts-symbols-common \
-    ttf-nerd-fonts-symbols-mono ttf-fira-code ttf-firacode-nerd
+RUN pacman -S --noconfirm noto-fonts noto-fonts-cjk noto-fonts-emoji unicode-emoji noto-fonts-extra ttf-fira-code \
+    ttf-ibm-plex otf-font-awesome ttf-jetbrains-mono wqy-microhei ttf-nerd-fonts-symbols ttf-nerd-fonts-symbols-common \
+    ttf-nerd-fonts-symbols-mono ttf-fira-code ttf-firacode-nerd ttf-croscore ttf-dejavu ttf-droid gsfonts ttf-roboto ttf-arphic-uming ttf-baekmuk \
+    gnu-free-fonts
 
 
 # Others
-RUN pacman -S --noconfirm --needed --overwrite="*" --ask=4 plasma-meta breeze
+#RUN pacman -S --noconfirm --needed --overwrite="*" --ask=4 plasma-meta breeze
 RUN pacman -S --noconfirm --needed --overwrite="*" --ask=4 linux-cachyos-deckify linux-cachyos-deckify-headers
-RUN pacman -S --noconfirm --needed --overwrite="*" --ask=4 amd-ucode intel-ucode apparmor
+#RUN pacman -S --noconfirm --needed --overwrite="*" --ask=4 amd-ucode intel-ucode
 RUN pacman -S --noconfirm --needed --overwrite="*" --ask=4 ptyxis fastfetch micro gamescope steam scx-scheds scx-manager
 RUN pacman -S --noconfirm --needed --overwrite="*" --ask=4 cosign apparmor shim
 RUN pacman -S --noconfirm --needed --overwrite="*" --ask=4 cachyos-handheld
@@ -72,7 +73,7 @@ RUN pacman -S --noconfirm distrobox docker podman
 
 
 ##############################################################################################################################################
-# SDDM fix?
+# SDDM fix
 ##############################################################################################################################################
 
 # SDDM fix?
@@ -80,19 +81,21 @@ RUN mkdir -p /var/lib/sddm/.config && chown -R sddm:sddm /var/lib/sddm/.config
 
 
 ##############################################################################################################################################
-# 
+# add chaotic aur and also garuda repo
 ##############################################################################################################################################
 
+RUN wget https://aur.chaotic.cx/mirrorlist.txt -O /etc/pacman.d/chaotic-mirrorlist && \
+    wget https://aur.chaotic.cx/chaotic-keyring.pkg.tar.zst -O /tmp/chaotic-keyring.pkg.tar.zst && \
+    pacman -U /tmp/chaotic-keyring.pkg.tar.zst --noconfirm && \
+    curl -fsSL https://archlinux.org/mirrors/status/json/ | jq -r '.urls[] | select(.protocols | index("https")) | "Server = \(.url)/$repo/$arch"' > /etc/pacman.d/mirrorlist && \
+    printf "\n[garuda]\nInclude = /etc/pacman.d/mirrorlist\n\n[garuda-extra]\nInclude = /etc/pacman.d/mirrorlist\n" >> /etc/pacman.conf
+
+
 RUN pacman-key --recv-key 3056513887B78AEB --keyserver keyserver.ubuntu.com
-
 RUN pacman-key --init && pacman-key --lsign-key 3056513887B78AEB
-
 RUN pacman -U 'https://cdn-mirror.chaotic.cx/chaotic-aur/chaotic-keyring.pkg.tar.zst' --noconfirm
-
 RUN pacman -U 'https://cdn-mirror.chaotic.cx/chaotic-aur/chaotic-mirrorlist.pkg.tar.zst' --noconfirm
-
 RUN echo -e '[chaotic-aur]\nInclude = /etc/pacman.d/chaotic-mirrorlist' >> /etc/pacman.conf
-
 RUN pacman -Sy --noconfirm
 
 
@@ -101,7 +104,14 @@ RUN pacman -S --noconfirm \
     chaotic-aur/bootc chaotic-aur/flatpak-git chaotic-aur/opentabletdriver
 
 
+###
 
+RUN curl -L https://iso.builds.garudalinux.org/iso/latest/garuda/kde-lite/latest.pkgs.txt \
+  | awk '{print $1}' \
+  | grep -v '^lib' \
+  | grep -Ev '^(linux|linux-zen|linux-lts|nvidia|snapper|linux-zen-headers)$' \
+  > /tmp/pkglist
+RUN pacman -S --ask=4 --noconfirm --needed --overwrite="*" $(cat /tmp/pkglist)
 
 #######################################################################################################################################################
 # 

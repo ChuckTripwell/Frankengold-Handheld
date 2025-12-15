@@ -60,9 +60,9 @@ RUN pacman -S --noconfirm noto-fonts noto-fonts-cjk noto-fonts-emoji unicode-emo
 # Others
 #RUN pacman -S --noconfirm --needed --overwrite="*" --ask=4 plasma-meta breeze
 RUN pacman -S --noconfirm --needed --overwrite="*" --ask=4 linux-cachyos-deckify linux-cachyos-deckify-headers
-#RUN pacman -S --noconfirm --needed --overwrite="*" --ask=4 amd-ucode intel-ucode
+RUN pacman -S --noconfirm --needed --overwrite="*" --ask=4 amd-ucode intel-ucode
 RUN pacman -S --noconfirm --needed --overwrite="*" --ask=4 ptyxis fastfetch micro gamescope steam scx-scheds scx-manager
-RUN pacman -S --noconfirm --needed --overwrite="*" --ask=4 cosign apparmor shim
+#RUN pacman -S --noconfirm --needed --overwrite="*" --ask=4 cosign apparmor shim
 #RUN pacman -S --noconfirm --needed --overwrite="*" --ask=4 cachyos-handheld
 
 # Virtualization \ Containerization
@@ -96,15 +96,6 @@ RUN pacman -Rdd --noconfirm flatpak || true
 RUN pacman -S --noconfirm --needed --overwrite="*" --ask=4 \
     chaotic-aur/bootc chaotic-aur/flatpak-git chaotic-aur/opentabletdriver
 
-
-###
-
-RUN curl -L https://iso.builds.garudalinux.org/iso/latest/garuda/kde-lite/latest.pkgs.txt \
-  | awk '{print $1}' \
-  | grep -v '^lib' \
-  | grep -Ev '^(linux|linux-zen|linux-lts|nvidia|snapper|linux-zen-headers|linux-firmware)$' \
-  > /tmp/pkglist
-RUN pacman -S --ask=4 --noconfirm --needed --overwrite="*" $(cat /tmp/pkglist)
 
 RUN pacman -S --noconfirm --needed --overwrite="*" --ask=4 cachyos-handheld
 

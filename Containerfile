@@ -1,21 +1,18 @@
-#FROM linuxserver/steamos:latest AS steamos
+FROM ghcr.io/ublue-os/bazzite-deck:latest AS bazzite
 FROM docker.io/cachyos/cachyos-v3:latest AS cachyos
-
-#FROM scratch AS builder
-#COPY --from=steamos /* /
-#COPY --from=cachyos /* /
-
-#RUN rm -rf /lib/modules/*
-
 
 RUN pacman -Sy --noconfirm --overwrite="*" --ask=4 linux-cachyos-deckify
 RUN pacman -Sy --noconfirm --overwrite="*" --ask=4 cachyos-handheld
 RUN pacman -Sy --noconfirm --overwrite="*" --ask=4 plasma-meta
 
-#RUN pacman -Qqn | sudo pacman -S --needed -
-
-#FROM scratch AS final
-#COPY --from=builder /* /
+COPY --from="bazzite" /bin /
+COPY --from="bazzite" /bin /
+COPY --from="bazzite" /sbin /
+COPY --from="bazzite" /usr/bin /
+COPY --from="bazzite" /usr/sbin /
+COPY --from="bazzite" /lib /
+COPY --from="bazzite" /lib64 /
+COPY --from="bazzite" /opt /
 
 # Move everything from `/var` to `/usr/lib/sysimage` so behavior around pacman remains the same on `bootc usroverlay`'d systems
 RUN grep "= */var" /etc/pacman.conf | sed "/= *\/var/s/.*=// ; s/ //" | xargs -n1 sh -c 'mkdir -p "/usr/lib/sysimage/$(dirname $(echo $1 | sed "s@/var/@@"))" && mv -v "$1" "/usr/lib/sysimage/$(echo "$1" | sed "s@/var/@@")"' '' && \

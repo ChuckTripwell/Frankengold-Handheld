@@ -1,8 +1,8 @@
 FROM scratch AS builder
 
-COPY --from="ghcr.io/linuxserver/steamos:latest" /* /
+COPY --from="docker://ghcr.io/linuxserver/steamos:latest" /* /
 
-COPY --from="docker.io/cachyos/cachyos-v3:latest" /* /
+COPY --from="docker://docker.io/cachyos/cachyos-v3:latest" /* /
 
 RUN rm -rf /lib/modules/*
 

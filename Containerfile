@@ -1,4 +1,4 @@
-FROM linuxserver/steamos:latest AS steamos
+FROM quay.io/linuxserver.io/steamos:latest AS steamos
 FROM docker.io/cachyos/cachyos-v3:latest AS cachyos
 
 FROM scratch AS builder

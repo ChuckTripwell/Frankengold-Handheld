@@ -1,17 +1,17 @@
+#FROM ghcr.io/linuxserver/steamos:latest as steamos
+#FROM docker.io/cachyos/cachyos-v3:latest AS cachyos
+
 FROM scratch AS builder
-
-COPY --from="docker://ghcr.io/linuxserver/steamos:latest" /* /
-
-COPY --from="docker://docker.io/cachyos/cachyos-v3:latest" /* /
+COPY --from=ghcr.io/linuxserver/steamos:latest /* /
+COPY --from=docker.io/cachyos/cachyos-v3:latest /* /
 
 RUN rm -rf /lib/modules/*
 
 RUN pacman -Sy --noconfirm --overwrite="*" --ask=4 linux-cachyos-handheld
-
 #RUN pacman -Qqn | sudo pacman -S --needed -
 
 FROM scratch AS final
-COPY --from="builder" /* /
+COPY --from=builder /* /
 
 # Move everything from `/var` to `/usr/lib/sysimage` so behavior around pacman remains the same on `bootc usroverlay`'d systems
 RUN grep "= */var" /etc/pacman.conf | sed "/= *\/var/s/.*=// ; s/ //" | xargs -n1 sh -c 'mkdir -p "/usr/lib/sysimage/$(dirname $(echo $1 | sed "s@/var/@@"))" && mv -v "$1" "/usr/lib/sysimage/$(echo "$1" | sed "s@/var/@@")"' '' && \

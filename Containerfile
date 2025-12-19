@@ -66,13 +66,6 @@ RUN pacman -S --noconfirm distrobox docker podman
 # User frontend programs/apps
 RUN pacman -S --noconfirm scx-scheds scx-manager gnome-disk-utility
 
-RUN pacman -S --noconfirm --overwrite="*" --ask=4 linux-cachyos-deckify
-RUN pacman -S --noconfirm --overwrite="*" --ask=4 plasma-meta sddm
-RUN pacman -S --noconfirm --overwrite="*" --ask=4 cachyos-handheld
-RUN pacman -S --noconfirm --overwrite="*" --ask=4 sudo
-RUN pacman -S --noconfirm --overwrite="*" --ask=4 fastfetch
-#RUN pacman -S --noconfirm --overwrite="*" --ask=4 podman-compose
-
 ##############################################################################################################################################
 # Section 3 - Chaotic AUR / AUR # We grab some precompiled packages from the Chaotic AUR for things not on Arch repos/better updated~ ovo ####
 ##############################################################################################################################################
@@ -98,6 +91,14 @@ RUN pacman -S --noconfirm \
 RUN pacman -S --noconfirm \
   bootc/uupd && \
   systemctl enable uupd.timer
+
+
+RUN pacman -S --noconfirm --overwrite="*" --ask=4 linux-cachyos-deckify
+RUN pacman -S --noconfirm --overwrite="*" --ask=4 plasma-meta sddm
+RUN pacman -S --noconfirm --overwrite="*" --ask=4 cachyos-handheld
+RUN pacman -S --noconfirm --overwrite="*" --ask=4 sudo
+RUN pacman -S --noconfirm --overwrite="*" --ask=4 fastfetch
+#RUN pacman -S --noconfirm --overwrite="*" --ask=4 podman-compose
 
 #######################################################################################################################################################
 # Section 4 - Flatpaks preinstalls | Don't forget. Always, somewhere, someone is fighting for you. You are not alone. -Madoka Magica ##################

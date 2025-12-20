@@ -315,8 +315,8 @@ RUN printf "systemdsystemconfdir=/etc/systemd/system\nsystemdsystemunitdir=/usr/
 RUN rm -rf /home/build/.cache/* && \
     rm -rf \
         /tmp/* \
-        /var/cache/pacman/pkg/* && \
-    pacman -Rns --noconfirm
+        /var/cache/pacman/pkg/*
+
 
 # Necessary for general behavior expected by image-based systems
 RUN sed -i 's|^HOME=.*|HOME=/var/home|' "/etc/default/useradd" && \

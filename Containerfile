@@ -276,7 +276,8 @@ RUN systemctl enable polkit.service \
     tuned-ppd.service \
     firewalld.service \
     flatpak-preinstall.service \
-    os-group-fix.service
+    os-group-fix.service \
+    sddm.service
 
 ########################################################################################################################################
 # Section 8 - CachyOS settings | Since we have the CachyOS kernel, we gotta put it to good use ≽^•⩊•^≼ ################################

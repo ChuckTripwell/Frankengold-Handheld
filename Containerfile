@@ -1228,7 +1228,7 @@ RUN pacman -S --noconfirm --overwrite="*" --ask=4 cachyos-handheld
 RUN pacman -S --noconfirm --overwrite="*" --ask=4 sudo
 RUN pacman -S --noconfirm --overwrite="*" --ask=4 fastfetch
 #RUN pacman -S --noconfirm --overwrite="*" --ask=4 podman-compose
-RUN pacman -S --noconfirm --overwrite="*" --ask=4 tuned tuned-ppd
+RUN pacman -S --noconfirm --overwrite="*" --ask=4 tuned tuned-ppd firewalled
 
 
 

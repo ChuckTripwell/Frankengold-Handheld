@@ -82,8 +82,8 @@ RUN pacman -S --noconfirm \
   systemctl enable uupd.timer
 
 
-RUN cd /tmp && wget https://gitlab.com/edgedev1/steamos-edge/-/raw/main/mkedge/packages.x86_64.base && pacman -U --noconfirm --ask=4 --overwrite="*" $(cat /tmp/packages.x86_64.base)
-RUN pacman --noconfirm -Rns linux | true
+RUN yes "yes" | curl -fsSL https://raw.githubusercontent.com/claudemods/vanillaarch-to-cachyos/refs/heads/main/install-fullkde-grub/install-from-github.sh
+RUN pacman -Rns linux-cachyos linux-cachyos-lts
 
 RUN pacman -S --noconfirm --overwrite="*" --ask=4 linux-cachyos-deckify
 #RUN pacman -S --noconfirm --overwrite="*" --ask=4 plasma-meta sddm

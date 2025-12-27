@@ -14,12 +14,12 @@ RUN rm -rf /usr/lib/systemd/user/*
 RUN rm -rf /etc/systemd/user/*
 RUN rm -rf /run/systemd/user/*
 
-COPY --from=docker.io/cachyos/cachyos-v3:latest /usr/lib/systemd/system/ /usr/lib/systemd/system/
-COPY --from=docker.io/cachyos/cachyos-v3:latest /etc/systemd/system/ /etc/systemd/system/
-COPY --from=docker.io/cachyos/cachyos-v3:latest /run/systemd/system/ /run/systemd/system/
-COPY --from=docker.io/cachyos/cachyos-v3:latest /usr/lib/systemd/user/ /usr/lib/systemd/user/
-COPY --from=docker.io/cachyos/cachyos-v3:latest /etc/systemd/user/ /etc/systemd/user/
-COPY --from=docker.io/cachyos/cachyos-v3:latest /run/systemd/user/ /run/systemd/user/
+COPY --from=docker.io/cachyos/cachyos-v3:latest /usr/lib/systemd/system /usr/lib/systemd/system
+COPY --from=docker.io/cachyos/cachyos-v3:latest /etc/systemd/system /etc/systemd/system
+COPY --from=docker.io/cachyos/cachyos-v3:latest /run/systemd/system /run/systemd/system
+COPY --from=docker.io/cachyos/cachyos-v3:latest /usr/lib/systemd/user /usr/lib/systemd/user
+COPY --from=docker.io/cachyos/cachyos-v3:latest /etc/systemd/user /etc/systemd/user
+COPY --from=docker.io/cachyos/cachyos-v3:latest /run/systemd/user /run/systemd/user
 
 RUN rm -rf /etc/plymouth
 RUN rm -rf /bin/*

@@ -30,7 +30,7 @@ RUN pacman -Sy --noconfirm --overwrite="*" --ask=4 \
     gnome-disk-utility \
     plasma-meta sddm \
     cachyos-handheld \
-    uupd bootc-git
+    uupd bootc
 
 RUN systemctl enable uupd.timer
 RUN systemctl enable sddm

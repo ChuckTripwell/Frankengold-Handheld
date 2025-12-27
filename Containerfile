@@ -2,7 +2,8 @@ FROM scratch AS base
 
 COPY --from=ghcr.io/xeniameraki/xeniaos:latest / /
 
-RUN pacman --noconfirm -Rns linux*
+RUN pacman --noconfirm -Rns $( pacman -Qo /usr/lib/modules/$(uname -r) | awk '{print $5}' )
+
 
 RUN systemd disable '*'
 

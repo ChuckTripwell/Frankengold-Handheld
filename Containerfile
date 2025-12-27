@@ -1,4 +1,4 @@
-FROM scratch AS builder
+FROM docker.io/cachyos/cachyos-v3:latest AS builder
 
 COPY --from=ghcr.io/xeniameraki/xeniaos:latest / /os
 

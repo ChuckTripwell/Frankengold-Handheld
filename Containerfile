@@ -5,7 +5,7 @@ COPY --from=ghcr.io/xeniameraki/xeniaos:latest / /
 RUN pacman --noconfirm -Rns $( pacman -Qqe | grep ^linux-cachyos )
 
 
-RUN systemd disable '*'
+#RUN systemd disable '*'
 
 RUN rm -rf /usr/lib/systemd/system/*
 RUN rm -rf /etc/systemd/system/*

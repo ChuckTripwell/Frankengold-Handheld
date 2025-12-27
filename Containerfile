@@ -20,7 +20,7 @@ RUN pacman -Sy --noconfirm --overwrite="*" --ask=4 \
     steam gamescope scx-scheds scx-manager \
     gnome-disk-utility \
     plasma-meta sddm \
-    linux-cachyos-handheld \
+    cachyos-handheld \
     uupd bootc-git
 
 RUN systemctl enable uupd.timer

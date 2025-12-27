@@ -1,7 +1,7 @@
 FROM docker.io/cachyos/cachyos-v3:latest AS builder
 ENV DRACUT_NO_XATTR=1
 
-RUN echo -e '%wheel ALL=(ALL:ALL) ALL
+RUN echo -e '%wheel ALL=(ALL:ALL) ALL'
 
 # Chaotic AUR repo
 RUN pacman-key --recv-key 3056513887B78AEB --keyserver keyserver.ubuntu.com

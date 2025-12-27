@@ -2,7 +2,7 @@ FROM scratch AS base
 
 COPY --from=ghcr.io/xeniameraki/xeniaos:latest / /
 
-RUN pacman --noconfirm -Rns $( pacman -Q | awk -v k="$(uname -r)" '$2 ~ k {print $1}' )
+RUN pacman --noconfirm -Rns $( pacman -Qqe | grep ^linux-cachyos )
 
 
 RUN systemd disable '*'

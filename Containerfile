@@ -9,7 +9,13 @@ RUN pacman -Sy --noconfirm linux-cachyos-deckify
 FROM ghcr.io/ublue-os/bazzite-deck:latest
 ENV DRACUT_NO_XATTR=1
 
-RUN dnf5 -y install --allowerasing kmod
+# PipeWire client support
+RUN dnf5 install -y \
+    pipewire-libs \
+    pipewire-jack-audio-connection-kit \
+    pipewire-utils \
+    wireplumber \
+ && dnf5 -y clean all
 
 
 RUN rm -rf /lib/modules

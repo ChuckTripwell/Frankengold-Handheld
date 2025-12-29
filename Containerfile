@@ -6,7 +6,7 @@ RUN pacman -Sy --noconfirm linux-cachyos-deckify
 
 
 
-FROM ghcr.io/ublue-os/bazzite-deck:latest
+FROM ghcr.io/ublue-os/bazzite-deck:stable
 ENV DRACUT_NO_XATTR=1
 
 

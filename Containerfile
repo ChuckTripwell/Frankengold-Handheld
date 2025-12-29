@@ -10,8 +10,13 @@ FROM ghcr.io/ublue-os/bazzite-deck:stable
 ENV DRACUT_NO_XATTR=1
 
 
+RUN mkdir -p /LIB_TMP
 RUN rm -rf /lib/modules
-COPY --from=cachyos /lib /lib
+COPY --from=cachyos /lib/modules /lib/modules
+COPY --from=cachyos /lib /LIB_TMP
+COPY /lib /LIB_TMP
+COPY COPY /LIB_TMP /lib
+
 
 
 

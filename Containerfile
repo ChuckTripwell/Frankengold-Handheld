@@ -9,6 +9,8 @@ RUN pacman -Sy --noconfirm linux-cachyos-deckify
 FROM ghcr.io/ublue-os/bazzite-deck:latest
 ENV DRACUT_NO_XATTR=1
 
+RUN dnf5 -y install --allowerasing kmod
+
 
 RUN rm -rf /lib/modules
 COPY --from=cachyos /lib/modules /lib/modules

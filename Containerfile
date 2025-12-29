@@ -2,7 +2,8 @@ FROM docker.io/cachyos/cachyos-v3:latest AS cachyos
 ENV DRACUT_NO_XATTR=1
 
 RUN rm -rf /lib/modules/*
-RUN pacman -Sy --noconfirm linux-cachyos-deckify
+RUN pacman -Syy
+RUN pacman -S --noconfirm linux-cachyos-deckify
 
 
 

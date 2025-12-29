@@ -2,11 +2,11 @@ FROM docker.io/cachyos/cachyos-v3:latest AS cachyos
 ENV DRACUT_NO_XATTR=1
 
 RUN rm -rf /lib/modules/*
-RUN pacman -Sy --noconfirm linux-cachyos-deckify alsa-utils
+RUN pacman -Sy --noconfirm linux-cachyos-deckify
 
 
 
-FROM ghcr.io/ublue-os/bazzite-deck:stable
+FROM ghcr.io/ublue-os/bazzite-deck:latest
 ENV DRACUT_NO_XATTR=1
 
 

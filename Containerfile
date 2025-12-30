@@ -8,11 +8,8 @@ COPY --from=cachyos /lib/modules /lib/modules
 COPY --from=cachyos /usr/share/licenses/ /usr/share/licenses/
 
 
-RUN mkdir -p /lib/firmware/amd/sof/
-RUN mkdir -p /usr/share/alsa/ucm2/
-RUN mkdir -p /etc/asound.conf
-RUN mkdir -p /etc/pipewire/pipewire.conf
-RUN mkdir -p /etc/pipewire/pipewire-pulse.conf
+RUN mkdir -p /lib/firmware/amd/sof
+RUN mkdir -p /usr/share/alsa/ucm2
 
 
 COPY --from=cachyos /lib/firmware/amd/sof /lib/firmware/amd/sof

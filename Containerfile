@@ -7,6 +7,13 @@ RUN rm -rf /lib/modules
 COPY --from=cachyos /lib/modules /lib/modules
 COPY --from=cachyos /usr/share/licenses/ /usr/share/licenses/
 
+COPY --from=cachyos /lib/firmware/amd/sof/ /lib/firmware/amd/sof/
+COPY --from=cachyos /usr/share/alsa/ucm2/ /usr/share/alsa/ucm2/
+COPY --from=cachyos /etc/asound.conf /etc/asound.conf
+COPY --from=cachyos /etc/pipewire/pipewire.conf /etc/pipewire/pipewire.conf
+COPY --from=cachyos /etc/pipewire/pipewire-pulse.conf /etc/pipewire/pipewire-pulse.conf
+
+
 
 ENV DRACUT_NO_XATTR=1
 RUN mkdir -p /var/tmp

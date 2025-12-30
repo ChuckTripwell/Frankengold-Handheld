@@ -4,11 +4,8 @@ RUN pacman -Sy --noconfirm linux-cachyos-deckify
 
 
 FROM ghcr.io/ublue-os/bazzite-deck:latest
-#RUN rm -rf /lib/modules
-RUN mkdir -p /tmp/modules
-COPY --from=cachyos /lib/modules /tmp/modules
-RUN mv /tmp/modules/* /tmp/modules/kernel
-RUN mv /tmp/modules/kernel/* /lib/modules/*/
+RUN rm -rf /lib/modules
+COPY --from=cachyos /lib/modules /lib/modules
 
 
 

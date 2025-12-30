@@ -15,7 +15,7 @@ COPY --from=cachyos /lib/modules /lib/modules
 
 
 
-sudo rpm-ostree override remove pipewire-config-raop
+RUN dnf5 -y install alsa-utils --allowerasing
 
 
 

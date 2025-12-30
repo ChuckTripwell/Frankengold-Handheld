@@ -2,18 +2,16 @@ FROM docker.io/cachyos/cachyos-v3:latest AS cachyos
 ENV DRACUT_NO_XATTR=1
 
 RUN rm -rf /lib/modules/*
-RUN pacman -Syy --noconfirm
-RUN pacman -S --noconfirm linux-cachyos-deckify
+RUN pacman -Sy --noconfirm linux-cachyos-deckify
 
 
 
-FROM ghcr.io/ublue-os/bazzite-deck-nvidia:testing
+FROM ghcr.io/ublue-os/bazzite-deck-nvidia:stable
 ENV DRACUT_NO_XATTR=1
 
 
 RUN rm -rf /lib/modules
 COPY --from=cachyos /lib/modules /lib/modules
-
 
 
 

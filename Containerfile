@@ -6,7 +6,7 @@ RUN pacman -Sy --noconfirm linux-cachyos-deckify
 
 
 
-FROM ghcr.io/ublue-os/bazzite-deck-nvidia:stable
+FROM ghcr.io/ublue-os/bazzite-deck:latest
 ENV DRACUT_NO_XATTR=1
 
 

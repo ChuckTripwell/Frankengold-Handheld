@@ -7,8 +7,16 @@ RUN rm -rf /lib/modules
 COPY --from=cachyos /lib/modules /lib/modules
 COPY --from=cachyos /usr/share/licenses/ /usr/share/licenses/
 
-COPY --from=cachyos /lib/firmware/amd/sof/ /lib/firmware/amd/sof/
-COPY --from=cachyos /usr/share/alsa/ucm2/ /usr/share/alsa/ucm2/
+
+RUN mkdir -p /lib/firmware/amd/sof/
+RUN mkdir -p /usr/share/alsa/ucm2/
+RUN mkdir -p /etc/asound.conf
+RUN mkdir -p /etc/pipewire/pipewire.conf
+RUN mkdir -p /etc/pipewire/pipewire-pulse.conf
+
+
+COPY --from=cachyos /lib/firmware/amd/sof /lib/firmware/amd/sof
+COPY --from=cachyos /usr/share/alsa/ucm2 /usr/share/alsa/ucm2
 COPY --from=cachyos /etc/asound.conf /etc/asound.conf
 COPY --from=cachyos /etc/pipewire/pipewire.conf /etc/pipewire/pipewire.conf
 COPY --from=cachyos /etc/pipewire/pipewire-pulse.conf /etc/pipewire/pipewire-pulse.conf

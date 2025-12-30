@@ -4,9 +4,12 @@ RUN pacman -Sy --noconfirm linux-cachyos-deckify
 
 
 FROM ghcr.io/ublue-os/bazzite-deck:latest
-RUN rm -rf /lib/modules
-COPY --from=cachyos /lib/modules /lib/modules
+#RUN rm -rf /lib/modules
 
+RUN mkdir -p /tmp/kernel && mv /lib/modules/*/kernel /tmp/kernel/ && mv /lib/modules/*/* /tmp/kernel/
+COPY --from=cachyos /lib/modules/*/* /tmp/kernel/
+RUN rm -rf /lib/modules/*
+RUN mv /tmp/kernel /lib/modules/
 
 
 ENV DRACUT_NO_XATTR=1

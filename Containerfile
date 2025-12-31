@@ -1,6 +1,14 @@
 FROM docker.io/cachyos/cachyos-v3:latest AS cachyos
 RUN rm -rf /lib/modules/*
-RUN pacman -Sy --noconfirm linux-cachyos-deckify
+RUN pacman -Sy --noconfirm
+RUN pacman -S --noconfirm linux-cachyos-deckify
+RUN pacman -S --noconfirm amd-ucode 
+RUN pacman -S --noconfirm alsa-card-profiles alsa-lib alsa-topology-conf alsa-ucm-conf alsa-utils
+RUN pacman -S --noconfirm pipewire pipewire-alsa pipewire-audio pipewire-jack pipewire-pulse kpipewire
+RUN pacman -S --noconfirm linux-firmware linux-firmware-intel linux-firmware-amdgpu
+RUN pacman -S --noconfirm portaudio pulseaudio-qt 
+RUN pacman -S --noconfirm steamdeck-firmware linux-firmware-realtek
+
 
 FROM ghcr.io/ublue-os/bazzite-deck:latest
 RUN rm -rf /lib/modules
@@ -12,11 +20,11 @@ RUN mkdir -p /lib/firmware/amd/sof
 RUN mkdir -p /usr/share/alsa/ucm2
 
 
-COPY --from=cachyos /lib/firmware/amd/sof /lib/firmware/amd/sof
-COPY --from=cachyos /usr/share/alsa/ucm2 /usr/share/alsa/ucm2
-COPY --from=cachyos /etc/asound.conf /etc/asound.conf
-COPY --from=cachyos /etc/pipewire/pipewire.conf /etc/pipewire/pipewire.conf
-COPY --from=cachyos /etc/pipewire/pipewire-pulse.conf /etc/pipewire/pipewire-pulse.conf
+COPY --from=cachyos /lib/firmware /lib/firmware
+COPY --from=cachyos /usr/share/alsa /usr/share/alsa
+#COPY --from=cachyos /etc/asound.conf /etc/asound.conf
+#COPY --from=cachyos /etc/pipewire/pipewire.conf /etc/pipewire/pipewire.conf
+#COPY --from=cachyos /etc/pipewire/pipewire-pulse.conf /etc/pipewire/pipewire-pulse.conf
 
 
 

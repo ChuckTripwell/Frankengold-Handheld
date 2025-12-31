@@ -9,21 +9,22 @@ FROM ghcr.io/ublue-os/bazzite-deck:latest
 #
 # audio fix
 #
-# Create the service directly
-RUN echo '[Unit]' > /etc/systemd/system/alsactl-init.service
-RUN echo 'Description=Run alsactl init at first login after boot - to fix no audio glitch' > /etc/systemd/system/alsactl-init.service
-RUN echo 'After=default.target' > /etc/systemd/system/alsactl-init.service
-RUN echo '' > /etc/systemd/system/alsactl-init.service
-RUN echo '[Service]' > /etc/systemd/system/alsactl-init.service
-RUN echo 'Type=oneshot' > /etc/systemd/system/alsactl-init.service
-RUN echo 'ExecStart=/usr/bin/alsactl init' > /etc/systemd/system/alsactl-init.service
-RUN echo 'RemainAfterExit=yes' > /etc/systemd/system/alsactl-init.service
-RUN echo '' > /etc/systemd/system/alsactl-init.service
-RUN echo '[Install]' > /etc/systemd/system/alsactl-init.service
-RUN echo 'WantedBy=default.target' > /etc/systemd/system/alsactl-init.service
-#
-# Enable the service
-RUN systemctl enable alsactl-init.service
+# Create the service
+RUN printf "[Unit]\n\
+Description=ALSA restore watchdog\n\
+After=multi-user.target\n\n\
+[Service]\n\
+Type=simple\n\
+ExecStart=/usr/bin/alsactl init\n\
+Restart=on-failure\n\
+RestartSec=10\n\
+StartLimitBurst=5\n\
+StartLimitIntervalSec=60\n\
+User=root\n\n\
+[Install]\n\
+WantedBy=multi-user.target\n" > /etc/systemd/system/alsactl-watch.service
+
+RUN systemctl enable alsactl-watch.service
 
 
 #

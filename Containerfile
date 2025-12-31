@@ -9,8 +9,31 @@ RUN rm -rf /lib/modules
 COPY --from=cachyos /lib/modules /lib/modules
 COPY --from=cachyos /usr/share/licenses/ /usr/share/licenses/
 
-# noaudio fix?
-RUN alsactl init
+#
+# noaudio fix
+#
+# Create the systemd service
+RUN cat <<'EOF' > /etc/systemd/system/alsactl-init.service
+[Unit]
+Description=Initialize ALSA
+After=multi-user.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/sbin/alsactl init
+RemainAfterExit=yes
+User=root
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+# Enable the service
+RUN systemctl enable alsactl-init.service
+
+# disable countme
+RUN sed -i -e s,countme=1,countme=0, /etc/yum.repos.d/*.repo && systemctl mask --now rpm-ostree-countme.timer
+
 
 ENV DRACUT_NO_XATTR=1
 RUN mkdir -p /var/tmp

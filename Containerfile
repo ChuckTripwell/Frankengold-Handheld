@@ -35,6 +35,9 @@ RUN rm -rf /lib/modules
 COPY --from=cachyos /lib/modules /lib/modules
 COPY --from=cachyos /usr/share/licenses/ /usr/share/licenses/
 
+# a cool theme
+RUN cd /tmp/ && git clone https://github.com/ChuckTripwell/Afterglow-kde && cd Afterglow-kde && chmod +x ./install.sh
+
 # finish
 ENV DRACUT_NO_XATTR=1
 RUN mkdir -p /var/tmp

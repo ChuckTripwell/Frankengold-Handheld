@@ -9,38 +9,38 @@ FROM ghcr.io/ublue-os/bazzite-deck:latest
 #
 # audio fix
 #
-# Create autostart service
-RUN printf "[Unit]\n\
-Description=ALSA restore watchdog\n\
-After=multi-user.target\n\n\
-[Service]\n\
-Type=simple\n\
-ExecStart=/usr/bin/alsactl init\n\
-Restart=on-failure\n\
-RestartSec=10\n\
-StartLimitBurst=5\n\
-StartLimitIntervalSec=60\n\
-User=root\n\n\
-[Install]\n\
-WantedBy=multi-user.target\n" > /etc/systemd/system/alsactl-start.service
-# enable service
-RUN systemctl enable alsactl-start.service
+### Create autostart service
+#RUN printf "[Unit]\n\
+#Description=ALSA restore watchdog\n\
+#After=multi-user.target\n\n\
+#[Service]\n\
+#Type=simple\n\
+#ExecStart=/usr/bin/alsactl init\n\
+#Restart=on-failure\n\
+#RestartSec=10\n\
+#StartLimitBurst=5\n\
+#StartLimitIntervalSec=60\n\
+#User=root\n\n\
+#[Install]\n\
+#WantedBy=multi-user.target\n" > /etc/systemd/system/alsactl-start.service
+### enable service
+#RUN systemctl enable alsactl-start.service
 
 
 
 
 
-RUN printf "[Unit]\n\
-Description=Run alsactl init on volume key press\n\
-After=multi-user.target\n\n\
-\[Service]\n\
-Type=simple\n\
-ExecStart=/bin/sh -c \"/usr/bin/libinput debug-events --device /dev/input/event5 | /usr/bin/awk '/KEY_VOLUME(UP|DOWN).*pressed/ { system(\\\"/usr/bin/alsactl init\\\") }'\"\n\
-Restart=always\n\
-User=root\n\n\
-\[Install]\n\
-WantedBy=multi-user.target\n" > /etc/systemd/system/alsactl-fix.service && \
-systemctl enable alsactl-fix.service
+#RUN printf "[Unit]\n\
+#Description=Run alsactl init on volume key press\n\
+#After=multi-user.target\n\n\
+#\[Service]\n\
+#Type=simple\n\
+#ExecStart=/bin/sh -c \"/usr/bin/libinput debug-events --device /dev/input/event5 | /usr/bin/awk '/KEY_VOLUME(UP|DOWN).*pressed/ { system(\\\"/usr/bin/alsactl init\\\") }'\"\n\
+#Restart=always\n\
+#User=root\n\n\
+#\[Install]\n\
+#WantedBy=multi-user.target\n" > /etc/systemd/system/alsactl-fix.service && \
+#systemctl enable alsactl-fix.service
 
 
 

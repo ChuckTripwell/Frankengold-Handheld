@@ -8,8 +8,10 @@ RUN pacman -S --noconfirm linux-cachyos-deckify
 FROM ghcr.io/ublue-os/bazzite-deck:latest
 
 #
-# force distrobox to use and isolated /home/* dir
+# force distrobox to use a sub-directory for home
 #
+RUN mkdir -p /etc/distrobox/
+RUN touch /etc/distrobox/distrobox.conf
 RUN tee -a DBX_CONTAINER_HOME_PREFIX=$HOME/distrobox >> /etc/distrobox/distrobox.conf
 
 #

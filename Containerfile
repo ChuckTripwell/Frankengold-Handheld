@@ -10,9 +10,7 @@ FROM ghcr.io/ublue-os/bazzite-deck:latest
 #
 # force distrobox to use and isolated /home/* dir
 #
-RUN tee -a /etc/distrobox/distrobox.conf <<EOF
-DBX_CONTAINER_HOME_PREFIX=$HOME/distrobox
-EOF
+RUN tee -a DBX_CONTAINER_HOME_PREFIX=$HOME/distrobox >> /etc/distrobox/distrobox.conf
 
 #
 # audio fix ( just in case... )

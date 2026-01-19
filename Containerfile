@@ -1,4 +1,5 @@
 FROM docker.io/cachyos/cachyos-v3:latest AS cachyos
+
 RUN rm -rf /lib/modules/*
 RUN pacman -Sy --noconfirm
 RUN pacman -S --noconfirm linux-cachyos-deckify
@@ -7,7 +8,14 @@ RUN pacman -S --noconfirm linux-cachyos-deckify
 FROM ghcr.io/ublue-os/bazzite-deck:latest
 
 #
-# audio fix
+# force distrobox to use and isolated /home/* dir
+#
+RUN tee -a /etc/distrobox/distrobox.conf <<EOF
+DBX_CONTAINER_HOME_PREFIX=$HOME/distrobox
+EOF
+
+#
+# audio fix ( just in case... )
 #
 ### Create autostart service
 #RUN printf "[Unit]\n\
@@ -26,10 +34,6 @@ FROM ghcr.io/ublue-os/bazzite-deck:latest
 ### enable service
 #RUN systemctl enable alsactl-start.service
 
-
-
-
-
 #RUN printf "[Unit]\n\
 #Description=Run alsactl init on volume key press\n\
 #After=multi-user.target\n\n\
@@ -42,23 +46,16 @@ FROM ghcr.io/ublue-os/bazzite-deck:latest
 #WantedBy=multi-user.target\n" > /etc/systemd/system/alsactl-fix.service && \
 #systemctl enable alsactl-fix.service
 
-
-
-
-
-
-
+#
 # Set vm.max_map_count for stability/improved gaming performance
 # https://wiki.archlinux.org/title/Gaming#Increase_vm.max_map_count
+#
 RUN echo -e "vm.max_map_count = 2147483642" > /etc/sysctl.d/80-gamecompatibility.conf
 
 
-# a cool theme
-#RUN cd /tmp/ && git clone https://github.com/ChuckTripwell/Afterglow-kde && cd Afterglow-kde && chmod +x ./install.sh
-
-
 #
-# disable countme
+# disable countme ( sorry )
+#
 RUN sed -i -e s,countme=1,countme=0, /etc/yum.repos.d/*.repo && systemctl mask --now rpm-ostree-countme.timer
 
 RUN rm -rf /lib/modules

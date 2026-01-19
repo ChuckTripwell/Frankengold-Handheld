@@ -10,9 +10,9 @@ FROM ghcr.io/ublue-os/bazzite-deck:latest
 #
 # force distrobox to use a sub-directory for home
 #
-RUN mkdir -p /usr/etc/distrobox/
-RUN touch /usr/etc/distrobox/distrobox.conf
-RUN echo "DBX_CONTAINER_HOME_PREFIX=$HOME/distrobox" >> /usr/etc/distrobox/distrobox.conf
+RUN mkdir -p /usr/share/distrobox/
+RUN touch /usr/share/distrobox/distrobox.conf
+RUN echo "DBX_CONTAINER_HOME_PREFIX=$HOME/distrobox" >> /usr/share/distrobox/distrobox.conf
 
 #
 # audio fix ( just in case... )

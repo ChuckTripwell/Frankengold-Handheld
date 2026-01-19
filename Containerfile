@@ -12,7 +12,7 @@ FROM ghcr.io/ublue-os/bazzite-deck:latest
 #
 RUN mkdir -p /etc/distrobox/
 RUN touch /etc/distrobox/distrobox.conf
-RUN tee -a DBX_CONTAINER_HOME_PREFIX=$HOME/distrobox >> /etc/distrobox/distrobox.conf
+RUN tee -a "DBX_CONTAINER_HOME_PREFIX=$HOME/distrobox" >> /etc/distrobox/distrobox.conf
 
 #
 # audio fix ( just in case... )

@@ -1,30 +1,61 @@
-### FrankengoldOS ###
+# Frankengold-Handheld
 
-# what?
-an abominable monster of an image with gaming-oriented optimizations.
+# waht?
+It's bazzite, with the cachyos kernel shoved in.
+(this version is meant to be used on the SteamDeck - and was only tested on LCD)
 
 # why?
-We wanted the stability of Bazzite but also the speed of Cachyos...and now we have it!
+because.
+also, combining things is fun.
+
+# who is it for?
+me.
+
+# can I use it too?
+sure, just remember: if you get stuck, you are on your own.
 
 # how?
-install bazzite (or any other bootc distro) and type:
-```
-sudo bootc switch ghcr.io/chucktripwell/frankengold-handheld:latest
-```
-rebase, reboot, regret.
+note: once you do this, you will not be able to go back.
 
-this is permanent. you are on your own. 
+1. have bzzite-nvidia installed (and backup your data! the proccess is permenant! you will not be able to rebase back to regular bazzite.)
+2. open terminal and type: ```sudo bootc switch ghcr.io/chucktripwell/frankengold-handheld:latest```
+3. wait for it to finish and then reboot.
+4. go to the "SchedExt GUI Manager" app and make sure it's to your liking (scx_lavd with "Gaming" preset should be fine for most cases)
+5. enjoy!
+
+# when gaming, isn't bazzite enough?
+when making a snadwitch, isn't bread enough?
+
+# is it stable?
+who knows?
 
 # is it safe?
-probably not...
-it's the kind of thing they tell you not to do in Linux 101.
+probably not.
 
-# then, why?
-because.
-it's.
-fast.
-like... the responsiveness alone makes it worth it for some people. 
+# can it run...?
+maybe?
+
+# I found a bug...
+here's a cookie.
+
+# can you add...?
+don't wanna.
+
+# can I use this image as basis for my own image?
+yes.
+
+# is it arch or fedora?
+yes.
+
+# to which one?
+yes.
 
 # are you going to maintain it?
-probably.
-as long as our steamdecks remain active. 
+yeah, for as long as I'm using it...
+
+# you ruined my mechine!!!
+no. YOU ruined your mechine.
+I did not force you to install this.
+
+# hey!!! this is pretty fun!
+thanks.

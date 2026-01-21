@@ -35,6 +35,11 @@ COPY --from=cachyos /usr/share/licenses/ /usr/share/licenses/
 # :::::: experimental :::::: ###
 ##################################################################################################################################################
 
+# :::::: install preformence-related stuff :::::: 
+RUN dnf5 -y copr enable bieszczaders/kernel-cachyos-addons
+RUN dnf5 -y install --allowerasing scx-scheds scx-tools scxctl cachyos-settings uksmd scx-manager
+RUN dnf5 -y copr disable bieszczaders/kernel-cachyos-addons
+
 # :::::: refresh akmods so that some drivers actually catch... :::::: 
 RUN dnf5 -y install rpmdevtools akmods
 

@@ -5,8 +5,7 @@ It's bazzite, with the cachyos kernel shoved in.
 (this version is meant to be used on the SteamDeck - and was only tested on LCD)
 
 # why?
-because.
-also, combining things is fun.
+because as much as I love bazzite, I find it slower compared to cachyos.
 
 # who is it for?
 me.

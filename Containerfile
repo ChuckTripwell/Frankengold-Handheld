@@ -30,7 +30,6 @@ RUN rm -rf /lib/modules
 COPY --from=cachyos /lib/modules /lib/modules
 COPY --from=cachyos /usr/share/licenses/ /usr/share/licenses/
 
-
 ##################################################################################################################################################
 # :::::: experimental :::::: ###
 ##################################################################################################################################################
@@ -42,6 +41,9 @@ RUN dnf5 -y copr disable bieszczaders/kernel-cachyos-addons
 
 # :::::: refresh akmods so that some drivers actually catch... :::::: 
 RUN dnf5 -y install rpmdevtools akmods
+
+# :::::: install additional stuff :::::: 
+RUN dnf5 -y install python3-pygame
 
 ##################################################################################################################################################
 ### :::::: end of experimental :::::: ###

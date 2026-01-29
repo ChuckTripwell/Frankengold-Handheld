@@ -1,40 +1,93 @@
-# Allow build scripts to be referenced without being copied into the final image
-FROM scratch AS ctx
-COPY build_files /
+##################################################################################################################################################
+### :::::: pull cachyos :::::: ###
+##################################################################################################################################################
+FROM docker.io/cachyos/cachyos-v3:latest AS cachyos
 
-# Base Image
-FROM ghcr.io/ublue-os/bazzite:stable
+# :::::: prepare the kernel :::::: 
+RUN rm -rf /lib/modules/*
+RUN pacman -Sy --noconfirm
+RUN pacman -S --noconfirm linux-cachyos-deckify
 
-## Other possible base images include:
-# FROM ghcr.io/ublue-os/bazzite:latest
-# FROM ghcr.io/ublue-os/bluefin-nvidia:stable
-# 
-# ... and so on, here are more base images
-# Universal Blue Images: https://github.com/orgs/ublue-os/packages
-# Fedora base image: quay.io/fedora/fedora-bootc:41
-# CentOS base images: quay.io/centos-bootc/centos-bootc:stream10
+##################################################################################################################################################
+### :::::: pull ublue-os :::::: ###
+##################################################################################################################################################
+FROM ghcr.io/ublue-os/bazzite-deck:latest
 
-### [IM]MUTABLE /opt
-## Some bootable images, like Fedora, have /opt symlinked to /var/opt, in order to
-## make it mutable/writable for users. However, some packages write files to this directory,
-## thus its contents might be wiped out when bootc deploys an image, making it troublesome for
-## some packages. Eg, google-chrome, docker-desktop.
-##
-## Uncomment the following line if one desires to make /opt immutable and be able to be used
-## by the package manager.
+# :::::: force distrobox to use a sub-directory for home :::::: 
+RUN mkdir -p /usr/share/distrobox/
+RUN touch /usr/share/distrobox/distrobox.conf
+RUN echo "DBX_CONTAINER_HOME_PREFIX=$HOME/distrobox" >> /usr/share/distrobox/distrobox.conf
 
-# RUN rm /opt && mkdir /opt
+# :::::: Set vm.max_map_count for stability/improved gaming performance :::::: 
+# :::::: https://wiki.archlinux.org/title/Gaming#Increase_vm.max_map_count :::::: 
+RUN echo -e "vm.max_map_count = 2147483642" > /etc/sysctl.d/80-gamecompatibility.conf
 
-### MODIFICATIONS
-## make modifications desired in your image and install packages by modifying the build.sh script
-## the following RUN directive does all the things required to run "build.sh" as recommended.
+# :::::: disable countme ( we always disable it anyway, so this  is to save us time. you can enable it if you want... ) :::::: 
+RUN sed -i -e s,countme=1,countme=0, /etc/yum.repos.d/*.repo && systemctl mask --now rpm-ostree-countme.timer
 
-RUN --mount=type=bind,from=ctx,source=/,target=/ctx \
-    --mount=type=cache,dst=/var/cache \
-    --mount=type=cache,dst=/var/log \
-    --mount=type=tmpfs,dst=/tmp \
-    /ctx/build.sh
-    
-### LINTING
-## Verify final image and contents are correct.
+# :::::: forcefully remove and replace kernel :::::: 
+RUN rm -rf /lib/modules
+COPY --from=cachyos /lib/modules /lib/modules
+COPY --from=cachyos /usr/share/licenses/ /usr/share/licenses/
+
+##################################################################################################################################################
+# :::::: experimental :::::: ###
+##################################################################################################################################################
+
+# :::::: audio fix ::::::
+
+RUN printf "[Unit]\n\
+Description=ALSA restore watchdog\n\
+After=multi-user.target\n\n\
+[Service]\n\
+Type=simple\n\
+ExecStart=/usr/bin/alsactl init\n\
+Restart=on-failure\n\
+RestartSec=10\n\
+StartLimitBurst=5\n\
+StartLimitIntervalSec=60\n\
+User=root\n\n\
+[Install]\n\
+WantedBy=multi-user.target\n" > /etc/systemd/system/alsactl-start.service
+
+#RUN systemctl enable alsactl-start.service
+
+RUN printf "[Unit]\n\
+Description=Run alsactl init on volume key press\n\
+After=multi-user.target\n\n\
+\[Service]\n\
+Type=simple\n\
+ExecStart=/bin/sh -c \"/usr/bin/libinput debug-events --device /dev/input/event5 | /usr/bin/awk '/KEY_VOLUME(UP|DOWN).*pressed/ { system(\\\"/usr/bin/alsactl init\\\") }'\"\n\
+Restart=always\n\
+User=root\n\n\
+\[Install]\n\
+WantedBy=multi-user.target\n" > /etc/systemd/system/alsactl-fix.service
+
+RUN systemctl enable alsactl-fix.service
+
+
+# :::::: install preformence-related stuff :::::: 
+RUN dnf5 -y copr enable bieszczaders/kernel-cachyos-addons
+RUN dnf5 -y install --allowerasing scx-scheds scx-tools scxctl cachyos-settings uksmd scx-manager
+RUN dnf5 -y copr disable bieszczaders/kernel-cachyos-addons
+
+# :::::: refresh akmods so that some drivers actually catch... :::::: 
+RUN dnf5 -y install rpmdevtools akmods
+
+# :::::: install additional stuff :::::: 
+RUN dnf5 -y install python3-pygame
+
+##################################################################################################################################################
+### :::::: end of experimental :::::: ###
+##################################################################################################################################################
+
+# :::::: slot the kernel into place :::::: 
+ENV DRACUT_NO_XATTR=1
+RUN mkdir -p /var/tmp
+RUN printf "systemdsystemconfdir=/etc/systemd/system\nsystemdsystemunitdir=/usr/lib/systemd/system\n" | tee /usr/lib/dracut/dracut.conf.d/30-bootcrew-fix-bootc-module.conf && \
+      printf 'hostonly=no\nadd_dracutmodules+=" ostree bootc "' | tee /usr/lib/dracut/dracut.conf.d/30-bootcrew-bootc-modules.conf && \
+      sh -c 'export KERNEL_VERSION="$(basename "$(find /usr/lib/modules -maxdepth 1 -type d | grep -v -E "*.img" | tail -n 1)")" && \
+      dracut --force --no-hostonly --reproducible --zstd --verbose --kver "$KERNEL_VERSION"  "/usr/lib/modules/$KERNEL_VERSION/initramfs.img"'
+
+#  :::::: finish :::::: 
 RUN bootc container lint

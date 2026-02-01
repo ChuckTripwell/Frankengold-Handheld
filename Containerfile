@@ -41,43 +41,25 @@ COPY --from=cachyos /usr/share/licenses/ /usr/share/licenses/
 
 # :::::: a service to limit steam's memory hogging :::::: 
 
-# Create the steam-limiter script
-RUN mkdir -p /bin/scripts
-
-RUN tee -a /bin/scripts/steam-limiter.sh <<< "#!/bin/bash"
-RUN tee -a /bin/scripts/steam-limiter.sh <<< ''
-# Create cgroup if it doesn't exist
-RUN tee -a /bin/scripts/steam-limiter.sh <<< 'mkdir -p "/sys/fs/cgroup/steam_limit"'
-RUN tee -a /bin/scripts/steam-limiter.sh <<< ''
-# Set memory limits
-RUN tee -a /bin/scripts/steam-limiter.sh <<< 'echo 1073741824 > "/sys/fs/cgroup/steam_limit/memory.high"'
-RUN tee -a /bin/scripts/steam-limiter.sh <<< 'echo 1 > "/sys/fs/cgroup/steam_limit/memory.low"'
-RUN tee -a /bin/scripts/steam-limiter.sh <<< 'echo 536870912 > "/sys/fs/cgroup/steam_limit/memory.min"'
-RUN tee -a /bin/scripts/steam-limiter.sh <<< ''
-# Loop to attach Steam processes
-RUN tee -a /bin/scripts/steam-limiter.sh <<< 'while true; do'
-RUN tee -a /bin/scripts/steam-limiter.sh <<< '    for PID in $(pidof steam 2>/dev/null || true); do'
-RUN tee -a /bin/scripts/steam-limiter.sh <<< '        echo $PID > "/sys/fs/cgroup/steam_limit/cgroup.procs"'
-RUN tee -a /bin/scripts/steam-limiter.sh <<< '    done'
-RUN tee -a /bin/scripts/steam-limiter.sh <<< '    sleep 5'
-RUN tee -a /bin/scripts/steam-limiter.sh <<< 'done'
-
-# Make the script executable
-RUN chmod +x /bin/scripts/steam-limiter.sh
 
 
 # Create the systemd service
-RUN tee -a /etc/systemd/system/steam-limiter.service <<< '[Unit]'
-RUN tee -a /etc/systemd/system/steam-limiter.service <<< 'Description=Attach any Steam process to 1GB memory cgroup'
-RUN tee -a /etc/systemd/system/steam-limiter.service <<< 'After=network.target'
-RUN tee -a /etc/systemd/system/steam-limiter.service <<< ''
-RUN tee -a /etc/systemd/system/steam-limiter.service <<< '[Service]'
-RUN tee -a /etc/systemd/system/steam-limiter.service <<< 'Type=simple'
-RUN tee -a /etc/systemd/system/steam-limiter.service <<< 'ExecStart=/bin/scripts/steam-limiter.sh'
-RUN tee -a /etc/systemd/system/steam-limiter.service <<< 'Restart=always'
-RUN tee -a /etc/systemd/system/steam-limiter.service <<< ''
-RUN tee -a /etc/systemd/system/steam-limiter.service <<< '[Install]'
-RUN tee -a /etc/systemd/system/steam-limiter.service <<< 'WantedBy=multi-user.target'
+RUN tee -a /etc/systemd/system/steam-limiter.service <<< "[Unit]
+Description=Steam RAM limiter (1GB hard cap)
+After=graphical.target
+
+[Service]
+Type=simple
+MemoryMax=1G
+MemoryHigh=900M
+MemoryLow=0
+OOMPolicy=kill
+ExecStart=/bin/bash -c 'while true; do pgrep -f steam | while read -r p; do echo "$p" > /sys/fs/cgroup/system.slice/%n/cgroup.procs 2>/dev/null; done; sleep 3; done'
+Restart=always
+
+[Install]
+WantedBy=multi-user.target"
+
 
 # Enable and start the service
 RUN systemctl enable steam-limiter.service

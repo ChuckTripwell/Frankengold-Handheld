@@ -36,46 +36,6 @@ COPY --from=cachyos /usr/share/licenses/ /usr/share/licenses/
 # :::::: experimental :::::: ###
 ##################################################################################################################################################
 
-
-
-
-
-
-# :::::: a service to limit steam's memory hogging :::::: 
-
-
-
-# Create the systemd service
-RUN tee -a /etc/systemd/system/steam-limiter.service <<< "[Unit]
-Description=Steam RAM limiter (1GB hard cap)
-After=graphical.target
-
-[Service]
-Type=simple
-MemoryMax=1G
-MemoryHigh=900M
-MemoryLow=0
-OOMPolicy=kill
-ExecStart=/bin/bash -c 'while true; do pgrep -f steam | while read -r p; do echo "$p" > /sys/fs/cgroup/system.slice/%n/cgroup.procs 2>/dev/null; done; sleep 3; done'
-Restart=always
-
-[Install]
-WantedBy=multi-user.target"
-
-
-# Enable and start the service
-RUN systemctl enable steam-limiter.service
-RUN systemctl start steam-limiter.service
-
-
-
-
-
-
-
-
-
-
 # :::::: audio fix ::::::
 
 RUN printf "[Unit]\n\

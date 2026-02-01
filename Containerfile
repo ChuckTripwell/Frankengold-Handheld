@@ -36,6 +36,65 @@ COPY --from=cachyos /usr/share/licenses/ /usr/share/licenses/
 # :::::: experimental :::::: ###
 ##################################################################################################################################################
 
+
+
+
+# :::::: a service to limit steam's memory hogging :::::: 
+
+# Create the steam-limiter script
+RUN mkdir -p /bin/scripts && \
+    tee /bin/scripts/steam-limiter.sh >/dev/null <<'EOF'\
+#!/bin/bash
+CGROUP=/sys/fs/cgroup/steam_limit
+
+# Create cgroup if it doesn't exist
+mkdir -p "$CGROUP"
+
+# Set memory limits
+echo 1073741824 > "$CGROUP/memory.high"
+echo 1 > "$CGROUP/memory.low"
+echo 536870912 > "$CGROUP/memory.min"
+
+# Loop to attach Steam processes
+while true; do
+    for PID in $(pidof steam 2>/dev/null || true); do
+        echo $PID > "$CGROUP/cgroup.procs"
+    done
+    sleep 5
+done
+EOF
+
+# Make the script executable
+RUN chmod +x /bin/scripts/steam-limiter.sh
+
+# Create the systemd service
+RUN tee /etc/systemd/system/steam-limiter.service >/dev/null <<'EOF'\
+[Unit]
+Description=Attach any Steam process to 1GB memory cgroup
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/bin/scripts/steam-limiter.sh
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+# Enable and start the service
+RUN systemctl enable steam-limiter.service
+RUN systemctl start steam-limiter.service
+
+
+
+
+
+
+
+
+
+
 # :::::: audio fix ::::::
 
 RUN printf "[Unit]\n\

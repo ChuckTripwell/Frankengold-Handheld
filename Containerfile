@@ -39,34 +39,28 @@ COPY --from=cachyos /usr/share/licenses/ /usr/share/licenses/
 # :::::: audio fix ::::::
 
 RUN printf "[Unit]\n\
-Description=ALSA restore watchdog\n\
-After=multi-user.target\n\n\
+Description=Run alsactl init at boot\n\
+After=multi-user.target\n\
+\n\
 [Service]\n\
-Type=simple\n\
-ExecStart=/usr/bin/alsactl init\n\
-Restart=on-failure\n\
-RestartSec=10\n\
-StartLimitBurst=5\n\
-StartLimitIntervalSec=60\n\
-User=root\n\n\
+Type=oneshot\n\
+ExecStart=/usr/sbin/alsactl init\n\
+\n\
 [Install]\n\
-WantedBy=multi-user.target\n" > /etc/systemd/system/alsactl-start.service
+WantedBy=multi-user.target\n" > /etc/systemd/system/alsactl-init.service
 
-#RUN systemctl enable alsactl-start.service
+RUN systemctl enable alsactl-init.service
 
-RUN printf "[Unit]\n\
+RUN printf "ACTION==\"change\", SUBSYSTEM==\"input\", ENV{KEY}==\"114|115\", TAG+=\"systemd\", ENV{SYSTEMD_WANTS}=\"volume-alsactl.service\"\n" \
+> /etc/udev/rules.d/99-volume-alsactl.rules /n/ \
+printf "[Unit]\n\
 Description=Run alsactl init on volume key press\n\
-After=multi-user.target\n\n\
+\n\
 [Service]\n\
-Type=simple\n\
-ExecStart=/bin/sh -c \"/usr/bin/libinput debug-events --device /dev/input/event5 | /usr/bin/awk '/KEY_VOLUME(UP|DOWN).*pressed/ { system(\\\"/usr/bin/alsactl init\\\") }'\"\n\
-Restart=always\n\
-User=root\n\n\
-[Install]\n\
-WantedBy=multi-user.target\n" > /etc/systemd/system/alsactl-fix.service
+Type=oneshot\n\
+ExecStart=/usr/sbin/alsactl init\n" > /etc/systemd/system/volume-alsactl.service
 
-RUN systemctl enable alsactl-fix.service
-
+RUN systemctl enable volume-alsactl.service
 
 # :::::: install preformence-related stuff :::::: 
 RUN dnf5 -y copr enable bieszczaders/kernel-cachyos-addons

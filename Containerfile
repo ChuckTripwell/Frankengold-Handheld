@@ -36,32 +36,6 @@ COPY --from=cachyos /usr/share/licenses/ /usr/share/licenses/
 # :::::: experimental :::::: ###
 ##################################################################################################################################################
 
-# :::::: audio fix ::::::
-
-RUN printf "[Unit]\n\
-Description=Run alsactl init at boot\n\
-After=multi-user.target\n\
-\n\
-[Service]\n\
-Type=oneshot\n\
-ExecStart=/usr/sbin/alsactl init\n\
-\n\
-[Install]\n\
-WantedBy=multi-user.target\n" > /etc/systemd/system/alsactl-init.service
-
-RUN systemctl enable alsactl-init.service
-
-RUN printf 'ACTION==\"change\", SUBSYSTEM==\"input\", ENV{KEY}==\"114|115\", TAG+=\"systemd\", ENV{SYSTEMD_WANTS}=\"volume-alsactl.service\"' > /etc/udev/rules.d/99-volume-alsactl.rules
-
-RUN printf "[Unit]\n\
-Description=Run alsactl init on volume key press\n\
-\n\
-[Service]\n\
-Type=oneshot\n\
-ExecStart=/usr/sbin/alsactl init\n" > /etc/systemd/system/volume-alsactl.service
-
-RUN systemctl enable volume-alsactl.service
-
 # :::::: install preformence-related stuff :::::: 
 RUN dnf5 -y copr enable bieszczaders/kernel-cachyos-addons
 RUN dnf5 -y install --allowerasing scx-scheds scx-tools scxctl cachyos-settings uksmd scx-manager

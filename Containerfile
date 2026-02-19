@@ -51,9 +51,10 @@ WantedBy=multi-user.target\n" > /etc/systemd/system/alsactl-init.service
 
 RUN systemctl enable alsactl-init.service
 
-RUN printf "ACTION==\"change\", SUBSYSTEM==\"input\", ENV{KEY}==\"114|115\", TAG+=\"systemd\", ENV{SYSTEMD_WANTS}=\"volume-alsactl.service\"\n" \
-> /etc/udev/rules.d/99-volume-alsactl.rules /n/ \
-printf "[Unit]\n\
+RUN printf 'ACTION==\"change\", SUBSYSTEM==\"input\", ENV{KEY}==\"114|115\", TAG+=\"systemd\", ENV{SYSTEMD_WANTS}=\"volume-alsactl.service\"' \
+> /etc/udev/rules.d/99-volume-alsactl.rules
+
+RUN printf "[Unit]\n\
 Description=Run alsactl init on volume key press\n\
 \n\
 [Service]\n\

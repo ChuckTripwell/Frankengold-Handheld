@@ -46,6 +46,9 @@ RUN dnf5 -y install rpmdevtools akmods
 
 # :::::: install additional stuff :::::: 
 RUN dnf5 -y install python3-pygame
+RUN dnf5 -y install --allowerasing tlp
+RUN dnf5 -y install --allowerasing zcfan
+RUN systemctl enable tlp.service
 
 ##################################################################################################################################################
 ### :::::: end of experimental :::::: ###

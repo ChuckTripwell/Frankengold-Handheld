@@ -46,7 +46,7 @@ RUN dnf5 -y install rpmdevtools akmods
 
 # :::::: install additional stuff :::::: 
 RUN dnf5 -y install --allowerasing python3-pygame
-RUN dnf5 -y install --allowerasing rust-libbz2-rs-sys-devel
+RUN dnf5 -y install --allowerasing bzip2-libs
 RUN dnf5 -y install --allowerasing tlp
   RUN systemctl enable tlp.service
 RUN dnf5 -y install --allowerasing zcfan

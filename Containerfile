@@ -6,7 +6,7 @@ FROM docker.io/cachyos/cachyos-v3:latest AS cachyos
 # :::::: prepare the kernel :::::: 
 RUN rm -rf /lib/modules/*
 RUN pacman -Sy --noconfirm
-RUN pacman -S --noconfirm linux-cachyos-deckify-lto
+RUN pacman -S --noconfirm linux-cachyos-deckify
 
 ##################################################################################################################################################
 ### :::::: pull ublue-os :::::: ###
@@ -46,7 +46,6 @@ RUN dnf5 -y install rpmdevtools akmods
 
 # :::::: install additional stuff :::::: 
 RUN dnf5 -y install --allowerasing python3-pygame
-RUN dnf5 -y install --allowerasing bzip2-libs
 RUN dnf5 -y install --allowerasing tlp
   RUN systemctl enable tlp.service
 RUN dnf5 -y install --allowerasing zcfan

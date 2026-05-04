@@ -50,8 +50,9 @@ RUN dnf5 -y install --allowerasing tlp
   RUN systemctl enable tlp.service
 RUN dnf5 -y install --allowerasing zcfan
 
-RUN	bash /tmp/millennium_v235_installer.sh
-RUN	rm /tmp/millennium_v235_installer.sh
+COPY build_files/millennium.sh /tmp/millennium.sh
+RUN	bash /tmp/millennium.sh
+RUN	rm /tmp/millennium.sh
 
 ##################################################################################################################################################
 ### :::::: end of experimental :::::: ###

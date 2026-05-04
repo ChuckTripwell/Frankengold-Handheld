@@ -1,112 +1,99 @@
-#!/usr/bin/env bash
+#!/usr/bin/bash
+# Millennium installer/upgrader for Bazzite (immutable OS)
+# Works around read-only /usr and /opt by:
+#   1. Extracting the tarball directly to ~/.local/
+#   2. Patching hardcoded paths in the .so files (/opt, /usr -> /var, same length)
+#   3. Using systemd-tmpfiles to create /var/ symlinks on every boot
 
-readonly GITHUB_ACCOUNT="SteamClientHomebrew/Millennium"
-readonly RELEASES_URI="https://api.github.com/repos/${GITHUB_ACCOUNT}/releases"
-readonly DOWNLOAD_URI="https://github.com/${GITHUB_ACCOUNT}/releases/download"
-readonly INSTALL_DIR="/tmp/millennium"
-DRY_RUN=0
-ALLOW_BETA=0
+set -e
 
-log() { printf "%b\n" "$1"; }
-is_root() { [ "$(id -u)" -eq 0 ]; }
-format_size() {
-    echo "$1" | awk '{ split("B KB MB GB TB PB", v); s=1; while ($1 > 1024) { $1 /= 1024; s++ } printf "%.2f %s\n", $1, v[s] }'
-}
+MILL_LIB="$HOME/.local/lib/millennium"
+MILL_SHARE="$HOME/.local/share/millennium"
+PYTHON_DIR="$HOME/.local/opt/python-i686-3.11.8"
+STEAM_DIR="$HOME/.steam/steam"
+GITHUB_ACCOUNT="SteamClientHomebrew/Millennium"
 
-verify_platform() {
-    case $(uname -sm) in
-        "Linux x86_64") echo "linux-x86_64" ;;
-        *) log "Unsupported platform $(uname -sm). x86_64 is the only available platform."; exit 1 ;;
-    esac
-}
+# ── 1. Fetch latest release tag ───────────────────────────────────────────────
+echo "==> Fetching latest Millennium release..."
+TAG=$(curl -fsSL "https://api.github.com/repos/${GITHUB_ACCOUNT}/releases" \
+    -H 'Accept: application/vnd.github.v3+json' \
+    | jq -r '[.[] | select(.prerelease == false)] | first | .tag_name')
 
-check_dependencies() {
-    log "resolving dependencies..."
-    for cmd in curl tar jq sudo; do
-        command -v "${cmd}" >/dev/null || {
-            log "${cmd} isn't installed. Install it from your package manager." >&2
-            exit 1
-        }
-    done
-}
+if [[ -z "$TAG" || "$TAG" == "null" ]]; then
+    echo "ERROR: Could not fetch release info"
+    exit 1
+fi
 
-fetch_release_info() {
-    echo "2.35.0:35546112"
-    return 0
-}
+VERSION="${TAG#v}"
+TARBALL_URL="https://github.com/${GITHUB_ACCOUNT}/releases/download/${TAG}/millennium-v${VERSION}-linux-x86_64.tar.gz"
+echo "    Version: $VERSION"
 
-remove_old_installation() {
-    log ":: Cleaning up previous Millennium installations..."
-    sudo rm -rf /usr/lib/millennium \
-                /usr/share/millennium \
-                "${XDG_CONFIG_HOME:-$HOME/.config}/millennium" \
-                "${XDG_DATA_HOME:-$HOME/.local/share}/millennium"
+# ── 2. Download and extract to ~/.local/ ──────────────────────────────────────
+echo "==> Downloading tarball..."
+TMPDIR=$(mktemp -d)
+trap 'rm -rf "$TMPDIR"' EXIT
 
-    if [ -f "/usr/bin/steam.millennium.bak" ]; then
-        log "   Restoring original steam executable..."
-        sudo mv /usr/bin/steam.millennium.bak /usr/bin/steam
-    fi
-}
+curl -fsSL "$TARBALL_URL" -o "$TMPDIR/millennium.tar.gz"
 
-download_package() {
-    local url="$1"
-    local dest="$2"
-    curl --fail --location --output "${dest}" "${url}"
-}
+echo "==> Extracting to ~/.local/..."
+mkdir -p "$MILL_LIB" "$MILL_SHARE" "$PYTHON_DIR"
 
-extract_package() {
-    local tar_file="$1"
-    local extract_dir="$2"
-    mkdir -p "${extract_dir}"
-    tar xzf "${tar_file}" -C "${extract_dir}"
-}
+# Extract to temp dir first, then copy to writable targets
+tar -xzf "$TMPDIR/millennium.tar.gz" -C "$TMPDIR" --warning=no-timestamp 2>/dev/null || true
 
-install_millennium() {
-    local extract_path="$1"
-    sudo cp -r "${extract_path}"/* / || true
-}
+cp -r "$TMPDIR/usr/lib/millennium/."   "$MILL_LIB/"
+cp -r "$TMPDIR/usr/share/millennium/." "$MILL_SHARE/"
+cp -r "$TMPDIR/opt/python-i686-3.11.8/." "$PYTHON_DIR/"
+chmod +x "$PYTHON_DIR/bin/python3.11"
 
-post_install() {
-    [ -f /opt/python-i686-3.11.8/bin/python3.11 ] && sudo chmod +x /opt/python-i686-3.11.8/bin/python3.11
-    log "installing for '${USER}'"
-    beta_file="${HOME}/.steam/steam/package/beta"
-    target="${HOME}/.steam/steam/ubuntu12_32/libXtst.so.6"
-    if [ -f "${beta_file}" ]; then
-        log "removing beta '$(cat "${beta_file}")' in favor for stable."
-        rm "${beta_file}"
-    fi
-    [ -d "${HOME}/.steam/steam/ubuntu12_32" ] && ln -sf /usr/lib/millennium/libmillennium_bootstrap_86x.so "${target}"
-}
+# ── 3. Verify key files ───────────────────────────────────────────────────────
+for f in \
+    "$MILL_LIB/libmillennium_x86.so" \
+    "$MILL_LIB/libmillennium_bootstrap_86x.so" \
+    "$PYTHON_DIR/lib/libpython-3.11.8.so" \
+    "$PYTHON_DIR/bin/python3.11"
+do
+    [[ -f "$f" ]] || { echo "ERROR: missing $f"; exit 1; }
+done
 
-cleanup() {
-    local dir="$1"
-    log "cleaning up temporary files..."
-    rm -rf "${dir}"
-}
+# ── 4. Patch binaries (same-length string replacement, no relocation needed) ──
+# /opt/python-i686-3.11.8  (23 chars) -> /var/python-i686-3.11.8  (23 chars)
+# /usr/lib/millennium      (19 chars) -> /var/lib/millennium       (19 chars)
+# /usr/share/millennium    (21 chars) -> /var/share/millennium     (21 chars)
+echo "==> Patching binaries..."
 
-main() {
-    local target release_info tag size download_uri install_dir extract_path tar_file
-    if is_root; then log "Do not run as root!"; exit 1; fi
-    target=$(verify_platform)
-    check_dependencies
-    release_info=$(fetch_release_info)
-    tag="${release_info%%:*}"
-    download_uri="${DOWNLOAD_URI}/v${tag}/millennium-v${tag}-${target}.tar.gz"
-    remove_old_installation
-    install_dir="${INSTALL_DIR}"
-    extract_path="${install_dir}/files"
-    tar_file="${install_dir}/millennium-v${tag}-${target}.tar.gz"
-    rm -rf "${install_dir}"
-    mkdir -p "${install_dir}"
-    log "Downloading package..."
-    download_package "${download_uri}" "${tar_file}"
-    log "Unpacking..."
-    extract_package "${tar_file}" "${extract_path}"
-    log "Installing..."
-    install_millennium "${extract_path}"
-    log "Post-install..."
-    post_install
-    cleanup "${install_dir}"
-    log "Millennium 2.35.0 base install done.\n"
-}
-main "$@"
+perl -pi -e '
+    s|/opt/python-i686-3\.11\.8|/var/python-i686-3.11.8|g;
+    s|/usr/lib/millennium|/var/lib/millennium|g;
+    s|/usr/share/millennium|/var/share/millennium|g;
+' "$MILL_LIB/libmillennium_x86.so" \
+  "$MILL_LIB/libmillennium_bootstrap_86x.so"
+
+echo "    Verified patched paths:"
+strings "$MILL_LIB/libmillennium_x86.so" \
+    | grep -E "^/var/(python-i686|lib/millennium|share/millennium)" \
+    | sed 's/^/      /'
+
+# ── 5. Steam preload symlink ──────────────────────────────────────────────────
+echo "==> Installing Steam preload hook..."
+ln -sf "$MILL_LIB/libmillennium_bootstrap_86x.so" \
+       "$STEAM_DIR/ubuntu12_32/libXtst.so.6"
+
+# ── 6. systemd-tmpfiles for persistent /var/ symlinks ────────────────────────
+echo "==> Writing /etc/tmpfiles.d/millennium.conf (requires sudo)..."
+sudo tee /etc/tmpfiles.d/millennium.conf > /dev/null << EOF
+# Millennium Steam mod framework — Bazzite immutable OS workaround
+# Redirects hardcoded /var/ paths (patched from /opt/ and /usr/) to ~/.local installs
+L /var/python-i686-3.11.8  -  -  -  -  $HOME/.local/opt/python-i686-3.11.8
+L /var/lib/millennium      -  -  -  -  $HOME/.local/lib/millennium
+L /var/share/millennium    -  -  -  -  $HOME/.local/share/millennium
+EOF
+
+sudo systemd-tmpfiles --create /etc/tmpfiles.d/millennium.conf
+
+echo ""
+echo "==> Symlinks:"
+ls -la /var/python-i686-3.11.8 /var/lib/millennium /var/share/millennium
+
+echo ""
+echo "Done — Millennium $VERSION installed. Restart Steam to load it."

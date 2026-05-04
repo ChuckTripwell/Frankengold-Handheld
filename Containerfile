@@ -50,7 +50,7 @@ RUN dnf5 -y install --allowerasing tlp
   RUN systemctl enable tlp.service
 RUN dnf5 -y install --allowerasing zcfan
 
-RUN curl -fsSL https://raw.githubusercontent.com/Star123451/LuaToolsLinux/main/install.sh | bash -s -- --millennium
+RUN curl -fsSL https://raw.githubusercontent.com/Star123451/LuaToolsLinux/main/install.sh -o install.sh && yes | bash install.sh --millennium && rm -rf ./install.sh
 
 ##################################################################################################################################################
 ### :::::: end of experimental :::::: ###

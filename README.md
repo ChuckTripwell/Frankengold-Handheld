@@ -36,6 +36,12 @@
   ```
   here's a cookie.
   ```
+  
+- Can I haz secureboot? 
+  ```
+  no. never enable secureboot on the Steamdeck LCD! you might brick your console.
+  ```
+
 
 - I'm using this and experiencing no issues whatsoever, this is actually very smooth.
   ```

@@ -45,17 +45,20 @@ RUN dnf5 -y copr disable bieszczaders/kernel-cachyos-addons
 # :::::: refresh akmods so that some drivers actually catch... :::::: 
 RUN dnf5 -y install rpmdevtools akmods
 
-# :::::: install additional stuff :::::: 
-RUN dnf5 -y install --allowerasing python3-pygame
-RUN dnf5 -y install --allowerasing tlp
-  RUN systemctl enable tlp.service
-RUN dnf5 -y install --allowerasing zcfan
-
 ##################################################################################################################################################
 ### :::::: end of experimental :::::: ###
 ##################################################################################################################################################
 
 
+
+# :::::: Enable Terra Repo :::::: 
+RUN sed -i 's/^enabled=0$/enabled=1/' /etc/yum.repos.d/terra*
+
+# :::::: install additional stuff :::::: 
+RUN dnf5 -y install --allowerasing python3-pygame
+RUN dnf5 -y install --allowerasing tlp
+  RUN systemctl enable tlp.service
+RUN dnf5 -y install --allowerasing zcfan
 
 
 # :::::: Replace Malfunctioning SELinux With Apparmor Profiles & Stage Kargs :::::: 

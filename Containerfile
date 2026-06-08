@@ -55,6 +55,37 @@ RUN dnf5 -y install --allowerasing zcfan
 ### :::::: end of experimental :::::: ###
 ##################################################################################################################################################
 
+
+
+
+# :::::: Replace Malfunctioning SELinux With Apparmor Profiles & Stage Kargs :::::: 
+
+RUN dnf5 install -y apparmor-parser apparmor-utils
+RUN dnf5 install -y apparmor-profiles || true
+
+RUN mkdir -p /etc/apparmor.d /usr/lib64 /etc/systemd/system /var/lib
+
+COPY --from=cachyos /usr/bin/apparmor_parser /usr/bin/apparmor_parser
+COPY --from=cachyos /usr/lib/libapparmor.so* /usr/lib64/
+COPY --from=cachyos /etc/apparmor.d/ /etc/apparmor.d/
+
+RUN echo '[Unit]' > /etc/systemd/system/apparmor-activator.service
+RUN echo 'Description=AppArmor Argument and Profile Activator' >> /etc/systemd/system/apparmor-activator.service
+RUN echo 'ConditionPathExists=!/var/.apparmor_activated' >> /etc/systemd/system/apparmor-activator.service
+RUN echo 'After=multi-user.target' >> /etc/systemd/system/apparmor-activator.service
+RUN echo '' >> /etc/systemd/system/apparmor-activator.service
+RUN echo '[Service]' >> /etc/systemd/system/apparmor-activator.service
+RUN echo 'Type=oneshot' >> /etc/systemd/system/apparmor-activator.service
+RUN echo 'ExecStart=/usr/bin/bash -c "if ! grep -q \"security=apparmor\" /proc/cmdline; then rpm-ostree kargs --append-if-missing=\"security=apparmor\" --append-if-missing=\"lsm=landlock,lockdown,yama,integrity,apparmor,bpf\"; fi; touch /var/.apparmor_activated"' >> /etc/systemd/system/apparmor-activator.service
+RUN echo 'ExecStartPost=/usr/bin/bash -c "if [ -d /etc/apparmor.d ]; then /usr/bin/apparmor_parser -r -W /etc/apparmor.d/; fi"' >> /etc/systemd/system/apparmor-activator.service
+RUN echo 'ExecStartPost=/usr/bin/bash -c "for i in {1..30}; do TARGET_UID=\$(loginctl list-users | awk \"NR==2 {print \\\$1}\"); if [ -n \"\$TARGET_UID\" ] && [ -S /run/user/\"\$TARGET_UID\"/bus ]; then sudo -u \"#\$TARGET_UID\" DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/\"\$TARGET_UID\"/bus kdialog --title \"System Security Update\" --passivepopup \"AppArmor configuration has been staged. Please reboot your system to apply changes.\" 10 || true; break; fi; sleep 2; done &"' >> /etc/systemd/system/apparmor-activator.service
+RUN echo '' >> /etc/systemd/system/apparmor-activator.service
+RUN echo '[Install]' >> /etc/systemd/system/apparmor-activator.service
+RUN echo 'WantedBy=multi-user.target' >> /etc/systemd/system/apparmor-activator.service
+
+RUN systemctl enable apparmor-activator.service
+
+
 # :::::: slot the kernel into place :::::: 
 RUN mkdir -p /var/tmp
 RUN printf "systemdsystemconfdir=/etc/systemd/system\nsystemdsystemunitdir=/usr/lib/systemd/system\n" | tee /usr/lib/dracut/dracut.conf.d/30-bootcrew-fix-bootc-module.conf && \

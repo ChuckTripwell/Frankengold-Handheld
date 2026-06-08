@@ -8,6 +8,8 @@ RUN rm -rf /lib/modules/*
 RUN pacman -Sy --noconfirm archlinux-keyring cachyos-keyring
 RUN pacman -Sy --noconfirm
 RUN pacman -S --noconfirm linux-cachyos-deckify
+# install AppArmor for later
+  RUN pacman -S --noconfirm apparmor apparmor.d
 
 ##################################################################################################################################################
 ### :::::: pull ublue-os :::::: ###
@@ -60,9 +62,7 @@ RUN dnf5 -y install --allowerasing tlp
   RUN systemctl enable tlp.service
 RUN dnf5 -y install --allowerasing zcfan
 
-
 # :::::: Replace Malfunctioning SELinux With Apparmor Profiles & Stage Kargs :::::: 
-
 RUN dnf5 install -y apparmor-parser apparmor-utils
 RUN dnf5 install -y apparmor-profiles || true
 

@@ -10,10 +10,47 @@ RUN pacman -Sy --noconfirm
 RUN pacman -S --noconfirm linux-cachyos-deckify
 
 
+RUN pacman -S --noconfirm git curl jq
+
+RUN TAG=$(curl -fsSL https://api.github.com/repos/SteamClientHomebrew/Millennium/releases/latest | jq -r '.tag_name') && \
+    curl -fsSL -o /tmp/millennium.tar.gz "https://github.com/SteamClientHomebrew/Millennium/releases/download/${TAG}/millennium-${TAG}-linux-x86_64.tar.gz" && \
+    mkdir -p /dist/usr/lib/millennium && \
+    tar -xzf /tmp/millennium.tar.gz -C /dist/ --strip-components=1
+
+
+
+
+
+RUN cd / && git clone https://aur.archlinux.org/millennium.git
+
+
 ##################################################################################################################################################
 ### :::::: pull ublue-os :::::: ###
 ##################################################################################################################################################
 FROM ghcr.io/ublue-os/bazzite-deck:stable
+
+
+
+
+
+
+
+
+
+
+RUN mkdir -p /usr/lib/millennium
+COPY --from=cachyos /dist/usr/ /usr/
+COPY --from=cachyos /millennium/millennium.install /usr/bin/millennium.install
+
+RUN chmod +x /usr/bin/millennium.install
+RUN chmod +x /usr/lib/millennium/*
+
+
+
+
+
+
+
 
 # :::::: force distrobox to use a sub-directory for home :::::: 
 RUN mkdir -p /usr/share/distrobox/

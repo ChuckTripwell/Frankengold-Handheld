@@ -27,6 +27,15 @@ RUN mkdir -p /usr/lib/millennium
 COPY --from=cachyos /dist/usr/ /usr/
 RUN chmod +x /usr/lib/millennium/*
 
+RUN dnf5 -y install --allowerasing p7zip
+RUN dnf5 -y install --allowerasing p7zip-plugins
+RUN dnf5 -y install --allowerasing python3
+RUN dnf5 -y install --allowerasing libxcb
+RUN dnf5 -y install --allowerasing libnotify
+RUN dnf5 -y install --allowerasing git
+RUN dnf5 -y install --allowerasing libcurl-devel
+RUN dnf5 -y install --allowerasing libcurl 
+
 # :::::: force distrobox to use a sub-directory for home :::::: 
 RUN mkdir -p /usr/share/distrobox/
 RUN touch /usr/share/distrobox/distrobox.conf

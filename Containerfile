@@ -9,32 +9,10 @@ RUN pacman -Sy --noconfirm archlinux-keyring cachyos-keyring
 RUN pacman -Sy --noconfirm
 RUN pacman -S --noconfirm linux-cachyos-deckify
 
-# :::::: fetch the Millennium files for later :::::: 
-RUN pacman -S --noconfirm jq git curl
-
-RUN TAG=$(curl -fsSL https://api.github.com/repos/SteamClientHomebrew/Millennium/releases/latest | jq -r '.tag_name') && \
-    curl -fsSL -o /tmp/millennium.tar.gz "https://github.com/SteamClientHomebrew/Millennium/releases/download/${TAG}/millennium-${TAG}-linux-x86_64.tar.gz" && \
-    mkdir -p /dist/usr/lib/millennium && \
-    tar -xzf /tmp/millennium.tar.gz -C /dist/ --strip-components=1
-
 ##################################################################################################################################################
 ### :::::: pull ublue-os :::::: ###
 ##################################################################################################################################################
 FROM ghcr.io/ublue-os/bazzite-deck:stable
-
-# :::::: put the Millennium files in so that it can be installed if desired :::::: 
-RUN mkdir -p /usr/lib/millennium
-COPY --from=cachyos /dist/usr/ /usr/
-RUN chmod +x /usr/lib/millennium/*
-
-RUN dnf5 -y install --allowerasing p7zip
-RUN dnf5 -y install --allowerasing p7zip-plugins
-RUN dnf5 -y install --allowerasing python3
-RUN dnf5 -y install --allowerasing libxcb
-RUN dnf5 -y install --allowerasing libnotify
-RUN dnf5 -y install --allowerasing git
-RUN dnf5 -y install --allowerasing libcurl-devel
-RUN dnf5 -y install --allowerasing libcurl 
 
 # :::::: force distrobox to use a sub-directory for home :::::: 
 RUN mkdir -p /usr/share/distrobox/

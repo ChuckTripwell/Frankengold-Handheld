@@ -9,48 +9,23 @@ RUN pacman -Sy --noconfirm archlinux-keyring cachyos-keyring
 RUN pacman -Sy --noconfirm
 RUN pacman -S --noconfirm linux-cachyos-deckify
 
-
-RUN pacman -S --noconfirm git curl jq
+# :::::: fetch the Millennium files for later :::::: 
+RUN pacman -S --noconfirm jq git curl
 
 RUN TAG=$(curl -fsSL https://api.github.com/repos/SteamClientHomebrew/Millennium/releases/latest | jq -r '.tag_name') && \
     curl -fsSL -o /tmp/millennium.tar.gz "https://github.com/SteamClientHomebrew/Millennium/releases/download/${TAG}/millennium-${TAG}-linux-x86_64.tar.gz" && \
     mkdir -p /dist/usr/lib/millennium && \
     tar -xzf /tmp/millennium.tar.gz -C /dist/ --strip-components=1
 
-
-
-
-
-RUN cd / && git clone https://aur.archlinux.org/millennium.git
-
-
 ##################################################################################################################################################
 ### :::::: pull ublue-os :::::: ###
 ##################################################################################################################################################
 FROM ghcr.io/ublue-os/bazzite-deck:stable
 
-
-
-
-
-
-
-
-
-
+# :::::: put the Millennium files in so that it can be installed if desired :::::: 
 RUN mkdir -p /usr/lib/millennium
 COPY --from=cachyos /dist/usr/ /usr/
-COPY --from=cachyos /millennium/millennium.install /usr/bin/millennium.install
-
-RUN chmod +x /usr/bin/millennium.install
 RUN chmod +x /usr/lib/millennium/*
-
-
-
-
-
-
-
 
 # :::::: force distrobox to use a sub-directory for home :::::: 
 RUN mkdir -p /usr/share/distrobox/
@@ -71,10 +46,6 @@ RUN rm -rf /lib/modules
 COPY --from=cachyos /lib/modules /lib/modules
 COPY --from=cachyos /usr/share/licenses/ /usr/share/licenses/
 
-##################################################################################################################################################
-# :::::: experimental :::::: ###
-##################################################################################################################################################
-
 # :::::: install preformence-related stuff :::::: 
 RUN dnf5 -y copr enable bieszczaders/kernel-cachyos-addons
 RUN dnf5 -y install --allowerasing scx-scheds scx-tools scxctl cachyos-settings uksmd scx-manager
@@ -82,12 +53,6 @@ RUN dnf5 -y copr disable bieszczaders/kernel-cachyos-addons
 
 # :::::: refresh akmods so that some drivers actually catch... :::::: 
 RUN dnf5 -y install rpmdevtools akmods
-
-##################################################################################################################################################
-### :::::: end of experimental :::::: ###
-##################################################################################################################################################
-
-
 
 # :::::: Enable Terra Repo :::::: 
 RUN sed -i 's/^enabled=0$/enabled=1/' /etc/yum.repos.d/terra*
@@ -100,9 +65,6 @@ RUN dnf5 -y install --allowerasing zcfan
 
 # :::::: Replace Malfunctioning SELinux With Apparmor Profiles & Stage Kargs :::::: 
 RUN dnf5 install -y apparmor-parser apparmor-utils apparmor-profiles
-
-
-
 
 # :::::: slot the kernel into place :::::: 
 RUN mkdir -p /var/tmp

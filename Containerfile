@@ -5,9 +5,9 @@ FROM docker.io/cachyos/cachyos-v3:latest AS cachyos
 
 # :::::: prepare the kernel :::::: 
 RUN rm -rf /lib/modules/*
-RUN pacman -Sy --noconfirm archlinux-keyring cachyos-keyring
-RUN pacman -Sy --noconfirm
-RUN pacman -S --noconfirm linux-cachyos-deckify
+RUN pacman -Sy --disable-sandbox --noconfirm archlinux-keyring cachyos-keyring
+RUN pacman -Sy --disable-sandbox --noconfirm
+RUN pacman -S --disable-sandbox --noconfirm linux-cachyos-deckify
 
 ##################################################################################################################################################
 ### :::::: pull ublue-os :::::: ###

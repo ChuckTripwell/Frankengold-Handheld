@@ -51,7 +51,7 @@ RUN dnf5 -y install --allowerasing tlp
 RUN dnf5 -y install --allowerasing zcfan
 
 # :::::: Replace Malfunctioning SELinux With Apparmor Profiles & Stage Kargs :::::: 
-RUN dnf5 install -y apparmor-parser apparmor-utils apparmor-profiles
+#RUN dnf5 install -y apparmor-parser apparmor-utils apparmor-profiles
 
 # :::::: slot the kernel into place :::::: 
 RUN mkdir -p /var/tmp

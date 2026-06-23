@@ -42,14 +42,16 @@ RUN dnf5 -y copr disable bieszczaders/kernel-cachyos-addons
 RUN dnf5 -y install rpmdevtools akmods
 
 # :::::: Enable Terra Repo :::::: 
-RUN sed -i 's/^enabled=0$/enabled=1/' /etc/yum.repos.d/terra*
+#RUN sed -i 's/^enabled=0$/enabled=1/' /etc/yum.repos.d/terra*
 
 # :::::: install additional stuff :::::: 
 RUN dnf5 -y install --allowerasing python3-pygame
 RUN dnf5 -y install --allowerasing zcfan
 
 # :::::: Replace Malfunctioning SELinux With Apparmor Profiles & Stage Kargs :::::: 
-RUN dnf5 install -y apparmor-parser apparmor-utils apparmor-profiles
+#RUN dnf5 install -y apparmor-parser apparmor-utils apparmor-profiles
+
+RUN dnf5 install -y libselinux
 
 # :::::: slot the kernel into place :::::: 
 RUN mkdir -p /var/tmp

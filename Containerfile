@@ -9,6 +9,9 @@ RUN pacman -Sy --disable-sandbox --noconfirm archlinux-keyring cachyos-keyring
 RUN pacman -Sy --disable-sandbox --noconfirm
 RUN pacman -S --disable-sandbox --noconfirm linux-cachyos-deckify
 
+# install AppArmor for later
+  RUN pacman -S --disable-sandbox --noconfirm apparmor apparmor.d
+
 ##################################################################################################################################################
 ### :::::: pull ublue-os :::::: ###
 ##################################################################################################################################################
@@ -50,6 +53,9 @@ RUN dnf5 -y install --allowerasing zcfan
 
 # :::::: Replace Malfunctioning SELinux With Apparmor Profiles & Stage Kargs :::::: 
 RUN dnf5 install -y apparmor-parser apparmor-utils apparmor-profiles
+
+# :::::: Disable Terra Repo :::::: 
+RUN sed -i 's/^enabled=1$/enabled=0/' /etc/yum.repos.d/terra*
 
 # :::::: slot the kernel into place :::::: 
 RUN mkdir -p /var/tmp

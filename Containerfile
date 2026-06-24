@@ -15,7 +15,7 @@ RUN pacman -S --disable-sandbox --noconfirm linux-cachyos-deckify
 ##################################################################################################################################################
 ### :::::: pull ublue-os :::::: ###
 ##################################################################################################################################################
-FROM ghcr.io/ublue-os/bazzite-deck:testing
+FROM ghcr.io/ublue-os/bazzite-deck:latest
 
 # :::::: force distrobox to use a sub-directory for home :::::: 
 RUN mkdir -p /usr/share/distrobox/

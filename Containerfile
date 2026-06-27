@@ -76,7 +76,7 @@ RUN echo 'ConditionPathExists=!/etc/.selinux_is_activated.lock' >> /etc/systemd/
 RUN echo '' >> /etc/systemd/system/selinux-activate.service
 RUN echo '[Service]' >> /etc/systemd/system/selinux-activate.service
 RUN echo 'Type=oneshot' >> /etc/systemd/system/selinux-activate.service
-RUN echo 'ExecStart=/bin/sh -c '\''/usr/sbin/restorecon -R /etc /var/log && rpm-ostree kargs --append="lsm=landlock,lockdown,yama,integrated,selinux,bpf" --append="selinux=1" --append="enforcing=1" --append="selinux_dontaudit=0" --append="selinux_deny_unknown=1" && touch /etc/.selinux_is_activated.lock'\''' >> /etc/systemd/system/selinux-activate.service
+RUN echo 'ExecStart=/bin/sh -c '\''restorecon -R -F /etc /var/log && rpm-ostree kargs --append="lsm=landlock,lockdown,yama,integrated,selinux,bpf" --append="selinux=1" --append="enforcing=1" --append="selinux_dontaudit=0" --append="selinux_deny_unknown=1" && touch /etc/.selinux_is_activated.lock'\''' >> /etc/systemd/system/selinux-activate.service
 RUN echo 'RemainAfterExit=yes' >> /etc/systemd/system/selinux-activate.service
 RUN echo '' >> /etc/systemd/system/selinux-activate.service
 RUN echo '[Install]' >> /etc/systemd/system/selinux-activate.service
@@ -93,7 +93,7 @@ RUN echo 'ConditionPathExists=!/etc/.var_labeling_complete.lock' >> /etc/systemd
 RUN echo '' >> /etc/systemd/system/var-labeling.service
 RUN echo '[Service]' >> /etc/systemd/system/var-labeling.service
 RUN echo 'Type=oneshot' >> /etc/systemd/system/var-labeling.service
-RUN echo 'ExecStart=/bin/sh -c '\''/usr/bin/restorecon -R -e /var/lib/flatpak -e /var/lib/containers /var && touch /etc/.var_labeling_complete.lock'\''' >> /etc/systemd/system/var-labeling.service
+RUN echo 'ExecStart=/bin/sh -c '\''/usr/bin/restorecon -R -F -e /var/lib/flatpak -e /var/lib/containers /var && touch /etc/.var_labeling_complete.lock'\''' >> /etc/systemd/system/var-labeling.service
 RUN echo 'RemainAfterExit=yes' >> /etc/systemd/system/var-labeling.service
 RUN echo '' >> /etc/systemd/system/var-labeling.service
 RUN echo '[Install]' >> /etc/systemd/system/var-labeling.service

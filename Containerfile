@@ -10,7 +10,7 @@ RUN pacman -Sy --disable-sandbox --noconfirm
 RUN pacman -S --disable-sandbox --noconfirm linux-cachyos-deckify
 
 # install AppArmor for later
-#  RUN pacman -S --disable-sandbox --noconfirm apparmor apparmor.d
+  RUN pacman -S --disable-sandbox --noconfirm apparmor apparmor.d
 
 ##################################################################################################################################################
 ### :::::: pull ublue-os :::::: ###
@@ -56,6 +56,76 @@ RUN dnf5 -y install --allowerasing zcfan
 
 # :::::: Disable Terra Repo :::::: 
 #RUN sed -i 's/^enabled=1$/enabled=0/' /etc/yum.repos.d/terra*
+
+# :::::: Fix Vulkan :::::: 
+RUN TMPDIR="$(mktemp -d)" && \
+    dnf5 download "VK_hdr_layer" --destdir "$TMPDIR" && \
+    RPM_FILE=$(ls "$TMPDIR"/*.rpm) && \
+    mkdir "$TMPDIR/VK_hdr_layer" && \
+    cd "$TMPDIR/VK_hdr_layer" && \
+    # Extract RPM
+    rpm2cpio "$RPM_FILE" | cpio -idmv && \
+    # Libraries
+    mkdir -p /usr/lib64/VK_hdr_layer && \
+    cp -v usr/lib64/VK_hdr_layer/* /usr/lib64/VK_hdr_layer/ && \
+    # Vulkan implicit layer
+    mkdir -p /usr/share/vulkan/implicit_layer.d && \
+    mkdir -p /usr/share/vulkan/implicit_layer.d && \
+    cp -v usr/share/vulkan/implicit_layer.d/VkLayer_hdr_wsi.*.json /usr/share/vulkan/implicit_layer.d/ && \
+    # License & Docs
+    mkdir -p /usr/share/licenses/VK_hdr_layer && \
+    cp -v usr/share/licenses/VK_hdr_layer/* /usr/share/licenses/VK_hdr_layer/ && \
+    mkdir -p /usr/share/doc/VK_hdr_layer && \
+    cp -v usr/share/doc/VK_hdr_layer/* /usr/share/doc/VK_hdr_layer/
+
+# :::::: Replace Malfunctioning SELinux With Apparmor Profiles & Stage Kargs :::::: 
+
+RUN dnf5 -y install apparmor apparmor-utils apparmor-profiles
+
+RUN mkdir -p /etc/apparmor.d
+
+COPY --from=cachyos /usr/bin/apparmor_parser /usr/bin/apparmor_parser
+COPY --from=cachyos /etc/apparmor.d/ /etc/apparmor.d/
+
+# AppArmor Kernel Arguments Service (Delays until graphical interface is ready)
+RUN SERVICE_FILE="/usr/lib/systemd/system/activate-apparmor.service" && \
+    echo "[Unit]" > "$SERVICE_FILE" && \
+    echo "Description=Enable AppArmor Kernel Arguments" >> "$SERVICE_FILE" && \
+    echo "ConditionPathExists=!/etc/.apparmor_is_activated.lock" >> "$SERVICE_FILE" && \
+    echo "DefaultDependencies=no" >> "$SERVICE_FILE" && \
+    echo "After=graphical.target" >> "$SERVICE_FILE" && \
+    echo "" >> "$SERVICE_FILE" && \
+    echo "[Service]" >> "$SERVICE_FILE" && \
+    echo "Type=oneshot" >> "$SERVICE_FILE" && \
+    echo "RemainAfterExit=yes" >> "$SERVICE_FILE" && \
+    echo "ExecStart=/usr/bin/sh -c '/usr/bin/rpm-ostree kargs | grep -q apparmor || /usr/bin/rpm-ostree kargs --append=lsm=landlock,lockdown,yama,integrity,apparmor'" >> "$SERVICE_FILE" && \
+    echo "ExecStartPost=/usr/bin/touch /etc/.apparmor_is_activated.lock" >> "$SERVICE_FILE" && \
+    echo "" >> "$SERVICE_FILE" && \
+    echo "[Install]" >> "$SERVICE_FILE" && \
+    echo "WantedBy=graphical.target" >> "$SERVICE_FILE"
+
+# Enable the Kernel Arguments Service
+RUN mkdir -p /usr/lib/systemd/system/graphical.target.wants && \
+    ln -s /usr/lib/systemd/system/activate-apparmor.service /usr/lib/systemd/system/graphical.target.wants/activate-apparmor.service
+
+# AppArmor Profile Parser Service (Delays until graphical interface is ready)
+RUN LOADER_FILE="/usr/lib/systemd/system/apparmor-profile-loader.service" && \
+    echo "[Unit]" > "$LOADER_FILE" && \
+    echo "Description=AppArmor Profile Parser" >> "$LOADER_FILE" && \
+    echo "After=graphical.target" >> "$LOADER_FILE" && \
+    echo "" >> "$LOADER_FILE" && \
+    echo "[Service]" >> "$LOADER_FILE" && \
+    echo "Type=oneshot" >> "$LOADER_FILE" && \
+    echo "RemainAfterExit=yes" >> "$LOADER_FILE" && \
+    echo "ExecStart=/usr/bin/bash -c 'if [ -d /etc/apparmor.d ]; then /usr/bin/apparmor_parser -r -W /etc/apparmor.d/; fi'" >> "$LOADER_FILE" && \
+    echo "" >> "$LOADER_FILE" && \
+    echo "[Install]" >> "$LOADER_FILE" && \
+    echo "WantedBy=graphical.target" >> "$LOADER_FILE"
+
+# Enable the Profile Parser Service
+RUN mkdir -p /usr/lib/systemd/system/graphical.target.wants && \
+    ln -s /usr/lib/systemd/system/apparmor-profile-loader.service /usr/lib/systemd/system/graphical.target.wants/apparmor-profile-loader.service
+
 
 # :::::: slot the kernel into place :::::: 
 RUN mkdir -p /var/tmp

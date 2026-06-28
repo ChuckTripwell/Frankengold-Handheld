@@ -68,7 +68,7 @@ RUN TMPDIR="$(mktemp -d)" && \
 
 # :::::: Fix SELinux :::::: 
 
-RUN mkdir -p /usr/lib/ostree-options && \
+RUN mkdir -p /usr/lib/ostree-options/kargs.d && \
     echo 'flags=lsm=landlock,lockdown,yama,integrated,selinux,bpf selinux=1 enforcing=1 selinux_dontaudit=0 selinux_deny_unknown=1' > /usr/lib/ostree-options/kargs.d/selinux.conf
 
 RUN setfiles -v /etc/selinux/targeted/contexts/files/file_contexts / || true

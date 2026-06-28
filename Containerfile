@@ -76,14 +76,14 @@ RUN echo 'ConditionPathExists=!/etc/.selinux_is_activated.lock' >> /etc/systemd/
 RUN echo '' >> /etc/systemd/system/selinux-activate.service
 RUN echo '[Service]' >> /etc/systemd/system/selinux-activate.service
 RUN echo 'Type=oneshot' >> /etc/systemd/system/selinux-activate.service
-RUN echo 'ExecStart=/bin/sh -c '\''rpm-ostree kargs --append="lsm=landlock,lockdown,yama,integrated,selinux,bpf" --append="selinux=1" --append="enforcing=1" --append="selinux_dontaudit=0" --append="selinux_deny_unknown=1" && touch /etc/.selinux_is_activated.lock'\''' >> /etc/systemd/system/selinux-activate.service
+RUN echo 'ExecStart=/bin/sh -c '\''rpm-ostree kargs --append="lsm=landlock,lockdown,yama,integrated,selinux,bpf" --append="selinux=1" --append="enforcing=1" --append="selinux_dontaudit=0" --append="selinux_deny_unknown=1" && systemctl start selinux-autorelabel.service && touch /etc/.selinux_is_activated.lock'\''' >> /etc/systemd/system/selinux-activate.service
 RUN echo 'RemainAfterExit=yes' >> /etc/systemd/system/selinux-activate.service
 RUN echo '' >> /etc/systemd/system/selinux-activate.service
 RUN echo '[Install]' >> /etc/systemd/system/selinux-activate.service
 RUN echo 'WantedBy=graphical.target' >> /etc/systemd/system/selinux-activate.service
 RUN systemctl enable selinux-activate.service
 
-RUN systemctl enable selinux-autorelabel.service
+#RUN systemctl enable selinux-autorelabel.service
 
 RUN systemctl mask sedispatch.service
 

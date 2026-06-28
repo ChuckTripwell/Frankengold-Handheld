@@ -101,6 +101,8 @@ RUN systemctl enable var-labeling.service
 
 RUN systemctl mask sedispatch.service
 
+RUN dnf5 -y install --allowerasing ublue-os-selinux-workarounds
+
 # :::::: slot the kernel into place :::::: 
 RUN mkdir -p /var/tmp
 RUN printf "systemdsystemconfdir=/etc/systemd/system\nsystemdsystemunitdir=/usr/lib/systemd/system\n" | tee /usr/lib/dracut/dracut.conf.d/30-bootcrew-fix-bootc-module.conf && \

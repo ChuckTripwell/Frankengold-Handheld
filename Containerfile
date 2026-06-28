@@ -68,9 +68,6 @@ RUN TMPDIR="$(mktemp -d)" && \
 
 # :::::: Fix SELinux :::::: 
 
-semodule -R
-
-
 RUN echo '[Unit]' > /etc/systemd/system/selinux-activate.service
 RUN echo 'Description=Activate SELinux kernel arguments once after graphical boot' >> /etc/systemd/system/selinux-activate.service
 RUN echo 'After=graphical.target' >> /etc/systemd/system/selinux-activate.service

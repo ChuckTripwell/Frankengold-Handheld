@@ -69,7 +69,7 @@ RUN TMPDIR="$(mktemp -d)" && \
 # :::::: Fix SELinux :::::: 
 
 RUN mkdir -p /usr/lib/bootc/kargs.d
-RUN echo 'kargs = ["lsm=landlock,lockdown,yama,integrated,selinux,bpf selinux=1 enforcing=1 selinux_dontaudit=0 selinux_deny_unknown=1"]' > /usr/lib/bootc/kargs.d/10-autorelabel.toml
+RUN echo 'kargs = ["lsm=landlock,lockdown,yama,integrated,selinux,bpf selinux=1 enforcing=1 selinux_dontaudit=0 selinux_deny_unknown=1 tesrlol=0"]' > /usr/lib/bootc/kargs.d/10-autorelabel.toml
 
 #RUN echo '[Unit]' > /etc/systemd/system/selinux-activate.service
 #RUN echo 'Description=Activate SELinux kernel arguments once after graphical boot' >> /etc/systemd/system/selinux-activate.service

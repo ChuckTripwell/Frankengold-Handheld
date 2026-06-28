@@ -68,15 +68,29 @@ RUN TMPDIR="$(mktemp -d)" && \
 
 # :::::: Fix SELinux :::::: 
 
-RUN mkdir -p /usr/lib/bootc/kargs.d
+semodule -R
 
-RUN echo 'kargs = ["lsm=landlock,lockdown,yama,integrated,selinux,bpf", "selinux=1", "enforcing=1", "selinux_dontaudit=0", "selinux_deny_unknown=1", "autorelabel=1"]' > /usr/lib/bootc/kargs.d/selinux.toml
 
-#RUN setfiles -v /etc/selinux/targeted/contexts/files/file_contexts / || true
+RUN echo '[Unit]' > /etc/systemd/system/selinux-activate.service
+RUN echo 'Description=Activate SELinux kernel arguments once after graphical boot' >> /etc/systemd/system/selinux-activate.service
+RUN echo 'After=graphical.target' >> /etc/systemd/system/selinux-activate.service
+RUN echo 'Wants=graphical.target' >> /etc/systemd/system/selinux-activate.service
+RUN echo 'ConditionPathExists=!/etc/.selinux_is_activated.lock' >> /etc/systemd/system/selinux-activate.service
+RUN echo '' >> /etc/systemd/system/selinux-activate.service
+RUN echo '[Service]' >> /etc/systemd/system/selinux-activate.service
+RUN echo 'Type=oneshot' >> /etc/systemd/system/selinux-activate.service
+RUN echo 'ExecStart=/bin/sh -c '\''rpm-ostree kargs --append="lsm=landlock,lockdown,yama,integrated,selinux,bpf" --append="selinux=1" --append="enforcing=1" --append="selinux_dontaudit=0" --append="selinux_deny_unknown=1" && touch /etc/.selinux_is_activated.lock'\''' >> /etc/systemd/system/selinux-activate.service
+RUN echo 'RemainAfterExit=yes' >> /etc/systemd/system/selinux-activate.service
+RUN echo '' >> /etc/systemd/system/selinux-activate.service
+RUN echo '[Install]' >> /etc/systemd/system/selinux-activate.service
+RUN echo 'WantedBy=graphical.target' >> /etc/systemd/system/selinux-activate.service
+RUN systemctl enable selinux-activate.service
+
+RUN systemctl enable selinux-autorelabel.service
 
 RUN systemctl mask sedispatch.service
 
-#RUN dnf5 -y install --allowerasing ublue-os-selinux-workarounds
+
 
 # :::::: slot the kernel into place :::::: 
 RUN mkdir -p /var/tmp

@@ -76,7 +76,6 @@ RUN echo 'kargs = [\n\
   "enforcing=1",\n\
   "selinux_dontaudit=0",\n\
   "selinux_deny_unknown=1",\n\
-  "tesrlol=0"\n\
 ]' > /usr/lib/bootc/kargs.d/10-autorelabel.toml
 
 #RUN echo '[Unit]' > /etc/systemd/system/selinux-activate.service

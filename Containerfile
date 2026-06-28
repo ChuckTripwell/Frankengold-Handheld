@@ -70,7 +70,7 @@ RUN TMPDIR="$(mktemp -d)" && \
 
 RUN mkdir -p /usr/lib/bootc/kargs.d
 
-RUN echo 'kargs = ["lsm=landlock,lockdown,yama,integrated,selinux,bpf", "selinux=1", "enforcing=1", "selinux_dontaudit=0", "selinux_deny_unknown=1"]' > /usr/lib/bootc/kargs.d/selinux.toml
+RUN echo 'kargs = ["lsm=landlock,lockdown,yama,integrated,selinux,bpf", "selinux=1", "enforcing=1", "selinux_dontaudit=0", "selinux_deny_unknown=1", "autorelabel=1"]' > /usr/lib/bootc/kargs.d/selinux.toml
 
 #RUN setfiles -v /etc/selinux/targeted/contexts/files/file_contexts / || true
 

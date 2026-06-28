@@ -85,26 +85,23 @@ RUN systemctl enable selinux-activate.service
 
 RUN restorecon -R -v -F /etc
 
-
-#RUN echo '[Unit]' > /etc/systemd/system/var-labeling.service
-#RUN echo 'Description=Run SELinux relabeling of /var once after graphical boot' >> /etc/systemd/system/var-labeling.service
-#RUN echo 'After=graphical.target' >> /etc/systemd/system/var-labeling.service
-#RUN echo 'Wants=graphical.target' >> /etc/systemd/system/var-labeling.service
-#RUN echo 'ConditionPathExists=/etc/.labeling_complete.lock' >> /etc/systemd/system/var-labeling.service
-#RUN echo 'ConditionPathExists=!/etc/.var_labeling_complete.lock' >> /etc/systemd/system/var-labeling.service
-#RUN echo '' >> /etc/systemd/system/var-labeling.service
-#RUN echo '[Service]' >> /etc/systemd/system/var-labeling.service
-#RUN echo 'Type=oneshot' >> /etc/systemd/system/var-labeling.service
-#RUN echo 'ExecStart=/bin/sh -c '\''/usr/bin/restorecon -R -F -e /var/lib/flatpak -e /var/lib/containers /var && touch /etc/.var_labeling_complete.lock'\''' >> /etc/systemd/system/var-labeling.service
-#RUN echo 'RemainAfterExit=yes' >> /etc/systemd/system/var-labeling.service
-#RUN echo '' >> /etc/systemd/system/var-labeling.service
-#RUN echo '[Install]' >> /etc/systemd/system/var-labeling.service
-#RUN echo 'WantedBy=graphical.target' >> /etc/systemd/system/var-labeling.service
-#RUN systemctl enable var-labeling.service
-
+RUN echo '[Unit]' > /etc/systemd/system/var-labeling.service
+RUN echo 'Description=Run SELinux relabeling of /var once after graphical boot' >> /etc/systemd/system/var-labeling.service
+RUN echo 'After=graphical.target' >> /etc/systemd/system/var-labeling.service
+RUN echo 'Wants=graphical.target' >> /etc/systemd/system/var-labeling.service
+RUN echo 'ConditionPathExists=/etc/.labeling_complete.lock' >> /etc/systemd/system/var-labeling.service
+RUN echo 'ConditionPathExists=!/etc/.var_labeling_complete.lock' >> /etc/systemd/system/var-labeling.service
+RUN echo '' >> /etc/systemd/system/var-labeling.service
+RUN echo '[Service]' >> /etc/systemd/system/var-labeling.service
+RUN echo 'Type=oneshot' >> /etc/systemd/system/var-labeling.service
+RUN echo 'ExecStart=/bin/sh -c '\''/usr/bin/restorecon -R -F -e /var/lib/flatpak -e /var/lib/containers /var && touch /etc/.var_labeling_complete.lock'\''' >> /etc/systemd/system/var-labeling.service
+RUN echo 'RemainAfterExit=yes' >> /etc/systemd/system/var-labeling.service
+RUN echo '' >> /etc/systemd/system/var-labeling.service
+RUN echo '[Install]' >> /etc/systemd/system/var-labeling.service
+RUN echo 'WantedBy=graphical.target' >> /etc/systemd/system/var-labeling.service
+RUN systemctl enable var-labeling.service
 
 RUN systemctl mask sedispatch.service
-
 
 # :::::: slot the kernel into place :::::: 
 RUN mkdir -p /var/tmp

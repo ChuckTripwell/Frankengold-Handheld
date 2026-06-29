@@ -71,6 +71,8 @@ RUN TMPDIR="$(mktemp -d)" && \
 
 RUN sed -i 's/^SELINUX=permissive/SELINUX=enforcing/' /etc/selinux/config
 
+RUN touch /etc/.autorelabel
+
 RUN mkdir -p /usr/lib/bootc/kargs.d/
 RUN sed -i 's|/\.autorelabel|/etc/.autorelabel|g' /usr/lib/systemd/system/selinux-autorelabel-mark.service
 RUN sed -i 's|/\.autorelabel|/etc/.autorelabel|g' /usr/libexec/selinux/selinux-autorelabel

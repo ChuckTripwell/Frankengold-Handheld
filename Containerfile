@@ -69,7 +69,7 @@ RUN TMPDIR="$(mktemp -d)" && \
 # :::::: Fix SELinux :::::: 
 
 
-RUN sed -i 's/^SELINUX=enforcing/SELINUX=permissive/' /etc/selinux/config
+RUN sed -i 's/^SELINUX=permissive/SELINUX=enforcing/' /etc/selinux/config
 
 RUN mkdir -p /usr/lib/bootc/kargs.d/
 RUN sed -i 's|/\.autorelabel|/etc/.autorelabel|g' /usr/lib/systemd/system/selinux-autorelabel-mark.service

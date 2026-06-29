@@ -72,23 +72,9 @@ RUN TMPDIR="$(mktemp -d)" && \
 RUN sed -i 's/^SELINUX=enforcing/SELINUX=permissive/' /etc/selinux/config
 
 RUN mkdir -p /usr/lib/bootc/kargs.d/
-RUN echo 'kargs = ["lsm=landlock,lockdown,yama,integrated,selinux,bpf", "selinux=1", "enforcing=1", "selinux_dontaudit=0", "selinux_deny_unknown=1"]' > /usr/lib/bootc/kargs.d/90-security-overrides.toml
+RUN sed -i 's|/\.autorelabel|/etc/.autorelabel|g' /usr/lib/systemd/system/selinux-autorelabel-mark.service
+RUN echo 'kargs = ["lsm=landlock,lockdown,yama,integrated,selinux,bpf", "selinux=1", "enforcing=1", "selinux_dontaudit=0", "selinux_deny_unknown=1", "autorelabel=1"]' > /usr/lib/bootc/kargs.d/90-security-overrides.toml
 
-
-RUN echo '[Unit]' > /etc/systemd/system/selinux-activate.service
-RUN echo 'Description=Activate SELinux kernel arguments once after graphical boot' >> /etc/systemd/system/selinux-activate.service
-RUN echo 'After=graphical.target' >> /etc/systemd/system/selinux-activate.service
-RUN echo 'Wants=graphical.target' >> /etc/systemd/system/selinux-activate.service
-RUN echo 'ConditionPathExists=!/etc/.selinux_is_activated.lock' >> /etc/systemd/system/selinux-activate.service
-RUN echo '' >> /etc/systemd/system/selinux-activate.service
-RUN echo '[Service]' >> /etc/systemd/system/selinux-activate.service
-RUN echo 'Type=oneshot' >> /etc/systemd/system/selinux-activate.service
-RUN echo 'ExecStart=/bin/sh -c '\''touch /etc/.selinux_is_activated.lock & sed -i 's/^SELINUX=enforcing/SELINUX=permissive/' /etc/selinux/config && /usr/libexec/selinux/selinux-autorelabel'\''' >> /etc/systemd/system/selinux-activate.service
-RUN echo 'RemainAfterExit=yes' >> /etc/systemd/system/selinux-activate.service
-RUN echo '' >> /etc/systemd/system/selinux-activate.service
-RUN echo '[Install]' >> /etc/systemd/system/selinux-activate.service
-RUN echo 'WantedBy=graphical.target' >> /etc/systemd/system/selinux-activate.service
-RUN systemctl enable selinux-activate.service
 
 
 

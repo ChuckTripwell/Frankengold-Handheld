@@ -77,7 +77,7 @@ RUN mkdir -p /usr/lib/bootc/kargs.d/
 RUN sed -i 's|/\.autorelabel|/etc/.autorelabel|g' /usr/lib/systemd/system/selinux-autorelabel-mark.service
 RUN sed -i 's|/\.autorelabel|/etc/.autorelabel|g' /usr/libexec/selinux/selinux-autorelabel
 RUN sed -i 's|/\.autorelabel|/etc/.autorelabel|g' /usr/lib/systemd/system-generators/selinux-autorelabel-generator.sh
-RUN echo 'kargs = ["lsm=landlock,lockdown,yama,integrated,selinux,bpf", "selinux=1", "enforcing=1", "selinux_dontaudit=0", "selinux_deny_unknown=1", "autorelabel=1"]' > /usr/lib/bootc/kargs.d/90-security-overrides.toml
+RUN echo 'kargs = ["lsm=landlock,lockdown,yama,integrated,selinux,bpf", "selinux=1", "enforcing=1", "selinux_dontaudit=0", "selinux_deny_unknown=1"]' > /usr/lib/bootc/kargs.d/90-security-overrides.toml
 
 
 

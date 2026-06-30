@@ -39,8 +39,13 @@
   
 - Can I haz secureboot? 
   ```
-  no. never enable secureboot on the Steamdeck LCD! you might brick your console.
+  not recommend. secureboot cannot be turned off on the Steamdeck (there's no option in the bios to turn it off) so if you do that, you're stuck.
   ```
+
+- Can I haz selinux? 
+    ```
+yes. 
+    ```
 
 
 - I'm using this and experiencing no issues whatsoever, this is actually very smooth.

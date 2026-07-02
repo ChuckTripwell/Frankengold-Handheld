@@ -53,9 +53,10 @@
   cheers!
   ```
 
-#---
+#|
 
-# how to install this abomination
+# how do I install this abomination?
+
 - step 1 - install bazzite. (bazzite.gg) 
 - step 2 - boot into bazzite and run the following commands: 
 ```

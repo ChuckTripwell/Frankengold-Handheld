@@ -1,57 +1,61 @@
-- NOTE: using this image will slightly change how ostree and grub works, so there is no way to rebase back to bazzite. please backup your stuff.
-- NOTE2: rebasing to this is NOT recommended. you have been warned.
+- NOTE1: using this image will slightly change permissios and such, so there might be no way to rebase back to bazzite (this might be fixed at a future date) so please backup your stuff.
+
+- NOTE2: this OS was made for my own amusement. rebasing to this is NOT recommended. you have been warned.
+
+- NOTE3: This OS is my daily driver...  Everywhere I looked it says this will not harm your ssd or cooling system, which is good enough for me...
+if YOU believe there's even a slight chance it might harm YOUR hardware, do not install this OS!!!
 
 # Frankengold Linux - Handheld
 --- you did WHAT?!?! ---
 
 - What is this?
-  ```
+```
   bazzite-handheld image but with an archlinux kernel optimized for gaming.
-  ```
+```
 
 - Is it safe?
-  ```
+```
   probably not.
-  ```
+```
 
 - Then, why?
-  ```
+```
   in theory: the speed of cachyos, the stability of bazzite.
   in practice: It's my device, I'll do what I want with it.
-  ```
+```
 
 - Can you add this feature...?
-  ```
+```
   no.
-  ```
+```
 
 - Can I create my own version?
-  ```
+```
   yes.
   all changes I made are in the Containerfile. go nuts.
   I will not provide ANY help. you are on your own.
-  ```
+```
 
 - I found a bug!
-  ```
+```
   here's a cookie.
-  ```
+```
   
 - Can I haz secureboot? 
-  ```
+```
   not recommend. secureboot cannot be turned off on the Steamdeck (there's no option in the bios to turn it off) so if you do that, you're stuck.
-  ```
+```
 
 - Can I haz selinux? 
-    ```
-  yes. 
-    ```
+```
+  yes.
+```
 
 
 - I'm using this and experiencing no issues whatsoever, this is actually very smooth.
-  ```
+```
   cheers!
-  ```
+```
 
 #
 

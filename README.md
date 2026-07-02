@@ -52,3 +52,26 @@
   ```
   cheers!
   ```
+
+#___
+
+# how to install this abomination
+- step 1 - install bazzite. (bazzite.gg) 
+- step 2 - boot into bazzite and run the following commands: 
+```
+ostree-image-signed:docker://ghcr.io/chucktripwell/frankengold-handheld:latest
+```
+- step 3 - reboot
+- step 4 - regret.
+
+that's it!
+your gaming handheld is now running frankengold.
+
+(or, if you got confused and ran the desktop version by accident, you are now bricked.) 
+
+to verify, run:
+```
+fastfetch
+```
+
+if the kernel does not have "fc" or "bazzie" anywhere, you are on frankengold. 

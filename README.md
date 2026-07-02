@@ -43,7 +43,7 @@ here's a cookie.
   
 - Can I haz secureboot? 
 ```
-not recommend. secureboot cannot be turned off on the Steamdeck (there's no option in the bios to turn it off) so if you do that, you're stuck.
+not recommend. secureboot cannot be turned off on the Steamdeck (there's no option in the bios to turn it off) so if you do that, you're forever stuck, unable to install any other OS. very scary.
 ```
 
 - Can I haz selinux? 
@@ -52,9 +52,9 @@ not recommend. secureboot cannot be turned off on the Steamdeck (there's no opti
 ```
 
 
-- I'm using this and experiencing no issues whatsoever, this is actually very smooth.
+- I'm using this OS as a daily driver and experiencing no issues whatsoever, this is actually very smooth.
 ```
-  cheers!
+cheers!
 ```
 
 #

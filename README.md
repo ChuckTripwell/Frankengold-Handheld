@@ -53,7 +53,7 @@
   cheers!
   ```
 
-#|
+#
 
 # how do I install this abomination?
 

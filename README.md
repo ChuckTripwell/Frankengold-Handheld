@@ -75,6 +75,7 @@ to verify the installation, run:
 fastfetch
 ```
 
-if the kernel does not have "fc" or "bazzie" anywhere, you are on frankengold. 
+if the kernel does not have "fc" or "bazzie" anywhere, you are probably on frankengold. 
+if it says "cachyos", you are definitely on frankengold. enjoy. 
 
 

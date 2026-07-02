@@ -61,7 +61,7 @@ cheers!
 
 # how do I install this abomination?
 
-- NOTE: this was tested only on the Steamdeck LCD, as it's the only handheld I own. it might run on other handhelds with a GPU that's not from Nvidia.
+- NOTE: this was tested only on the Steamdeck LCD, as it's the only handheld I own. it willprobably run fine on other handhelds with a GPU that's not from Nvidia.
 
 - step 1 - install bazzite as usual (https://bazzite.gg). 
 - step 2 - take a deep breath, reconsider your life choices, boot into bazzite and run the following commands: 

@@ -10,40 +10,40 @@ if YOU believe there's even a slight chance it might harm YOUR hardware, do not 
 
 - What is this?
 ```
-  bazzite-handheld image but with an archlinux kernel optimized for gaming.
+bazzite-handheld image but with an archlinux kernel optimized for gaming.
 ```
 
 - Is it safe?
 ```
-  probably not.
+probably not.
 ```
 
 - Then, why?
 ```
-  in theory: the speed of cachyos, the stability of bazzite.
-  in practice: It's my device, I'll do what I want with it.
+in theory: the speed of cachyos, the stability of bazzite.
+in practice: It's my device, I'll do what I want with it.
 ```
 
 - Can you add this feature...?
 ```
-  no.
+no.
 ```
 
 - Can I create my own version?
 ```
-  yes.
-  all changes I made are in the Containerfile. go nuts.
-  I will not provide ANY help. you are on your own.
+sure, 
+I will not provide ANY help tough. so you are on your own.
 ```
 
 - I found a bug!
 ```
-  here's a cookie.
+
+here's a cookie.
 ```
   
 - Can I haz secureboot? 
 ```
-  not recommend. secureboot cannot be turned off on the Steamdeck (there's no option in the bios to turn it off) so if you do that, you're stuck.
+not recommend. secureboot cannot be turned off on the Steamdeck (there's no option in the bios to turn it off) so if you do that, you're stuck.
 ```
 
 - Can I haz selinux? 

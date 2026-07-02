@@ -53,7 +53,7 @@
   cheers!
   ```
 
-#___
+#---
 
 # how to install this abomination
 - step 1 - install bazzite. (bazzite.gg) 

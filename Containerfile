@@ -70,30 +70,21 @@ RUN TMPDIR="$(mktemp -d)" && \
 
 
 # :::::: Fix Audio :::::: 
-
-RUN mkdir -p ~/.config/systemd/user \
- && echo '[Unit]' > ~/.config/systemd/user/audio-restart.service \
- && echo 'Description=Restart WirePlumber' >> ~/.config/systemd/user/audio-restart.service \
- && echo '' >> ~/.config/systemd/user/audio-restart.service \
- && echo '[Service]' >> ~/.config/systemd/user/audio-restart.service \
- && echo 'Type=oneshot' >> ~/.config/systemd/user/audio-restart.service \
- && echo 'ExecStart=/usr/bin/systemctl --user restart wireplumber' >> ~/.config/systemd/user/audio-restart.service \
- && mkdir -p ~/.config/systemd/user/volume-up.service.d \
- && echo '[Unit]' > ~/.config/systemd/user/volume-up.service.d/restart-audio.conf \
- && echo 'OnSuccess=audio-restart.service' >> ~/.config/systemd/user/volume-up.service.d/restart-audio.conf \
- && mkdir -p ~/.config/systemd/user/volume-down.service.d \
- && echo '[Unit]' > ~/.config/systemd/user/volume-down.service.d/restart-audio.conf \
- && echo 'OnSuccess=audio-restart.service' >> ~/.config/systemd/user/volume-down.service.d/restart-audio.conf \
- && mkdir -p ~/.config/systemd/user/volume-mute.service.d \
- && echo '[Unit]' > ~/.config/systemd/user/volume-mute.service.d/restart-audio.conf \
- && echo 'OnSuccess=audio-restart.service' >> ~/.config/systemd/user/volume-mute.service.d/restart-audio.conf \
- && systemctl --user daemon-reload
+RUN echo '[Unit]' > /usr/lib/systemd/system/wireplumber-restore.service
+RUN echo 'Description=Restore WirePlumber if it is not running' >> /usr/lib/systemd/system/wireplumber-restore.service
+RUN echo '' >> /usr/lib/systemd/system/wireplumber-restore.service
+RUN echo '[Service]' >> /usr/lib/systemd/system/wireplumber-restore.service
+RUN echo 'Type=oneshot' >> /usr/lib/systemd/system/wireplumber-restore.service
+RUN echo 'ExecStart=/bin/sh -c "systemctl is-active --quiet wireplumber.service || systemctl restart wireplumber.service"' >> /usr/lib/systemd/system/wireplumber-restore.service
+RUN echo '' >> /usr/lib/systemd/system/wireplumber-restore.service
+RUN echo '[Install]' >> /usr/lib/systemd/system/wireplumber-restore.service
+RUN echo 'WantedBy=multi-user.target' >> /usr/lib/systemd/system/wireplumber-restore.service
+RUN systemctl enable wireplumber-restore.service
 
 
 
 
 # :::::: Fix SELinux :::::: 
-
 
 RUN sed -i 's/^SELINUX=permissive/SELINUX=enforcing/' /etc/selinux/config
 

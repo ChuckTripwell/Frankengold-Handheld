@@ -66,7 +66,7 @@ cheers!
 - step 1 - install bazzite as usual (https://bazzite.gg). 
 - step 2 - take a deep breath, reconsider your life choices, boot into bazzite and run the following commands: 
 ```
-ostree-image-signed:docker://ghcr.io/chucktripwell/frankengold-handheld:latest
+sudo bootc switch --enforce-container-sigpolicy ghcr.io/chucktripwell/frankengold-handheld:latest
 ```
 - step 3 - reboot, regret.
 - step 4 - good luck!

@@ -24,14 +24,13 @@ COPY --from=cachyos /usr/share/licenses/ /usr/share/licenses/
 ##################################################################################################################################################
 ### :::::: Modifications :::::: ###
 ##################################################################################################################################################
+# :::::: disable countme ( I like my telemetry opt-in,thank you very much. you can enable it if you want... ) :::::: 
+RUN sed -i -e s,countme=1,countme=0, /etc/yum.repos.d/*.repo && systemctl mask --now rpm-ostree-countme.timer
 
 # :::::: force distrobox to use a sub-directory for home :::::: 
 RUN mkdir -p /usr/share/distrobox/
 RUN touch /usr/share/distrobox/distrobox.conf
 RUN echo "DBX_CONTAINER_HOME_PREFIX=~/distrobox" >> /usr/share/distrobox/distrobox.conf
-
-# :::::: disable countme ( I like my telemetry opt-in,thank you very much. you can enable it if you want... ) :::::: 
-RUN sed -i -e s,countme=1,countme=0, /etc/yum.repos.d/*.repo && systemctl mask --now rpm-ostree-countme.timer
 
 # :::::: install preformence-related stuff :::::: 
 RUN dnf5 -y copr enable bieszczaders/kernel-cachyos-addons

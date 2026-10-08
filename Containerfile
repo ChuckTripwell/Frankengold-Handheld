@@ -1,7 +1,15 @@
 ##################################################################################################################################################
-### :::::: Pull RakuOS :::::: ###
+### :::::: Pull CachyOS :::::: ###
 ##################################################################################################################################################
-FROM quay.io/rakuos/rakuos-base-v3:latest AS kernel
+FROM docker.io/cachyos/cachyos-v3:latest AS cachyos
+
+# :::::: prepare the kernel :::::: 
+RUN rm -rf /lib/modules/*
+RUN pacman -Syy --disable-sandbox --noconfirm archlinux-keyring cachyos-keyring || curl -fsSL https://github.com/CachyOS/CachyOS-PKGBUILDS/raw/refs/heads/master/cachyos-mirrorlist/cachyos-mirrorlist -o /etc/pacman.d/cachyos-mirrorlist
+#RUN pacman -S --disable-sandbox --noconfirm archlinux-keyring cachyos-keyring
+RUN pacman -Syy --disable-sandbox --noconfirm
+RUN pacman -S --disable-sandbox --noconfirm linux-cachyos-deckify
+RUN pacman -S --disable-sandbox --noconfirm vulkan-tools vulkan-icd-loader lib32-vulkan-icd-loader dkms
 
 ##################################################################################################################################################
 ### :::::: Pull Ublue-OS :::::: ###
@@ -10,8 +18,8 @@ FROM ghcr.io/ublue-os/bazzite-deck:stable
 
 # :::::: forcefully remove and replace kernel :::::: 
 RUN rm -rf /lib/modules
-COPY --from=kernel /lib/modules /lib/modules
-COPY --from=kernel /usr/share/licenses/ /usr/share/licenses/
+COPY --from=cachyos /lib/modules /lib/modules
+COPY --from=cachyos /usr/share/licenses/ /usr/share/licenses/
 
 ##################################################################################################################################################
 ### :::::: Modifications :::::: ###
@@ -34,10 +42,20 @@ RUN dnf5 -y copr enable bieszczaders/kernel-cachyos-addons
     RUN dnf5 -y install --allowerasing scx-scheds scx-tools scxctl cachyos-settings uksmd scx-manager
 RUN dnf5 -y copr disable bieszczaders/kernel-cachyos-addons
 
-
-# ::::: mask systemd-oomd as it should be already handheld by the kernel :::::: 
-RUN systemctl disable --now systemd-oomd
-RUN systemctl mask systemd-oomd
+# :::::: Fix Audio :::::: 
+RUN mkdir -p /etc/systemd/user && \
+    echo "[Unit]" > /etc/systemd/user/audio-reset.service && \
+    echo "Description=Reset audio on user session start" >> /etc/systemd/user/audio-reset.service && \
+    echo "After=pipewire.service wireplumber.service" >> /etc/systemd/user/audio-reset.service && \
+    echo "" >> /etc/systemd/user/audio-reset.service && \
+    echo "[Service]" >> /etc/systemd/user/audio-reset.service && \
+    echo "Type=oneshot" >> /etc/systemd/user/audio-reset.service && \
+    echo "ExecStart=/usr/bin/systemctl --user restart pipewire pipewire-pulse wireplumber" >> /etc/systemd/user/audio-reset.service && \
+    echo "" >> /etc/systemd/user/audio-reset.service && \
+    echo "[Install]" >> /etc/systemd/user/audio-reset.service && \
+    echo "WantedBy=default.target" >> /etc/systemd/user/audio-reset.service
+#
+RUN systemctl --global enable audio-reset.service
 
 # Set vm.max_map_count for stability/improved gaming performance
 # https://wiki.archlinux.org/title/Gaming#Increase_vm.max_map_count
@@ -70,5 +88,4 @@ RUN printf "systemdsystemconfdir=/etc/systemd/system\nsystemdsystemunitdir=/usr/
 #  :::::: finish :::::: 
 RUN rm -rf /usr/etc
 LABEL containers.bootc 1
-RUN bootc -h
-RUN bootc container lint
+RUN bootc container lint || bootc -h

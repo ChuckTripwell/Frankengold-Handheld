@@ -3,7 +3,8 @@ FROM ghcr.io/ublue-os/bazzite-deck:stable
 
 RUN wget https://copr.fedorainfracloud.org/coprs/catpieleaf/kernel-p03/repo/fedora-$(rpm -E %fedora)/catpieleaf-kernel-p03-$(rpm -E %fedora).repo -O /etc/yum.repos.d/catpieleaf-kernel-p03.repo
 
-RUN rpm-ostree override remove kernel kernel-core kernel-modules kernel-modules-core kernel-modules-extra --install kernel-p03
+RUN dnf5 remove kernel kernel-core kernel-modules kernel-modules-core kernel-modules-extra 
+RUN dnf5 install kernel-p03
 
 
 

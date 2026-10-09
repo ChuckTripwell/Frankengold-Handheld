@@ -1,7 +1,7 @@
-FROM quay.io/fedora/fedora-bootc:rawhide
+FROM quay.io/fedora/fedora-bootc:rawhide AS bootc-source
 RUN dnf install -y bootc ostree
 
-FROM docker.io/cachyos/cachyos-v3:latest
+FROM docker.io/cachyos/cachyos-v3:latest AS base
 
 # Allow pacman hooks and actions to bypass network sandbox restrictions in container builds
 RUN sed -i '/^#DisableSandboxNetwork/s/^#//' /etc/pacman.conf || true

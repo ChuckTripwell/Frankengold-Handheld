@@ -1,5 +1,5 @@
 # Stage 1: Build bootc natively from official source using cargo
-FROM cachyos/cachyos:latest AS builder
+FROM cachyos/cachyos-v3:latest AS builder
 
 RUN pacman-key --init && \
     pacman-key --recv-keys F3B607488DB35A47 --keyserver keyserver.ubuntu.com && \
@@ -15,7 +15,7 @@ RUN git clone https://github.com/bootc-dev/bootc.git /usr/src/bootc && \
     install -Dm755 target/release/bootc /opt/bootc-build/usr/bin/bootc
 
 # Stage 2: Runtime CachyOS Steam Deck bootc image
-FROM cachyos/cachyos:latest
+FROM cachyos/cachyos-v3:latest AS final
 
 RUN pacman-key --init && \
     pacman-key --recv-keys F3B607488DB35A47 --keyserver keyserver.ubuntu.com && \

@@ -1,10 +1,10 @@
-FROM quay.io/centos/centos:stream9 AS bootc-source
+FROM quay.io/fedora/fedora-bootc:latest
 RUN dnf install -y bootc ostree
 
 FROM docker.io/cachyos/cachyos-v3:latest
 
 # Allow pacman hooks and actions to bypass network sandbox restrictions in container builds
-RUN sed -i '/^#DisableSandboxNetwork/s/^#//' /etc/pacman.conf || echo "DisableSandboxNetwork" >> /etc/pacman.conf
+RUN sed -i '/^#DisableSandboxNetwork/s/^#//' /etc/pacman.conf || true
 
 RUN pacman-key --init && \
     pacman-key --recv-keys F3B607488DB35A47 --keyserver keyserver.ubuntu.com && \

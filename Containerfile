@@ -3,7 +3,8 @@ RUN dnf install -y bootc ostree
 
 FROM docker.io/cachyos/cachyos-v3:latest
 
-RUN sed -i 's/#DisableSandboxNetwork/DisableSandboxNetwork/' /etc/pacman.conf || echo "DisableSandboxNetwork" >> /etc/pacman.conf
+# Allow pacman hooks and actions to bypass network sandbox restrictions in container builds
+RUN sed -i '/^#DisableSandboxNetwork/s/^#//' /etc/pacman.conf || echo "DisableSandboxNetwork" >> /etc/pacman.conf
 
 RUN pacman-key --init && \
     pacman-key --recv-keys F3B607488DB35A47 --keyserver keyserver.ubuntu.com && \

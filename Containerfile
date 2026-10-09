@@ -1,17 +1,8 @@
 FROM quay.io/fedora/fedora-bootc:rawhide AS builder
 RUN mkdir -p /opt/deps && \
-    { ldd /usr/bin/bootc /usr/bin/ostree | awk '{print $3}' | grep '^/'; } | sort -u | while read -r lib; do \
-        echo "$lib"; \
-        while [ -h "$lib" ]; do \
-            dir="$(dirname "$lib")"; \
-            target="$(readlink "$lib")"; \
-            case "$target" in \
-                /*) lib="$target" ;; \
-                *) lib="$dir/$target" ;; \
-            esac; \
-            echo "$lib"; \
-        done; \
-    done | sort -u | xargs -r cp --parents -P -t /opt/deps/
+    rpm -ql bootc ostree ostree-libs 2>/dev/null | while read -r path; do \
+        [ -e "$path" ] && [ ! -d "$path" ] && cp --parents -P "$path" /opt/deps/; \
+    done
 
 FROM docker.io/cachyos/cachyos-v3:latest AS base
 
@@ -49,10 +40,7 @@ RUN pacman-key --init && \
     alsa-utils \
     flatpak
 
-COPY --from=builder /usr/bin/bootc /usr/bin/bootc
-COPY --from=builder /usr/bin/ostree /usr/bin/ostree
 COPY --from=builder /opt/deps/ /
-COPY --from=builder /usr/lib/dracut/modules.d/* /usr/lib/dracut/modules.d/
 
 RUN git clone https://github.com/CachyOS/gamescope-session.git /tmp/gamescope-session && \
     cp -r /tmp/gamescope-session/usr/* /usr/ && \

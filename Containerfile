@@ -1,7 +1,7 @@
 # Stage 1: Runtime CachyOS image pulling precompiled bootc and runtime files from a minimal CentOS/Fedora base (avoiding Rust compile deps & missing SELinux headers)
 FROM quay.io/centos/centos:stream9 AS bootc-source
 
-FROM cachyos/cachyos:latest
+FROM docker.io/cachyos/cachyos-v3:latest
 
 # Copy bootc binaries, libraries, and ostree tooling directly from a compatible system container layer
 COPY --from=bootc-source /usr/bin/bootc /usr/bin/bootc

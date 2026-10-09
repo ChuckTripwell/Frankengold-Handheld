@@ -42,14 +42,13 @@ COPY --from=builder /usr/bin/bootc /usr/bin/bootc
 COPY --from=builder /usr/bin/ostree /usr/bin/ostree
 COPY --from=builder /usr/lib64/libostree* /usr/lib64/
 COPY --from=builder /usr/lib/dracut/modules.d/* /usr/lib/dracut/modules.d/
-COPY --from=builder /usr/lib/dracut/modules.d/* /usr/lib/dracut/modules.d/
 
 RUN git clone https://github.com/CachyOS/gamescope-session.git /tmp/gamescope-session && \
     cp -r /tmp/gamescope-session/usr/* /usr/ && \
     rm -rf /tmp/gamescope-session
 
 RUN mkdir -p /var/tmp
-RUN printf 'hostonly=no\nadd_dracutmodules+=" ostree bootc "' | tee /usr/lib/dracut/dracut.conf.d/30-bootcrew-bootc-modules.conf && \
+RUN printf 'hostonly=no\nadd_dracutmodules+=" ostree "' | tee /usr/lib/dracut/dracut.conf.d/30-bootcrew-bootc-modules.conf && \
       sh -c 'export KERNEL_VERSION="$(basename "$(find /usr/lib/modules -maxdepth 1 -type d | grep -v -E "*.img" | tail -n 1)")" && \
       depmod -a "$KERNEL_VERSION" && \
       dracut --force --no-hostonly --reproducible --zstd --verbose --kver "$KERNEL_VERSION" "/usr/lib/modules/$KERNEL_VERSION/initramfs.img"'

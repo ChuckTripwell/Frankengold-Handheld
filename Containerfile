@@ -1,20 +1,17 @@
 FROM quay.io/fedora/fedora-bootc:rawhide AS builder
 RUN mkdir -p /opt/deps && \
-    for bin in /usr/bin/bootc /usr/bin/ostree; do \
-        ldd "$bin" | awk '{print $3}' | grep '^/' | while read -r lib; do \
-            cp --parents -P "$lib" /opt/deps/; \
-            # Also follow and copy symlinks recursively if they point to files/other links
-            while [ -h "$lib" ]; do \
-                dir="$(dirname "$lib")"; \
-                target="$(readlink "$lib")"; \
-                case "$target" in \
-                    /*) lib="$target" ;; \
-                    *) lib="$dir/$target" ;; \
-                esac; \
-                cp --parents -P "$lib" /opt/deps/; \
-            done; \
+    { ldd /usr/bin/bootc /usr/bin/ostree | awk '{print $3}' | grep '^/'; } | sort -u | while read -r lib; do \
+        echo "$lib"; \
+        while [ -h "$lib" ]; do \
+            dir="$(dirname "$lib")"; \
+            target="$(readlink "$lib")"; \
+            case "$target" in \
+                /*) lib="$target" ;; \
+                *) lib="$dir/$target" ;; \
+            esac; \
+            echo "$lib"; \
         done; \
-    done
+    done | sort -u | xargs -r cp --parents -P -t /opt/deps/
 
 FROM docker.io/cachyos/cachyos-v3:latest AS base
 

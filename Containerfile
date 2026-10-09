@@ -1,7 +1,7 @@
 FROM quay.io/centos/centos:stream9 AS bootc-source
 RUN dnf install -y bootc ostree
 
-FROM cachyos/cachyos:latest
+FROM docker.io/cachyos/cachyos-v3:latest
 
 RUN pacman-key --init && \
     pacman-key --recv-keys F3B607488DB35A47 --keyserver keyserver.ubuntu.com && \

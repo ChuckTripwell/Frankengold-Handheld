@@ -1,7 +1,7 @@
 FROM quay.io/fedora/fedora-bootc:rawhide AS bootc-source
-RUN dnf install -y 'dnf-command(config-manager)' && \
-    dnf config-manager --set-enabled crb && \
-    dnf install -y bootc ostree
+#RUN dnf install -y 'dnf-command(config-manager)' && \
+#    dnf config-manager --set-enabled crb && \
+#    dnf install -y bootc ostree
 
 FROM docker.io/cachyos/cachyos-v3:latest AS base
 

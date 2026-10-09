@@ -1,4 +1,4 @@
-FROM quay.io/fedora/fedora-bootc:latest
+FROM quay.io/fedora/fedora-bootc:rawhide
 RUN dnf install -y bootc ostree
 
 FROM docker.io/cachyos/cachyos-v3:latest

@@ -1,7 +1,4 @@
-FROM quay.io/fedora/fedora-bootc:rawhide AS bootc-source
-#RUN dnf install -y 'dnf-command(config-manager)' && \
-#    dnf config-manager --set-enabled crb && \
-#    dnf install -y bootc ostree
+FROM quay.io/fedora/fedora-bootc:rawhide AS builder
 
 FROM docker.io/cachyos/cachyos-v3:latest AS base
 
@@ -44,8 +41,8 @@ RUN pacman-key --init && \
 COPY --from=builder /usr/bin/bootc /usr/bin/bootc
 COPY --from=builder /usr/bin/ostree /usr/bin/ostree
 COPY --from=builder /usr/lib64/libostree* /usr/lib64/
-COPY --from=builder /usr/lib/dracut/modules.d/02ostree /usr/lib/dracut/modules.d/02ostree
-COPY --from=builder /usr/lib/dracut/modules.d/05bootc /usr/lib/dracut/modules.d/05bootc
+COPY --from=builder /usr/lib/dracut/modules.d/* /usr/lib/dracut/modules.d/
+COPY --from=builder /usr/lib/dracut/modules.d/* /usr/lib/dracut/modules.d/
 
 RUN git clone https://github.com/CachyOS/gamescope-session.git /tmp/gamescope-session && \
     cp -r /tmp/gamescope-session/usr/* /usr/ && \

@@ -1,6 +1,6 @@
 FROM quay.io/fedora/fedora-bootc:rawhide AS builder
 RUN mkdir -p /opt/deps && \
-    rpm -ql bootc ostree ostree-libs 2>/dev/null | while read -r path; do \
+    rpm -ql bootc ostree ostree-libs openssl-libs 2>/dev/null | while read -r path; do \
         [ -e "$path" ] && [ ! -d "$path" ] && cp --parents -P "$path" /opt/deps/; \
     done
 

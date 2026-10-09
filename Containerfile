@@ -1,11 +1,7 @@
 FROM quay.io/centos/centos:stream9 AS bootc-source
 RUN dnf install -y bootc ostree
 
-FROM cachyos/cachyos-v3:latest
-
-COPY --from=bootc-source /usr/bin/bootc /usr/bin/bootc
-COPY --from=bootc-source /usr/lib64/libostree* /usr/lib64/
-COPY --from=bootc-source /usr/bin/ostree /usr/bin/ostree
+FROM cachyos/cachyos:latest
 
 RUN pacman-key --init && \
     pacman-key --recv-keys F3B607488DB35A47 --keyserver keyserver.ubuntu.com && \
@@ -14,6 +10,7 @@ RUN pacman-key --init && \
     pacman -S --needed --noconfirm cachyos-keyring cachyos-mirrorlist cachyos-v3-mirrorlist cachyos-hooks && \
     pacman -Syu --noconfirm && \
     pacman -S --needed --noconfirm \
+    git \
     glib2 \
     openssl \
     util-linux \
@@ -22,7 +19,7 @@ RUN pacman-key --init && \
     linux-cachyos-deckify \
     cachyos-settings \
     gamescope \
-    gamescope-session-steam \
+    gamescope-session-cachyos \
     steam \
     pipewire \
     pipewire-alsa \
@@ -37,6 +34,14 @@ RUN pacman-key --init && \
     lib32-vulkan-intel \
     alsa-utils \
     flatpak
+
+COPY --from=bootc-source /usr/bin/bootc /usr/bin/bootc
+COPY --from=bootc-source /usr/lib64/libostree* /usr/lib64/
+COPY --from=bootc-source /usr/bin/ostree /usr/bin/ostree
+
+RUN git clone https://github.com/CachyOS/gamescope-session.git /tmp/gamescope-session && \
+    cp -r /tmp/gamescope-session/usr/* /usr/ && \
+    rm -rf /tmp/gamescope-session
 
 RUN mkdir -p /etc/dracut.conf.d && \
     echo 'add_dracutmodules+=" ostree "' > /etc/dracut.conf.d/ostree.conf && \

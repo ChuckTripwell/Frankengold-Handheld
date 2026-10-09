@@ -1,8 +1,11 @@
 FROM quay.io/fedora/fedora-bootc:rawhide AS builder
+RUN mkdir -p /opt/deps && \
+    for bin in /usr/bin/bootc /usr/bin/ostree; do \
+        ldd "$bin" | awk '{print $3}' | grep '^/' | xargs -I {} cp --parents -u {} /opt/deps/; \
+    done
 
 FROM docker.io/cachyos/cachyos-v3:latest AS base
 
-# Allow pacman hooks to bypass network sandbox restrictions in container builds
 RUN sed -i '/^#DisableSandboxNetwork/s/^#//' /etc/pacman.conf || echo "DisableSandboxNetwork" >> /etc/pacman.conf
 
 RUN pacman-key --init && \
@@ -37,10 +40,9 @@ RUN pacman-key --init && \
     alsa-utils \
     flatpak
 
-# Copy native bootc and ostree binaries and libraries from builder
 COPY --from=builder /usr/bin/bootc /usr/bin/bootc
 COPY --from=builder /usr/bin/ostree /usr/bin/ostree
-COPY --from=builder /usr/lib64/libostree* /usr/lib64/
+COPY --from=builder /opt/deps/ /
 COPY --from=builder /usr/lib/dracut/modules.d/* /usr/lib/dracut/modules.d/
 
 RUN git clone https://github.com/CachyOS/gamescope-session.git /tmp/gamescope-session && \

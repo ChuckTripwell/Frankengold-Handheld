@@ -18,6 +18,7 @@ RUN pacman-key --init && \
     pacman -Syu --noconfirm && \
     pacman -S --needed --noconfirm \
     bash \
+    sudo \
     git \
     glib2 \
     openssl \

@@ -1,7 +1,9 @@
 FROM quay.io/fedora/fedora-bootc:rawhide AS builder
-RUN mkdir -p /opt/deps && \
-    rpm -ql bootc ostree ostree-libs openssl-libs 2>/dev/null | while read -r path; do \
-        [ -e "$path" ] && [ ! -d "$path" ] && cp --parents -P "$path" /opt/deps/; \
+RUN mkdir -p /opt/deps/usr/bin /opt/deps/usr/lib64 && \
+    cp -P /usr/bin/bootc /opt/deps/usr/bin/ && \
+    # Copy bootc shared library dependencies dynamically via ldd
+    ldd /usr/bin/bootc | awk '{print $3}' | grep '^/' | while read -r lib; do \
+        [ -f "$lib" ] && cp --parents -P "$lib" /opt/deps/; \
     done
 
 FROM docker.io/cachyos/cachyos-v3:latest AS base
@@ -21,6 +23,7 @@ RUN pacman-key --init && \
     util-linux \
     systemd \
     dracut \
+    ostree \
     linux-cachyos-deckify \
     cachyos-settings \
     gamescope \

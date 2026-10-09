@@ -17,6 +17,7 @@ RUN pacman-key --init && \
     pacman -S --needed --noconfirm cachyos-keyring cachyos-mirrorlist cachyos-v3-mirrorlist cachyos-hooks && \
     pacman -Syu --noconfirm && \
     pacman -S --needed --noconfirm \
+    bash \
     git \
     glib2 \
     openssl \

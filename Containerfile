@@ -1,21 +1,12 @@
-# Stage 1: Build bootc natively from official source using cargo
-FROM cachyos/cachyos-v3:latest AS builder
+# Stage 1: Runtime CachyOS image pulling precompiled bootc and runtime files from a minimal CentOS/Fedora base (avoiding Rust compile deps & missing SELinux headers)
+FROM quay.io/centos/centos:stream9 AS bootc-source
 
-RUN pacman-key --init && \
-    pacman-key --recv-keys F3B607488DB35A47 --keyserver keyserver.ubuntu.com && \
-    pacman-key --lsign-key F3B607488DB35A47 && \
-    pacman -Sy --noconfirm && \
-    pacman -S --needed --noconfirm cachyos-keyring cachyos-mirrorlist cachyos-v3-mirrorlist cachyos-hooks && \
-    pacman -Syu --noconfirm && \
-    pacman -S --needed --noconfirm base-devel git rust ostree glib2 openssl zstd go-md2man
+FROM cachyos/cachyos:latest
 
-RUN git clone https://github.com/bootc-dev/bootc.git /usr/src/bootc && \
-    cd /usr/src/bootc && \
-    cargo build --release && \
-    install -Dm755 target/release/bootc /opt/bootc-build/usr/bin/bootc
-
-# Stage 2: Runtime CachyOS Steam Deck bootc image
-FROM cachyos/cachyos-v3:latest AS final
+# Copy bootc binaries, libraries, and ostree tooling directly from a compatible system container layer
+COPY --from=bootc-source /usr/bin/bootc /usr/bin/bootc
+COPY --from=bootc-source /usr/lib64/libostree* /usr/lib64/
+COPY --from=bootc-source /usr/bin/ostree /usr/bin/ostree
 
 RUN pacman-key --init && \
     pacman-key --recv-keys F3B607488DB35A47 --keyserver keyserver.ubuntu.com && \
@@ -24,7 +15,6 @@ RUN pacman-key --init && \
     pacman -S --needed --noconfirm cachyos-keyring cachyos-mirrorlist cachyos-v3-mirrorlist cachyos-hooks && \
     pacman -Syu --noconfirm && \
     pacman -S --needed --noconfirm \
-    ostree \
     glib2 \
     openssl \
     util-linux \
@@ -49,8 +39,6 @@ RUN pacman-key --init && \
     alsa-utils \
     flatpak
 
-COPY --from=builder /opt/bootc-build /
-
 RUN mkdir -p /etc/dracut.conf.d && \
     echo 'add_dracutmodules+=" ostree "' > /etc/dracut.conf.d/ostree.conf && \
     kernel_version=$(ls /lib/modules | head -n1) && \
@@ -58,5 +46,7 @@ RUN mkdir -p /etc/dracut.conf.d && \
 
 LABEL containers.bootc="1"
 LABEL ostree.bootable="1"
+
+RUN bootc -h
 
 CMD ["/sbin/init"]

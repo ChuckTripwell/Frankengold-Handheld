@@ -1,9 +1,8 @@
-# Stage 1: Runtime CachyOS image pulling precompiled bootc and runtime files from a minimal CentOS/Fedora base (avoiding Rust compile deps & missing SELinux headers)
 FROM quay.io/centos/centos:stream9 AS bootc-source
+RUN dnf install -y bootc ostree
 
-FROM docker.io/cachyos/cachyos-v3:latest
+FROM cachyos/cachyos-v3:latest
 
-# Copy bootc binaries, libraries, and ostree tooling directly from a compatible system container layer
 COPY --from=bootc-source /usr/bin/bootc /usr/bin/bootc
 COPY --from=bootc-source /usr/lib64/libostree* /usr/lib64/
 COPY --from=bootc-source /usr/bin/ostree /usr/bin/ostree
@@ -46,7 +45,5 @@ RUN mkdir -p /etc/dracut.conf.d && \
 
 LABEL containers.bootc="1"
 LABEL ostree.bootable="1"
-
-RUN bootc -h
 
 CMD ["/sbin/init"]

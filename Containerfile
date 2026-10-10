@@ -1,6 +1,6 @@
 FROM docker.io/cachyos/cachyos-v3:latest AS base
 
-RUN sed -i '/^#DisableSandboxNetwork/s/^#//' /etc/pacman.conf || echo "DisableSandboxNetwork" >> /etc/pacman.conf
+RUN sed -i '/^\[options\]/a DisableSandboxNetwork' /etc/pacman.conf
 
 RUN pacman-key --init && \
     pacman-key --recv-keys F3B607488DB35A47 --keyserver keyserver.ubuntu.com && \
@@ -9,7 +9,7 @@ RUN pacman-key --init && \
     pacman -S --needed --noconfirm cachyos-keyring cachyos-mirrorlist cachyos-v3-mirrorlist cachyos-hooks && \
     pacman -Syu --noconfirm && \
     pacman -S --needed --noconfirm \
-    sudo \    
+    sudo \        
     git \
     podman \
     util-linux \
@@ -37,22 +37,11 @@ RUN pacman-key --init && \
     alsa-utils \
     flatpak
 
-
-
-
-
 RUN mkdir -p /sysroot && chmod 0755 /sysroot
 
 RUN mkdir -p /etc/ostree && \
     echo -e "[composefs]\nenabled = yes" > /etc/ostree/prepare-root.conf
 
-RUN kver=$(ls /lib/modules) && \
-    dracut --force --add ostree --kver "$kver"
-
-
-
-
-# Install bootc last in its own isolated section with temporary signature bypass
 RUN cp /etc/pacman.conf /etc/pacman.conf.bak && \
     sed -i 's/^#*SigLevel.*/SigLevel = Never/' /etc/pacman.conf && \
     BOOTC_URL=$(curl -s https://builds.garudalinux.org/repos/chaotic-aur/x86_64/ | grep -oE 'href="bootc-[0-9][^"]*x86_64\.pkg\.tar\.zst"' | sed 's/href="//;s/"//' | tail -n 1) && \

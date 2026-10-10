@@ -16,6 +16,7 @@ RUN pacman-key --init && \
     ostree \
     libselinux \
     linux-cachyos-deckify \
+    steam-powerbuttond-git \
     cachyos-settings \
     gamescope \
     gamescope-session-cachyos \
@@ -41,9 +42,10 @@ RUN cp /etc/pacman.conf /etc/pacman.conf.bak && \
     pacman -U --noconfirm "https://builds.garudalinux.org/repos/chaotic-aur/x86_64/${BOOTC_URL}" && \
     mv /etc/pacman.conf.bak /etc/pacman.conf
 
-RUN git clone https://github.com/CachyOS/gamescope-session.git /tmp/gamescope-session && \
-    cp -r /tmp/gamescope-session/usr/* /usr/ && \
-    rm -rf /tmp/gamescope-session
+RUN git clone https://github.com/CachyOS/CachyOS-Handheld /tmp/CachyOS-Handheld && \
+    rm -rf /tmp/CachyOS-Handheld/*README* && \
+    cp -r /tmp/CachyOS-Handheld/* / && \
+    rm -rf /tmp/CachyOS-Handheld
 
 RUN mkdir -p /var/tmp
 RUN printf 'hostonly=no\nadd_dracutmodules+=" ostree "' | tee /usr/lib/dracut/dracut.conf.d/30-bootcrew-bootc-modules.conf && \

@@ -1,10 +1,4 @@
 FROM quay.io/fedora/fedora-bootc:rawhide AS builder
-RUN mkdir -p /opt/deps/usr/bin /opt/deps/usr/lib64 && \
-    cp -P /usr/bin/bootc /opt/deps/usr/bin/ && \
-    # Copy bootc shared library dependencies dynamically via ldd
-    ldd /usr/bin/bootc | awk '{print $3}' | grep '^/' | while read -r lib; do \
-        [ -f "$lib" ] && cp --parents -P "$lib" /opt/deps/; \
-    done
 
 FROM docker.io/cachyos/cachyos-v3:latest AS base
 
@@ -17,8 +11,6 @@ RUN pacman-key --init && \
     pacman -S --needed --noconfirm cachyos-keyring cachyos-mirrorlist cachyos-v3-mirrorlist cachyos-hooks && \
     pacman -Syu --noconfirm && \
     pacman -S --needed --noconfirm \
-    bash \
-    sudo \
     git \
     glib2 \
     openssl \
@@ -45,7 +37,7 @@ RUN pacman-key --init && \
     alsa-utils \
     flatpak
 
-COPY --from=builder /opt/deps/ /
+COPY --from=builder /bin/bootc /bin/bootc
 
 RUN git clone https://github.com/CachyOS/gamescope-session.git /tmp/gamescope-session && \
     cp -r /tmp/gamescope-session/usr/* /usr/ && \

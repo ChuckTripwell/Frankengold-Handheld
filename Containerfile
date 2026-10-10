@@ -43,28 +43,25 @@ RUN mkdir -p /sysroot && chmod 0755 /sysroot
 RUN mkdir -p /etc/ostree && \
     echo -e "[composefs]\nenabled = yes" > /etc/ostree/prepare-root.conf
 
+RUN mkdir -p /usr/lib/ostree && \
+    mkdir -p /boot/ostree && \
+    mkdir -p /etc/ostree
+
+RUN mkdir -p /etc/dracut.conf.d && \
+    printf 'hostonly=no\nadd_dracutmodules+=" ostree "\n' > /etc/dracut.conf.d/bootc.conf
+
 RUN cp /etc/pacman.conf /etc/pacman.conf.bak && \
     sed -i 's/^#*SigLevel.*/SigLevel = Never/' /etc/pacman.conf && \
     BOOTC_URL=$(curl -s https://builds.garudalinux.org/repos/chaotic-aur/x86_64/ | grep -oE 'href="bootc-[0-9][^"]*x86_64\.pkg\.tar\.zst"' | sed 's/href="//;s/"//' | tail -n 1) && \
     pacman -U --noconfirm "https://builds.garudalinux.org/repos/chaotic-aur/x86_64/${BOOTC_URL}" && \
     mv /etc/pacman.conf.bak /etc/pacman.conf
 
-#RUN git clone https://github.com/CachyOS/CachyOS-Handheld /tmp/CachyOS-Handheld && \
-#    rm -rf /tmp/CachyOS-Handheld/*EADME.* && \
-#    cp -r /tmp/CachyOS-Handheld/* / && \
-#    rm -rf /tmp/CachyOS-Handheld
-
-RUN mkdir -p /var/tmp /etc/dracut.conf.d && \
-    printf 'hostonly=no\nadd_dracutmodules+=" ostree "\n' > /etc/dracut.conf.d/bootc.conf && \
-    KERNEL_VERSION=$(basename "$(find /usr/lib/modules -maxdepth 1 -type d | grep -v -E "*.img" | tail -n 1)") && \
+RUN KERNEL_VERSION=$(basename "$(find /usr/lib/modules -maxdepth 1 -type d | grep -v -E "*.img" | tail -n 1)") && \
     depmod -a "$KERNEL_VERSION" && \
-    dracut --force --no-hostonly --reproducible --zstd --verbose --kver "$KERNEL_VERSION" "/usr/lib/modules/$KERNEL_VERSION/initramfs.img"
+    dracut --force --no-hostonly --add "ostree" --zstd --kver "$KERNEL_VERSION" "/usr/lib/modules/$KERNEL_VERSION/initramfs.img"
 
-RUN echo "" > /etc/fstab
+RUN : > /etc/fstab
 
-RUN ln -s /dev/null /etc/systemd/system/systemd-remount-fs.service
-
-#RUN rm -rf /usr/etc
-LABEL ostree.bootable 1
-LABEL containers.bootc 1
+LABEL ostree.bootable=1
+LABEL containers.bootc=1
 RUN bootc container lint || bootc -h

@@ -13,12 +13,6 @@ FROM docker.io/cachyos/cachyos-v3:latest AS base
 
 FROM base AS system
 
-RUN cp /etc/pacman.conf /etc/pacman.conf.bak && \
-    sed -i 's/^#*SigLevel.*/SigLevel = Never/' /etc/pacman.conf && \
-    BOOTC_URL=$(curl -s https://builds.garudalinux.org/repos/chaotic-aur/x86_64/ | grep -oE 'href="bootc-[0-9][^"]*x86_64\.pkg\.tar\.zst"' | sed 's/href="//;s/"//' | tail -n 1) && \
-    pacman -U --noconfirm "https://builds.garudalinux.org/repos/chaotic-aur/x86_64/${BOOTC_URL}" && \
-    mv /etc/pacman.conf.bak /etc/pacman.conf
-
 # Move everything from `/var` to `/usr/lib/sysimage` so behavior around pacman remains the same on `bootc usroverlay`'d systems
 RUN grep "= */var" /etc/pacman.conf | sed "/= *\/var/s/.*=// ; s/ //" | xargs -n1 sh -c 'mkdir -p "/usr/lib/sysimage/$(dirname $(echo $1 | sed "s@/var/@@"))" && mv -v "$1" "/usr/lib/sysimage/$(echo "$1" | sed "s@/var/@@")"' '' && \
     sed -i -e "/= *\/var/ s/^#//" -e "s@= */var@= /usr/lib/sysimage@g" -e "/DownloadUser/d" /etc/pacman.conf
@@ -26,6 +20,14 @@ RUN grep "= */var" /etc/pacman.conf | sed "/= *\/var/s/.*=// ; s/ //" | xargs -n
 RUN pacman -Syu --disable-sandbox --noconfirm
 
 RUN pacman -Sy --disable-sandbox --noconfirm base bubblewrap dracut linux-cachyos-deckify linux-firmware ostree btrfs-progs e2fsprogs xfsprogs dosfstools skopeo dbus dbus-glib glib2 ostree shadow openssh && pacman -S --clean --noconfirm
+
+
+RUN cp /etc/pacman.conf /etc/pacman.conf.bak && \
+    sed -i 's/^#*SigLevel.*/SigLevel = Never/' /etc/pacman.conf && \
+    BOOTC_URL=$(curl -s https://builds.garudalinux.org/repos/chaotic-aur/x86_64/ | grep -oE 'href="bootc-[0-9][^"]*x86_64\.pkg\.tar\.zst"' | sed 's/href="//;s/"//' | tail -n 1) && \
+    pacman -U --noconfirm "https://builds.garudalinux.org/repos/chaotic-aur/x86_64/${BOOTC_URL}" && \
+    mv /etc/pacman.conf.bak /etc/pacman.conf
+
 
 RUN systemctl enable systemd-networkd systemd-resolved systemd-timesyncd sshd && \
     systemctl mask systemd-firstboot.service

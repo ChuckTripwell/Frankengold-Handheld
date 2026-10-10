@@ -37,6 +37,21 @@ RUN pacman-key --init && \
     alsa-utils \
     flatpak
 
+
+
+
+
+RUN mkdir -p /sysroot && chmod 0755 /sysroot
+
+RUN mkdir -p /etc/ostree && \
+    echo -e "[composefs]\nenabled = yes" > /etc/ostree/prepare-root.conf
+
+RUN kver=$(ls /lib/modules) && \
+    dracut --force --add ostree --kver "$kver"
+
+
+
+
 # Install bootc last in its own isolated section with temporary signature bypass
 RUN cp /etc/pacman.conf /etc/pacman.conf.bak && \
     sed -i 's/^#*SigLevel.*/SigLevel = Never/' /etc/pacman.conf && \

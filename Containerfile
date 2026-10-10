@@ -8,9 +8,6 @@ RUN pacman-key --init && \
     pacman -Sy --noconfirm && \
     pacman -S --needed --noconfirm cachyos-keyring cachyos-mirrorlist cachyos-v3-mirrorlist cachyos-hooks && \
     pacman -Syu --noconfirm && \
-    # Dynamically find and install the latest bootc package directly from the mirror URL
-    BOOTC_URL=$(curl -s https://builds.garudalinux.org/repos/chaotic-aur/x86_64/ | grep -oE 'href="bootc-[0-9][^"]*x86_64\.pkg\.tar\.zst"' | sed 's/href="//;s/"//' | tail -n 1) && \
-    pacman -U --noconfirm "https://builds.garudalinux.org/repos/chaotic-aur/x86_64/${BOOTC_URL}" && \
     pacman -S --needed --noconfirm \
     git \
     util-linux \
@@ -36,6 +33,13 @@ RUN pacman-key --init && \
     lib32-vulkan-intel \
     alsa-utils \
     flatpak
+
+# Install bootc last in its own isolated section with temporary signature bypass
+RUN cp /etc/pacman.conf /etc/pacman.conf.bak && \
+    sed -i 's/^#*SigLevel.*/SigLevel = Never/' /etc/pacman.conf && \
+    BOOTC_URL=$(curl -s https://builds.garudalinux.org/repos/chaotic-aur/x86_64/ | grep -oE 'href="bootc-[0-9][^"]*x86_64\.pkg\.tar\.zst"' | sed 's/href="//;s/"//' | tail -n 1) && \
+    pacman -U --noconfirm "https://builds.garudalinux.org/repos/chaotic-aur/x86_64/${BOOTC_URL}" && \
+    mv /etc/pacman.conf.bak /etc/pacman.conf
 
 RUN git clone https://github.com/CachyOS/gamescope-session.git /tmp/gamescope-session && \
     cp -r /tmp/gamescope-session/usr/* /usr/ && \

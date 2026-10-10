@@ -1,7 +1,9 @@
 FROM docker.io/alpine/git:latest AS ctx
 
-RUN git clone --depth 1 https://github.com/bootcrew/mono /mono
-RUN mv /mono/shared /shared
+
+RUN mkdir -p /mono2
+RUN git clone --depth 1 https://github.com/bootcrew/mono /mono2
+RUN mv /mono2/shared /shared
 
 
 

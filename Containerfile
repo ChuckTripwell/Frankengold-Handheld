@@ -62,6 +62,8 @@ RUN KERNEL_VERSION=$(basename "$(find /usr/lib/modules -maxdepth 1 -type d | gre
 
 RUN : > /etc/fstab
 
+RUN ln -s /dev/null /usr/lib/systemd/system-generators/systemd-remount-fs-generator
+
 LABEL ostree.bootable=1
 LABEL containers.bootc=1
 RUN bootc container lint || bootc -h

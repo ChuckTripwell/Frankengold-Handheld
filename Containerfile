@@ -9,7 +9,9 @@ RUN pacman-key --init && \
     pacman -S --needed --noconfirm cachyos-keyring cachyos-mirrorlist cachyos-v3-mirrorlist cachyos-hooks && \
     pacman -Syu --noconfirm && \
     pacman -S --needed --noconfirm \
+    sudo \    
     git \
+    podman \
     util-linux \
     systemd \
     dracut \
@@ -43,7 +45,7 @@ RUN cp /etc/pacman.conf /etc/pacman.conf.bak && \
     mv /etc/pacman.conf.bak /etc/pacman.conf
 
 RUN git clone https://github.com/CachyOS/CachyOS-Handheld /tmp/CachyOS-Handheld && \
-    rm -rf /tmp/CachyOS-Handheld/*README* && \
+    rm -rf /tmp/CachyOS-Handheld/*EADME.* && \
     cp -r /tmp/CachyOS-Handheld/* / && \
     rm -rf /tmp/CachyOS-Handheld
 

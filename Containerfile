@@ -55,7 +55,7 @@ RUN pacman-key --init && \
     pacman -Sy --disable-sandbox --noconfirm && \
     pacman -S --disable-sandbox --needed --noconfirm cachyos-keyring cachyos-mirrorlist cachyos-v3-mirrorlist cachyos-hooks && \
     pacman -Syu --disable-sandbox --noconfirm && \
-    pacman -S --disable-sandbox --needed --noconfirm \
+    pacman -S --disable-sandbox --needed --noconfirm --overwrite="*" \
     sudo \        
     git \
     podman \
@@ -64,8 +64,6 @@ RUN pacman-key --init && \
     dracut \
     ostree \
     libselinux \
-    linux-cachyos-deckify \
-    steam-powerbuttond-git \
     cachyos-settings \
     gamescope \
     gamescope-session-cachyos \

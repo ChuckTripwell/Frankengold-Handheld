@@ -1,98 +1,76 @@
-FROM docker.io/alpine/git:latest AS ctx
+##################################################################################################################################################
+### :::::: Pull CachyOS :::::: ###
+##################################################################################################################################################
+FROM docker.io/cachyos/cachyos-v3:latest AS cachyos
 
+# :::::: prepare the kernel :::::: 
+RUN rm -rf /lib/modules/*
+RUN pacman -Syy --disable-sandbox --noconfirm archlinux-keyring cachyos-keyring || curl -fsSL https://github.com/CachyOS/CachyOS-PKGBUILDS/raw/refs/heads/master/cachyos-mirrorlist/cachyos-mirrorlist -o /etc/pacman.d/cachyos-mirrorlist
+#RUN pacman -S --disable-sandbox --noconfirm archlinux-keyring cachyos-keyring
+RUN pacman -Syy --disable-sandbox --noconfirm
+RUN pacman -S --disable-sandbox --noconfirm linux-cachyos-deckify
+RUN pacman -S --disable-sandbox --noconfirm vulkan-tools vulkan-icd-loader lib32-vulkan-icd-loader dkms
 
-RUN mkdir -p /mono2
-RUN git clone --depth 1 https://github.com/bootcrew/mono /mono2
-RUN mv /mono2/shared /shared
+##################################################################################################################################################
+### :::::: Pull Ublue-OS :::::: ###
+##################################################################################################################################################
+FROM ghcr.io/ublue-os/bazzite-deck:stable
 
+# :::::: forcefully remove and replace kernel :::::: 
+RUN rm -rf /lib/modules
+COPY --from=cachyos /lib/modules /lib/modules
+COPY --from=cachyos /usr/share/licenses/ /usr/share/licenses/
 
+##################################################################################################################################################
+### :::::: Modifications :::::: ###
+##################################################################################################################################################
+# :::::: disable countme ( I like my telemetry opt-in,thank you very much. you can enable it if you want... ) :::::: 
+RUN sed -i -e s,countme=1,countme=0, /etc/yum.repos.d/*.repo && systemctl mask --now rpm-ostree-countme.timer
 
+# :::::: install controld dns :::::: 
+RUN curl -fsSL https://dl.controld.com/linux-amd64/ctrld \
+    -o /usr/bin/ctrld && \
+    chmod 755 /usr/bin/ctrld
 
+# :::::: force distrobox to use a sub-directory for home :::::: 
+RUN mkdir -p /usr/share/distrobox/
+RUN touch /usr/share/distrobox/distrobox.conf
+RUN echo "DBX_CONTAINER_HOME_PREFIX=~/distrobox" >> /usr/share/distrobox/distrobox.conf
 
+# :::::: install preformence-related stuff :::::: 
+RUN dnf5 -y copr enable bieszczaders/kernel-cachyos-addons
+    RUN dnf5 -y install --allowerasing scx-scheds scx-tools scxctl cachyos-settings uksmd scx-manager
+RUN dnf5 -y copr disable bieszczaders/kernel-cachyos-addons
 
+# Set vm.max_map_count for stability/improved gaming performance
+# https://wiki.archlinux.org/title/Gaming#Increase_vm.max_map_count
+  RUN echo -e "vm.max_map_count = 2147483642" > /etc/sysctl.d/80-gamecompatibility.conf
 
-FROM docker.io/cachyos/cachyos-v3:latest AS base
-
-FROM base AS system
-
-# Move everything from `/var` to `/usr/lib/sysimage` so behavior around pacman remains the same on `bootc usroverlay`'d systems
-RUN grep "= */var" /etc/pacman.conf | sed "/= *\/var/s/.*=// ; s/ //" | xargs -n1 sh -c 'mkdir -p "/usr/lib/sysimage/$(dirname $(echo $1 | sed "s@/var/@@"))" && mv -v "$1" "/usr/lib/sysimage/$(echo "$1" | sed "s@/var/@@")"' '' && \
-    sed -i -e "/= *\/var/ s/^#//" -e "s@= */var@= /usr/lib/sysimage@g" -e "/DownloadUser/d" /etc/pacman.conf
-
-RUN pacman -Syu --disable-sandbox --noconfirm
-
-RUN pacman -Sy --disable-sandbox --noconfirm base bubblewrap dracut linux-cachyos-deckify linux-firmware ostree btrfs-progs e2fsprogs xfsprogs dosfstools skopeo dbus dbus-glib glib2 ostree shadow openssh && pacman -S --clean --noconfirm
-
-
-RUN cp /etc/pacman.conf /etc/pacman.conf.bak && \
-    sed -i 's/^#*SigLevel.*/SigLevel = Never/' /etc/pacman.conf && \
-    BOOTC_URL=$(curl -s https://builds.garudalinux.org/repos/chaotic-aur/x86_64/ | grep -oE 'href="bootc-[0-9][^"]*x86_64\.pkg\.tar\.zst"' | sed 's/href="//;s/"//' | tail -n 1) && \
-    pacman -U --noconfirm "https://builds.garudalinux.org/repos/chaotic-aur/x86_64/${BOOTC_URL}" && \
-    mv /etc/pacman.conf.bak /etc/pacman.conf
-
-
-RUN systemctl enable systemd-networkd systemd-resolved systemd-timesyncd sshd && \
-    systemctl mask systemd-firstboot.service
-
-RUN echo "uninitialized" > /etc/machine-id && \
-    ln -sf /usr/share/zoneinfo/UTC /etc/localtime
-
-RUN printf '[Match]\nType=ether\n\n[Network]\nDHCP=yes\n' \
-    > /usr/lib/systemd/network/20-wired.network
-
-RUN printf 'L! /etc/resolv.conf - - - - /run/systemd/resolve/stub-resolv.conf\n' \
-    > /usr/lib/tmpfiles.d/resolv-conf.conf
-
-RUN --mount=type=tmpfs,dst=/tmp --mount=type=tmpfs,dst=/root \
-    --mount=type=bind,from=ctx,source=/,target=/ctx \
-    /ctx/shared/initramfs.sh
-
-RUN --mount=type=bind,from=ctx,source=/,target=/ctx \
-    sed -i 's|^HOME=.*|HOME=/var/home|' "/etc/default/useradd" && \
-    /ctx/shared/bootc-rootfs.sh
-
-RUN pacman-key --init && \
-    pacman-key --recv-keys F3B607488DB35A47 --keyserver keyserver.ubuntu.com && \
-    pacman-key --lsign-key F3B607488DB35A47 && \
-    pacman -Sy --disable-sandbox --noconfirm && \
-    pacman -S --disable-sandbox --needed --noconfirm cachyos-keyring cachyos-mirrorlist cachyos-v3-mirrorlist cachyos-hooks && \
-    pacman -Syu --disable-sandbox --noconfirm && \
-    pacman -S --disable-sandbox --needed --noconfirm --overwrite="*" \
-    sudo \        
-    git \
-    podman \
-    util-linux \
-    systemd \
-    dracut \
-    ostree \
-    libselinux \
-    cachyos-settings \
-    gamescope \
-    gamescope-session-cachyos \
-    steam \
-    pipewire \
-    pipewire-alsa \
-    pipewire-pulse \
-    wireplumber \
-    networkmanager \
-    mesa \
-    lib32-mesa \
-    vulkan-radeon \
-    lib32-vulkan-radeon \
-    vulkan-intel \
-    lib32-vulkan-intel \
-    alsa-utils \
-    flatpak \
-    zram-generator
-RUN pacman -S --disable-sandbox --clean --noconfirm
-
-
-
-
-
-
-
-
-LABEL ostree.bootable=1
-LABEL containers.bootc=1
-RUN bootc container lint || bootc -h
+##################################################################################################################################################
+### :::::: Security and Finalization :::::: ###
+##################################################################################################################################################
+# :::::: Fix SELinux :::::: 
+#
+RUN sed -i 's/^SELINUX=permissive/SELINUX=enforcing/' /etc/selinux/config
+#
+RUN touch /etc/.autorelabel
+#
+RUN mkdir -p /usr/lib/bootc/kargs.d/
+RUN sed -i 's|/\.autorelabel|/etc/.autorelabel|g' /usr/lib/systemd/system/selinux-autorelabel-mark.service
+RUN sed -i 's|/\.autorelabel|/etc/.autorelabel|g' /usr/libexec/selinux/selinux-autorelabel
+RUN sed -i 's|/\.autorelabel|/etc/.autorelabel|g' /usr/lib/systemd/system-generators/selinux-autorelabel-generator.sh
+RUN echo 'kargs = ["lsm=landlock,lockdown,yama,integrity,selinux,bpf", "selinux=1", "enforcing=1", "selinux_dontaudit=0", "selinux_deny_unknown=1"]' > /usr/lib/bootc/kargs.d/90-security-overrides.toml
+#
+RUN sed -i 's/active = yes/active = no/' /etc/audit/plugins.d/sedispatch.conf
+#
+# :::::: slot the kernel into place :::::: 
+RUN mkdir -p /var/tmp
+RUN printf "systemdsystemconfdir=/etc/systemd/system\nsystemdsystemunitdir=/usr/lib/systemd/system\n" | tee /usr/lib/dracut/dracut.conf.d/30-bootcrew-fix-bootc-module.conf && \
+      printf 'hostonly=no\nadd_dracutmodules+=" ostree bootc "' | tee /usr/lib/dracut/dracut.conf.d/30-bootcrew-bootc-modules.conf && \
+      sh -c 'export KERNEL_VERSION="$(basename "$(find /usr/lib/modules -maxdepth 1 -type d | grep -v -E "*.img" | tail -n 1)")" && \
+      dracut --force --no-hostonly --reproducible --zstd --verbose --kver "$KERNEL_VERSION"  "/usr/lib/modules/$KERNEL_VERSION/initramfs.img"'
+#
+#  :::::: finish :::::: 
+RUN rm -rf /usr/etc
+LABEL containers.bootc 1
+RUN bootc container lint

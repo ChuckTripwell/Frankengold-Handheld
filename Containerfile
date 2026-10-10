@@ -54,9 +54,11 @@ RUN cp /etc/pacman.conf /etc/pacman.conf.bak && \
 #    cp -r /tmp/CachyOS-Handheld/* / && \
 #    rm -rf /tmp/CachyOS-Handheld
 
-RUN printf 'hostonly=no\nadd_dracutmodules+=" ostree "\n' > /etc/dracut.conf.d/bootc.conf && \
-    KERNEL_VERSION=$(basename "$(find /usr/lib/modules -maxdepth 1 -type d | grep -v 'img' | tail -n 1)") && \
-    dracut --force --no-hostonly --kver "$KERNEL_VERSION"
+RUN mkdir -p /var/tmp /etc/dracut.conf.d && \
+    printf 'hostonly=no\nadd_dracutmodules+=" ostree "\n' > /etc/dracut.conf.d/bootc.conf && \
+    KERNEL_VERSION=$(basename "$(find /usr/lib/modules -maxdepth 1 -type d | grep -v -E "*.img" | tail -n 1)") && \
+    depmod -a "$KERNEL_VERSION" && \
+    dracut --force --no-hostonly --reproducible --zstd --verbose --kver "$KERNEL_VERSION" "/usr/lib/modules/$KERNEL_VERSION/initramfs.img"
 
 RUN rm -rf /usr/etc
 LABEL ostree.bootable=1

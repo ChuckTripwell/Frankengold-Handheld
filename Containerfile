@@ -7,20 +7,22 @@ RUN pacman-key --init && \
     pacman-key --lsign-key F3B607488DB35A47 && \
     pacman -Sy --noconfirm && \
     pacman -S --needed --noconfirm cachyos-keyring cachyos-mirrorlist cachyos-v3-mirrorlist cachyos-hooks && \
+    # Setup Chaotic-AUR repository keys and mirrorlist
+    pacman-key --recv-key 3056513887B78AEB --keyserver keyserver.ubuntu.com && \
+    pacman-key --lsign-key 3056513887B78AEB && \
+    pacman -U --noconfirm \
+    'https://cdn-mirror.chaotic.cx/chaotic-aur/chaotic-keyring.pkg.tar.zst' \
+    'https://cdn-mirror.chaotic.cx/chaotic-aur/chaotic-mirrorlist.pkg.tar.zst' && \
+    echo -e "\n[chaotic-aur]\nInclude = /etc/pacman.d/chaotic-mirrorlist" >> /etc/pacman.conf && \
     pacman -Syu --noconfirm && \
     pacman -S --needed --noconfirm \
     git \
-    base-devel \
-    rust \
-    cargo \
-    pkgconf \
-    glib2 \
-    openssl \
-    libselinux \
+    bootc \
     util-linux \
     systemd \
     dracut \
     ostree \
+    libselinux \
     linux-cachyos-deckify \
     cachyos-settings \
     gamescope \
@@ -39,13 +41,6 @@ RUN pacman-key --init && \
     lib32-vulkan-intel \
     alsa-utils \
     flatpak
-
-# Build bootc natively from source: 100% dynamic linking against CachyOS toolchain
-RUN git clone https://github.com/bootc-dev/bootc.git /tmp/bootc && \
-    cd /tmp/bootc && \
-    cargo build --release && \
-    install -Dm755 target/release/bootc /usr/bin/bootc && \
-    rm -rf /tmp/bootc
 
 RUN git clone https://github.com/CachyOS/gamescope-session.git /tmp/gamescope-session && \
     cp -r /tmp/gamescope-session/usr/* /usr/ && \

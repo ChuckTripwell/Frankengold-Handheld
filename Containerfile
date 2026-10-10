@@ -64,7 +64,7 @@ RUN echo "" > /etc/fstab
 
 RUN ln -s /dev/null /etc/systemd/system/systemd-remount-fs.service
 
-RUN rm -rf /usr/etc
-LABEL ostree.bootable=1
-LABEL containers.bootc=1
+#RUN rm -rf /usr/etc
+LABEL ostree.bootable 1
+LABEL containers.bootc 1
 RUN bootc container lint || bootc -h

@@ -61,7 +61,7 @@ RUN mkdir -p /var/tmp /etc/dracut.conf.d && \
     dracut --force --no-hostonly --reproducible --zstd --verbose --kver "$KERNEL_VERSION" "/usr/lib/modules/$KERNEL_VERSION/initramfs.img"
 
 COPY --from="quay.io/fedora/fedora-bootc:rawhide" /bin/bootc /bin/bootc
-COPY --from="quay.io/fedora/fedora-bootc:rawhide" /etc/fstab /etc/fstab
+RUN rm -rf /etc/fstab
 
 RUN rm -rf /usr/etc
 LABEL ostree.bootable=1

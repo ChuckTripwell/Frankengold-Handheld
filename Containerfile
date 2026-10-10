@@ -60,7 +60,7 @@ RUN mkdir -p /var/tmp /etc/dracut.conf.d && \
     depmod -a "$KERNEL_VERSION" && \
     dracut --force --no-hostonly --reproducible --zstd --verbose --kver "$KERNEL_VERSION" "/usr/lib/modules/$KERNEL_VERSION/initramfs.img"
 
-RUN rm -rf /etc/fstab
+RUN echo "" > /etc/fstab
 
 RUN rm -rf /usr/etc
 LABEL ostree.bootable=1

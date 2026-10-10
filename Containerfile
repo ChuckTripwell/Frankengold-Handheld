@@ -11,17 +11,13 @@ RUN mv /mono/shared /shared
 
 FROM docker.io/cachyos/cachyos-v3:latest AS base
 
-FROM base AS builder
-
-RUN pacman -Syu --disable-sandbox --noconfirm make git rust go-md2man ostree glibc pkgconf
-
-WORKDIR /home/build
-RUN --mount=type=bind,from=ctx,source=/,target=/ctx \
-    /ctx/shared/build.sh
-
 FROM base AS system
 
-COPY --from=builder /output /
+RUN cp /etc/pacman.conf /etc/pacman.conf.bak && \
+    sed -i 's/^#*SigLevel.*/SigLevel = Never/' /etc/pacman.conf && \
+    BOOTC_URL=$(curl -s https://builds.garudalinux.org/repos/chaotic-aur/x86_64/ | grep -oE 'href="bootc-[0-9][^"]*x86_64\.pkg\.tar\.zst"' | sed 's/href="//;s/"//' | tail -n 1) && \
+    pacman -U --noconfirm "https://builds.garudalinux.org/repos/chaotic-aur/x86_64/${BOOTC_URL}" && \
+    mv /etc/pacman.conf.bak /etc/pacman.conf
 
 # Move everything from `/var` to `/usr/lib/sysimage` so behavior around pacman remains the same on `bootc usroverlay`'d systems
 RUN grep "= */var" /etc/pacman.conf | sed "/= *\/var/s/.*=// ; s/ //" | xargs -n1 sh -c 'mkdir -p "/usr/lib/sysimage/$(dirname $(echo $1 | sed "s@/var/@@"))" && mv -v "$1" "/usr/lib/sysimage/$(echo "$1" | sed "s@/var/@@")"' '' && \
@@ -87,6 +83,11 @@ RUN pacman-key --init && \
     flatpak \
     zram-generator
 RUN pacman -S --disable-sandbox --clean --noconfirm
+
+
+
+
+
 
 
 

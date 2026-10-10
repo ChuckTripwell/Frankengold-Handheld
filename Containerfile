@@ -1,5 +1,3 @@
-FROM quay.io/fedora/fedora-bootc:rawhide AS builder
-
 FROM docker.io/cachyos/cachyos-v3:latest AS base
 
 RUN sed -i '/^#DisableSandboxNetwork/s/^#//' /etc/pacman.conf || echo "DisableSandboxNetwork" >> /etc/pacman.conf
@@ -12,8 +10,13 @@ RUN pacman-key --init && \
     pacman -Syu --noconfirm && \
     pacman -S --needed --noconfirm \
     git \
+    base-devel \
+    rust \
+    cargo \
+    pkgconf \
     glib2 \
     openssl \
+    libselinux \
     util-linux \
     systemd \
     dracut \
@@ -37,7 +40,12 @@ RUN pacman-key --init && \
     alsa-utils \
     flatpak
 
-COPY --from=builder /bin/bootc /bin/bootc
+# Build bootc natively from source: 100% dynamic linking against CachyOS toolchain
+RUN git clone https://github.com/bootc-dev/bootc.git /tmp/bootc && \
+    cd /tmp/bootc && \
+    cargo build --release && \
+    install -Dm755 target/release/bootc /usr/bin/bootc && \
+    rm -rf /tmp/bootc
 
 RUN git clone https://github.com/CachyOS/gamescope-session.git /tmp/gamescope-session && \
     cp -r /tmp/gamescope-session/usr/* /usr/ && \

@@ -1,6 +1,4 @@
-FROM docker.io/alpine/akpine:latest AS ctx
-
-RUN apk add git -y
+FROM docker.io/alpine/git:latest AS ctx
 
 RUN cd /
 RUN git clone --depth 1 https://github.com/bootcrew/mono

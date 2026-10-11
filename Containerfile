@@ -1,9 +1,10 @@
-FROM alpine:latest AS certs
-RUN apk add --no-cache curl && \
-    curl -o /tmp/cacert.pem https://curl.se/ca/cacert.pem
+FROM quay.io/rakuos/rakuos-gamescope-v3:staging
 
-FROM quay.io/rakuos/rakuos-gamescope-v3:staging AS rakuos
-COPY --from=certs /tmp/cacert.pem /etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem
+RUN mkdir -p /usr/local/share/ca-certificates && \
+    wget --no-check-certificate -O /usr/local/share/ca-certificates/cacert.pem https://curl.se/ca/cacert.pem
+
+ENV CURL_CA_BUNDLE=/usr/local/share/ca-certificates/cacert.pem
+ENV SSL_CERT_FILE=/usr/local/share/ca-certificates/cacert.pem
 
 LABEL containers.bootc=1
 RUN bootc -h

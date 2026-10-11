@@ -1,8 +1,7 @@
-#FROM ghcr.io/ublue-os/bazzite-deck:stable AS salvage
 FROM quay.io/rakuos/rakuos-gamescope-v3:staging AS rakuos
 
 
-RUN rum -y reinstall ca-certificates
+RUN dnf install -y ca-certificates && update-ca-trust extract
 
 
 LABEL containers.bootc 1

@@ -1,10 +1,10 @@
 FROM quay.io/rakuos/rakuos-gamescope-v3:staging
 
 #####################################################################################################################################################
- :::::: Security and Finalization :::::: 
+# :::::: Security and Finalization :::::: #
 #####################################################################################################################################################
 
- :::::: Fix SELinux :::::: 
+# :::::: Fix SELinux :::::: #
 
 # Install audit so that sedispatch.conf is present for modification
 RUN dnf install -y audit && \

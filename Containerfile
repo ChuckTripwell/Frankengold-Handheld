@@ -1,15 +1,7 @@
 ##################################################################################################################################################
-### :::::: Pull CachyOS :::::: ###
+### :::::: Pull RakuOS :::::: ###
 ##################################################################################################################################################
-FROM docker.io/cachyos/cachyos-v3:latest AS cachyos
-
-# :::::: prepare the kernel :::::: 
-RUN rm -rf /lib/modules/*
-RUN pacman -Syy --disable-sandbox --noconfirm archlinux-keyring cachyos-keyring || curl -fsSL https://github.com/CachyOS/CachyOS-PKGBUILDS/raw/refs/heads/master/cachyos-mirrorlist/cachyos-mirrorlist -o /etc/pacman.d/cachyos-mirrorlist
-#RUN pacman -S --disable-sandbox --noconfirm archlinux-keyring cachyos-keyring
-RUN pacman -Syy --disable-sandbox --noconfirm
-RUN pacman -S --disable-sandbox --noconfirm linux-cachyos-deckify
-RUN pacman -S --disable-sandbox --noconfirm vulkan-tools vulkan-icd-loader lib32-vulkan-icd-loader dkms
+FROM quay.io/rakuos/rakuos-gamescope-v3:staging AS kernel
 
 ##################################################################################################################################################
 ### :::::: Pull Ublue-OS :::::: ###
@@ -18,8 +10,8 @@ FROM ghcr.io/ublue-os/bazzite-deck:stable
 
 # :::::: forcefully remove and replace kernel :::::: 
 RUN rm -rf /lib/modules
-COPY --from=cachyos /lib/modules /lib/modules
-COPY --from=cachyos /usr/share/licenses/ /usr/share/licenses/
+COPY --from=kernel /lib/modules /lib/modules
+COPY --from=kernel /usr/share/licenses/ /usr/share/licenses/
 
 ##################################################################################################################################################
 ### :::::: Modifications :::::: ###

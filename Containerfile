@@ -1,21 +1,76 @@
-FROM quay.io/rakuos/rakuos-gamescope-v3:staging
+##################################################################################################################################################
+### :::::: Pull CachyOS :::::: ###
+##################################################################################################################################################
+FROM docker.io/cachyos/cachyos-v3:latest AS cachyos
 
-#####################################################################################################################################################
-# :::::: Security and Finalization :::::: #
-#####################################################################################################################################################
+# :::::: prepare the kernel :::::: 
+RUN rm -rf /lib/modules/*
+RUN pacman -Syy --disable-sandbox --noconfirm archlinux-keyring cachyos-keyring || curl -fsSL https://github.com/CachyOS/CachyOS-PKGBUILDS/raw/refs/heads/master/cachyos-mirrorlist/cachyos-mirrorlist -o /etc/pacman.d/cachyos-mirrorlist
+#RUN pacman -S --disable-sandbox --noconfirm archlinux-keyring cachyos-keyring
+RUN pacman -Syy --disable-sandbox --noconfirm
+RUN pacman -S --disable-sandbox --noconfirm linux-cachyos-deckify
+RUN pacman -S --disable-sandbox --noconfirm vulkan-tools vulkan-icd-loader lib32-vulkan-icd-loader dkms
 
-# :::::: Fix SELinux :::::: #
+##################################################################################################################################################
+### :::::: Pull Ublue-OS :::::: ###
+##################################################################################################################################################
+FROM ghcr.io/ublue-os/bazzite-deck:stable
 
-RUN rum rm -y apparmor-devel apparmor-libs apparmor-parser apparmor-profiles apparmor-utils mod_apparmor pam_apparmor python3-apparmor python3-LibAppArmor
+# :::::: forcefully remove and replace kernel :::::: 
+RUN rm -rf /lib/modules
+COPY --from=cachyos /lib/modules /lib/modules
+COPY --from=cachyos /usr/share/licenses/ /usr/share/licenses/
 
-#COPY --from="quay.io/fedora/fedora:latest" /etc/dnf/protected.d/selinux-policy-targeted.conf /etc/dnf/protected.d/selinux-policy-targeted.conf
-RUN rum install -y 'selinux-policy*' 'policycoreutils-gui'
+##################################################################################################################################################
+### :::::: Modifications :::::: ###
+##################################################################################################################################################
+# :::::: disable countme ( I like my telemetry opt-in,thank you very much. you can enable it if you want... ) :::::: 
+RUN sed -i -e s,countme=1,countme=0, /etc/yum.repos.d/*.repo && systemctl mask --now rpm-ostree-countme.timer
 
-RUN mkdir -p /usr/lib/bootc/kargs.d/ && \
-    echo 'kargs = ["lsm=landlock,lockdown,yama,integrity,selinux,bpf", "selinux=1", "enforcing=1", "selinux_dontaudit=0", "selinux_deny_unknown=1", "apparmor=0", "security=selinux"]' > /usr/lib/bootc/kargs.d/90-security-overrides.toml
+# :::::: install controld dns :::::: 
+RUN curl -fsSL https://dl.controld.com/linux-amd64/ctrld \
+    -o /usr/bin/ctrld && \
+    chmod 755 /usr/bin/ctrld
 
-RUN rum -y clean all
+# :::::: force distrobox to use a sub-directory for home :::::: 
+RUN mkdir -p /usr/share/distrobox/
+RUN touch /usr/share/distrobox/distrobox.conf
+RUN echo "DBX_CONTAINER_HOME_PREFIX=~/distrobox" >> /usr/share/distrobox/distrobox.conf
 
-LABEL containers.bootc=1
+# :::::: install preformence-related stuff :::::: 
+RUN dnf5 -y copr enable bieszczaders/kernel-cachyos-addons
+    RUN dnf5 -y install --allowerasing scx-scheds scx-tools scxctl cachyos-settings uksmd scx-manager
+RUN dnf5 -y copr disable bieszczaders/kernel-cachyos-addons
 
-RUN bootc -h
+# Set vm.max_map_count for stability/improved gaming performance
+# https://wiki.archlinux.org/title/Gaming#Increase_vm.max_map_count
+  RUN echo -e "vm.max_map_count = 2147483642" > /etc/sysctl.d/80-gamecompatibility.conf
+
+##################################################################################################################################################
+### :::::: Security and Finalization :::::: ###
+##################################################################################################################################################
+# :::::: Fix SELinux :::::: 
+#
+RUN sed -i 's/^SELINUX=permissive/SELINUX=enforcing/' /etc/selinux/config
+#
+RUN touch /etc/.autorelabel
+#
+RUN mkdir -p /usr/lib/bootc/kargs.d/
+RUN sed -i 's|/\.autorelabel|/etc/.autorelabel|g' /usr/lib/systemd/system/selinux-autorelabel-mark.service
+RUN sed -i 's|/\.autorelabel|/etc/.autorelabel|g' /usr/libexec/selinux/selinux-autorelabel
+RUN sed -i 's|/\.autorelabel|/etc/.autorelabel|g' /usr/lib/systemd/system-generators/selinux-autorelabel-generator.sh
+RUN echo 'kargs = ["lsm=landlock,lockdown,yama,integrity,selinux,bpf", "selinux=1", "enforcing=1", "selinux_dontaudit=0", "selinux_deny_unknown=1"]' > /usr/lib/bootc/kargs.d/90-security-overrides.toml
+#
+RUN sed -i 's/active = yes/active = no/' /etc/audit/plugins.d/sedispatch.conf
+#
+# :::::: slot the kernel into place :::::: 
+RUN mkdir -p /var/tmp
+RUN printf "systemdsystemconfdir=/etc/systemd/system\nsystemdsystemunitdir=/usr/lib/systemd/system\n" | tee /usr/lib/dracut/dracut.conf.d/30-bootcrew-fix-bootc-module.conf && \
+      printf 'hostonly=no\nadd_dracutmodules+=" ostree bootc "' | tee /usr/lib/dracut/dracut.conf.d/30-bootcrew-bootc-modules.conf && \
+      sh -c 'export KERNEL_VERSION="$(basename "$(find /usr/lib/modules -maxdepth 1 -type d | grep -v -E "*.img" | tail -n 1)")" && \
+      dracut --force --no-hostonly --reproducible --zstd --verbose --kver "$KERNEL_VERSION"  "/usr/lib/modules/$KERNEL_VERSION/initramfs.img"'
+#
+#  :::::: finish :::::: 
+RUN rm -rf /usr/etc
+LABEL containers.bootc 1
+RUN bootc container lint

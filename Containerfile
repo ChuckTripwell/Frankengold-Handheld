@@ -1,8 +1,8 @@
-FROM ghcr.io/ublue-os/bazzite-deck:stable AS salvage
+#FROM ghcr.io/ublue-os/bazzite-deck:stable AS salvage
 FROM quay.io/rakuos/rakuos-gamescope-v3:staging AS rakuos
 
 
-COPY --from=salvage /etc/pki /etc/pki
+RUN rum -y reinstall ca-certificates
 
 
 LABEL containers.bootc 1

@@ -2,8 +2,7 @@ FROM ghcr.io/ublue-os/bazzite-deck:stable AS salvage
 FROM quay.io/rakuos/rakuos-gamescope-v3:staging AS rakuos
 
 
-RUN rm -rf /etc
-COPY --from=salvage /etc /etc
+COPY --from=salvage /etc/pki /etc/pki
 
 
 LABEL containers.bootc 1

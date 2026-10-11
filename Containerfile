@@ -6,20 +6,15 @@ FROM quay.io/rakuos/rakuos-gamescope-v3:staging
 
 # :::::: Fix SELinux :::::: #
 
-RUN dnf -y install \
-    selinux-policy \
-    selinux-policy-targeted \
-    policycoreutils \
-    libselinux-utils && \
-    dnf clean all
+RUN rum rm -y apparmor-devel apparmor-libs apparmor-parser apparmor-profiles apparmor-utils mod_apparmor pam_apparmor python3-apparmor python3-LibAppArmor
 
-RUN mkdir -p /etc/selinux && \
-    echo "SELINUX=enforcing" > /etc/selinux/config && \
-    echo "SELINUXTYPE=targeted" >> /etc/selinux/config
+COPY --from="quay.io/fedora/fedora:latest" /etc/dnf/protected.d/selinux-policy-targeted.conf /etc/dnf/protected.d/selinux-policy-targeted.conf
+rum install -y 'selinux-policy*' 'policycoreutils-gui'
 
+RUN mkdir -p /usr/lib/bootc/kargs.d/ && \
+    echo 'kargs = ["lsm=landlock,lockdown,yama,integrity,selinux,bpf", "selinux=1", "enforcing=1", "selinux_dontaudit=0", "selinux_deny_unknown=1", "apparmor=0, security="selinux" ]' > /usr/lib/bootc/kargs.d/90-security-overrides.toml
 
-#RUN mkdir -p /usr/lib/bootc/kargs.d/ && \
-#    echo 'kargs = ["lsm=landlock,lockdown,yama,integrity,selinux,bpf", "selinux=1", "enforcing=1", "selinux_dontaudit=0", "selinux_deny_unknown=1", "apparmor=0"]' > /usr/lib/bootc/kargs.d/90-security-overrides.toml
+RUN rum -y clean all
 
 LABEL containers.bootc=1
 

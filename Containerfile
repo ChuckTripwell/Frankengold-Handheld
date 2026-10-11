@@ -6,4 +6,4 @@ COPY --from=salvage /etc/pki /etc/pki
 
 
 LABEL containers.bootc 1
-RUN bootc container lint
+RUN bootc -h

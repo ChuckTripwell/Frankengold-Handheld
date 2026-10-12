@@ -3,8 +3,11 @@
 ##################################################################################################################################################
 FROM ghcr.io/cmspam/cache22-cachy-kde:rolling
 
+RUN pacman -Syy --noconfirm \
+ && pacman-key --populate
+
 # :::::: prepare the kernel :::::: 
-#RUN pacman -Rdd --noconfirm linux-cachyos-*
+RUN pacman -Rdd --noconfirm linux-cachyos-*
 RUN rm -rf /lib/modules/*
 RUN pacman -S --disable-sandbox --noconfirm linux-cachyos-deckify
 

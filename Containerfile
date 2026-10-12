@@ -15,4 +15,9 @@ RUN pacman -S --disable-sandbox --noconfirm steam
 # :::::: Remove Firefox :::::: 
 RUN pacman -Rdd --disable-sandbox --noconfirm firefox
 
+RUN rm -rf \
+        /tmp/* \
+        /var/cache/pacman/pkg/*
+
+
 RUN bootc -h

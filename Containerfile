@@ -48,21 +48,6 @@ RUN dnf5 -y copr enable bieszczaders/kernel-cachyos-addons
     RUN dnf5 -y install --allowerasing scx-scheds scx-tools scxctl cachyos-settings uksmd scx-manager
 RUN dnf5 -y copr disable bieszczaders/kernel-cachyos-addons
 
-# :::::: Fix Audio :::::: 
-RUN mkdir -p /etc/systemd/user && \
-    echo "[Unit]" > /etc/systemd/user/audio-reset.service && \
-    echo "Description=Reset audio on user session start" >> /etc/systemd/user/audio-reset.service && \
-    echo "After=pipewire.service wireplumber.service" >> /etc/systemd/user/audio-reset.service && \
-    echo "" >> /etc/systemd/user/audio-reset.service && \
-    echo "[Service]" >> /etc/systemd/user/audio-reset.service && \
-    echo "Type=oneshot" >> /etc/systemd/user/audio-reset.service && \
-    echo "ExecStart=/usr/bin/systemctl --user restart pipewire pipewire-pulse wireplumber" >> /etc/systemd/user/audio-reset.service && \
-    echo "" >> /etc/systemd/user/audio-reset.service && \
-    echo "[Install]" >> /etc/systemd/user/audio-reset.service && \
-    echo "WantedBy=default.target" >> /etc/systemd/user/audio-reset.service
-#
-RUN systemctl --global enable audio-reset.service
-
 # Set vm.max_map_count for stability/improved gaming performance
 # https://wiki.archlinux.org/title/Gaming#Increase_vm.max_map_count
   RUN echo -e "vm.max_map_count = 2147483642" > /etc/sysctl.d/80-gamecompatibility.conf

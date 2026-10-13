@@ -54,7 +54,7 @@ RUN dnf5 -y install rakuos-rum rum-dnf-shim
 RUN rm -rf /opt && ln -s -T var/opt /opt
 RUN rm -rf /usr/local && ln -s -T ../var/usrlocal /usr/local
 RUN mkdir -vp /nix
-
+RUN mkdir -p /var/rpm && ln -s /var/rpm /usr/share/rpm
 
 
 

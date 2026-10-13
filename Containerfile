@@ -44,9 +44,9 @@ RUN touch /usr/share/distrobox/distrobox.conf
 RUN echo "DBX_CONTAINER_HOME_PREFIX=~/distrobox" >> /usr/share/distrobox/distrobox.conf
 
 # :::::: install preformence-related stuff :::::: 
-RUN dnf5 -y copr enable bieszczaders/kernel-cachyos-addons
-    RUN dnf5 -y install --allowerasing scx-scheds scx-tools scxctl cachyos-settings uksmd scx-manager
-RUN dnf5 -y copr disable bieszczaders/kernel-cachyos-addons
+#RUN dnf5 -y copr enable bieszczaders/kernel-cachyos-addons
+#    RUN dnf5 -y install --allowerasing scx-scheds scx-tools scxctl cachyos-settings uksmd scx-manager
+#RUN dnf5 -y copr disable bieszczaders/kernel-cachyos-addons
 
 # Set vm.max_map_count for stability/improved gaming performance
 # https://wiki.archlinux.org/title/Gaming#Increase_vm.max_map_count

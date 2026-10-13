@@ -16,12 +16,6 @@ RUN pacman -S --disable-sandbox --noconfirm vulkan-tools vulkan-icd-loader lib32
 ##################################################################################################################################################
 FROM ghcr.io/ublue-os/bazzite-deck:stable
 
-RUN dnf5 -y install dnf5-plugins
-RUN rpm --import https://repo.rakuos.org/pubkey.gpg
-RUN dnf5 -y config-manager addrepo --from-repofile=https://repo.rakuos.org/rakuos.repo
-RUN sed -i '/^\[rakuos-v3\]/,/^\[/ s/^enabled=0/enabled=1/' /etc/yum.repos.d/rakuos.repo
-RUN dnf5 -y install rakuos-rum rum-dnf-shim
-
 # :::::: forcefully remove and replace kernel :::::: 
 RUN rm -rf /lib/modules
 COPY --from=cachyos /lib/modules /lib/modules
@@ -44,9 +38,17 @@ RUN touch /usr/share/distrobox/distrobox.conf
 RUN echo "DBX_CONTAINER_HOME_PREFIX=~/distrobox" >> /usr/share/distrobox/distrobox.conf
 
 # :::::: install preformence-related stuff :::::: 
-#RUN dnf5 -y copr enable bieszczaders/kernel-cachyos-addons
-#    RUN dnf5 -y install --allowerasing scx-scheds scx-tools scxctl cachyos-settings uksmd scx-manager
-#RUN dnf5 -y copr disable bieszczaders/kernel-cachyos-addons
+RUN dnf5 -y copr enable bieszczaders/kernel-cachyos-addons
+    RUN dnf5 -y install --allowerasing scx-scheds scx-tools scxctl cachyos-settings uksmd scx-manager
+RUN dnf5 -y copr disable bieszczaders/kernel-cachyos-addons
+
+RUN dnf5 -y install dnf5-plugins
+RUN rpm --import https://repo.rakuos.org/pubkey.gpg
+RUN dnf5 -y config-manager addrepo --from-repofile=https://repo.rakuos.org/rakuos.repo
+RUN sed -i '/^\[rakuos-v3\]/,/^\[/ s/^enabled=0/enabled=1/' /etc/yum.repos.d/rakuos.repo
+RUN dnf5 -y install rakuos-rum rum-dnf-shim
+
+RUN rm -rf /usr/share/rpm/.rpm.lock
 
 # Set vm.max_map_count for stability/improved gaming performance
 # https://wiki.archlinux.org/title/Gaming#Increase_vm.max_map_count
@@ -77,6 +79,6 @@ RUN printf "systemdsystemconfdir=/etc/systemd/system\nsystemdsystemunitdir=/usr/
       dracut --force --no-hostonly --reproducible --zstd --verbose --kver "$KERNEL_VERSION"  "/usr/lib/modules/$KERNEL_VERSION/initramfs.img"'
 #
 #  :::::: finish :::::: 
-RUN rm -rf /usr/etc
+#RUN rm -rf /usr/etc
 LABEL containers.bootc 1
 RUN bootc container lint

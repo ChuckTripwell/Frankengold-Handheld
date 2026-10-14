@@ -42,22 +42,6 @@ RUN dnf5 -y copr enable bieszczaders/kernel-cachyos-addons
     RUN dnf5 -y install --allowerasing scx-scheds scx-tools scxctl cachyos-settings uksmd scx-manager
 RUN dnf5 -y copr disable bieszczaders/kernel-cachyos-addons
 
-
-
-# :::::: install rum :::::: 
-RUN dnf5 -y install dnf5-plugins
-RUN rpm --import https://repo.rakuos.org/pubkey.gpg
-RUN dnf5 -y config-manager addrepo --from-repofile=https://repo.rakuos.org/rakuos.repo
-RUN sed -i '/^\[rakuos-v3\]/,/^\[/ s/^enabled=0/enabled=1/' /etc/yum.repos.d/rakuos.repo
-RUN dnf5 -y install rakuos-rum rum-dnf-shim
-
-RUN rm -rf /opt && ln -s -T var/opt /opt
-RUN rm -rf /usr/local && ln -s -T ../var/usrlocal /usr/local
-RUN mkdir -vp /nix
-RUN mkdir -p /var/rpm && ln -s /var/rpm /usr/share/rpm
-
-
-
 # Set vm.max_map_count for stability/improved gaming performance
 # https://wiki.archlinux.org/title/Gaming#Increase_vm.max_map_count
   RUN echo -e "vm.max_map_count = 2147483642" > /etc/sysctl.d/80-gamecompatibility.conf

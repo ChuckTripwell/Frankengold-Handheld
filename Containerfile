@@ -8,6 +8,6 @@ RUN rum install -y selinux-policy selinux-policy-targeted libselinux libselinux-
 
 LABEL containers.bootc=1
 
-RUN bootc container lint
+RUN bootc -V
 
 

@@ -13,7 +13,7 @@ RUN rum -y install \
 
 RUN printf 'SELINUX=permissive\nSELINUXTYPE=targeted\n' > /etc/selinux/config && \
     mkdir -p /usr/lib/bootc/kargs.d && \
-    printf 'kargs = ["lsm=landlock,lockdown,yama,integrity,selinux,bpf", "selinux=1", "enforcing=0", "apparmor=0"]\n' \
+    printf 'kargs = ["lsm=landlock,lockdown,yama,integrity,selinux,bpf", "selinux=1", "enforcing=1", "apparmor=0"]\n' \
     > /usr/lib/bootc/kargs.d/90-security-overrides.toml
 
 RUN sed -i 's|/\.autorelabel|/etc/.autorelabel|g' \

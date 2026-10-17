@@ -34,8 +34,8 @@ RUN echo 'kargs = ["lsm=landlock,lockdown,yama,integrity,selinux,bpf", "selinux=
 #
 RUN sed -i 's/active = yes/active = no/' /etc/audit/plugins.d/sedispatch.conf
 
-RUN mkdir -p /etc/dnf/protected.d/
-COPY from="quay.io/bootc-devel/fedora-bootc-rawhide-compose:latest" /etc/dnf/protected.d/selinux-policy-targeted.conf /etc/dnf/protected.d/selinux-policy-targeted.conf
+#RUN mkdir -p /etc/dnf/protected.d/
+#COPY from="quay.io/bootc-devel/fedora-bootc-rawhide-compose:latest" /etc/dnf/protected.d/selinux-policy-targeted.conf /etc/dnf/protected.d/selinux-policy-targeted.conf
 
 
 LABEL containers.bootc=1

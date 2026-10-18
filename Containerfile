@@ -1,4 +1,4 @@
-FROM ghcr.io/ublue-os/bazzite-deck:latest AS base
+FROM quay.io/bootc-devel/fedora-bootc-rawhide-compose:latest AS base
 
 
 

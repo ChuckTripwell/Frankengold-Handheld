@@ -90,7 +90,7 @@ RUN shipped_repo_files() { \
 
 
 
-rum install -y --skip-broken --skip-unavailable akonadi-server \
+RUN rum install -y --skip-broken --skip-unavailable akonadi-server \
   ${RAKUOS_RELEASE_PKG} \
   steam \
   inputplumber \
@@ -106,17 +106,18 @@ rum install -y --skip-broken --skip-unavailable akonadi-server \
   steamdeck-firmware
 
 ## Remove packages
-rum remove -y cardwire firefox
+RUN rum remove -y cardwire || true
+RUN rum remove -y firefox || true
 
 
-systemctl enable inputplumber.service
+RUN systemctl enable inputplumber.service
 # steamdeck-dsp: copy the Deck's pipewire/wireplumber hardware profiles
 # (speaker DSP filter chain, mic, default-device rules) into /etc at boot
-systemctl enable pipewire-sysconf.service
-systemctl enable wireplumber-sysconf.service
-systemctl enable autologin-setup.service
-systemctl mask autologin-setup-plasma.service
-systemctl --global enable steamos-powerbuttond.service
+RUN systemctl enable pipewire-sysconf.service
+RUN systemctl enable wireplumber-sysconf.service
+RUN systemctl enable autologin-setup.service
+RUN systemctl mask autologin-setup-plasma.service
+RUN systemctl --global enable steamos-powerbuttond.service
 
 
 

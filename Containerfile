@@ -99,5 +99,16 @@ RUN printf "systemdsystemconfdir=/etc/systemd/system\nsystemdsystemunitdir=/usr/
 
 
 #  :::::: finish :::::: 
+
+# RUN bootc container lint
+
+FROM quay.io/coreos/chunkah AS chunkah
+ARG CHUNKAH_CONFIG_STR
+RUN --mount=from=builder,src=/,target=/chunkah,ro \
+    --mount=type=bind,target=/run/src,rw \
+        chunkah build --prune /sysroot/ --max-layers 64 --threads 4 --compressed \
+          --label ostree.commit- --label ostree.final-diffid- \
+          > /run/src/out.ociarchive
+
+FROM oci-archive:out.ociarchive
 LABEL containers.bootc 1
-RUN bootc container lint

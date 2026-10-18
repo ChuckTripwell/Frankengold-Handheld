@@ -67,7 +67,7 @@ RUN sed -i '/^\[rakuos-v3\]/,/^\[/ s/^enabled=0/enabled=1/' /etc/yum.repos.d/rak
 
 
 
-dnf5 -y install rakuos-rum rum-dnf-shim rakuos-core
+RUN dnf5 -y install rakuos-rum rum-dnf-shim rakuos-core
 
 
 

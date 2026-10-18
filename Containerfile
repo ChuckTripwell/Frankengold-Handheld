@@ -91,7 +91,6 @@ RUN shipped_repo_files() { \
 
 
 RUN rum install -y --skip-broken --skip-unavailable akonadi-server \
-  ${RAKUOS_RELEASE_PKG} \
   steam \
   inputplumber \
   wireplumber \

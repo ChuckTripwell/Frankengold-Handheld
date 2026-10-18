@@ -1,4 +1,4 @@
-FROM quay.io/rakuos/rakuos-gamescope-v3:staging
+FROM quay.io/rakuos/rakuos-gamescope-v3:staging AS base
 
 #RUN rum -y install \
 #  selinux-policy \
@@ -34,6 +34,8 @@ RUN echo 'kargs = ["lsm=landlock,lockdown,yama,integrity,selinux,bpf", "selinux=
 #
 RUN sed -i 's/active = yes/active = no/' /etc/audit/plugins.d/sedispatch.conf
 
+FROM FROM scratch AS test
+COPY from="base" / /
 COPY from="quay.io/bootc-devel/fedora-bootc-rawhide-compose:latest" / /
 
 

@@ -56,70 +56,18 @@ RUN echo "DBX_CONTAINER_HOME_PREFIX=~/distrobox" >> /usr/share/distrobox/distrob
 
 
 
-RUN set -euo pipefail; \
-    FACTORY_VAR_ROOT="/usr/share/factory/var" && \
-    PACKAGES_LIST="$FACTORY_VAR_ROOT/lib/rakuos/packages.list" && \
-    UPPER_DIR="$FACTORY_VAR_ROOT/lib/rakuos/overlay/upper" && \
-    WORK_DIR="$FACTORY_VAR_ROOT/lib/rakuos/overlay/work" && \
-    STATE_FILE="$FACTORY_VAR_ROOT/lib/rakuos/overlay.state" && \
-    DIRTY_FILE="$FACTORY_VAR_ROOT/lib/rakuos/overlay.dirty" && \
-    FACTORY_RUM_RPMDB="$FACTORY_VAR_ROOT/lib/rakuos/rum-rpmdb" && \
-    \
-    echo "[rakuos] Seeding overlay state for first-boot install..." && \
-    \
-    mkdir -p "$FACTORY_VAR_ROOT/lib/rakuos" "$UPPER_DIR" "$WORK_DIR" && \
-    \
-    touch "$PACKAGES_LIST" && \
-    echo "[rakuos] packages.list is empty — no packages will be installed on first boot." && \
-    rm -f "$STATE_FILE" "$DIRTY_FILE" && \
-    sed -i -e '$a\' "$PACKAGES_LIST" && \
-    echo "[rakuos] stale overlay state cleared — prebake will write fresh first-boot state." && \
-    echo "[rakuos] Post-build seed complete." && \
-    \
-    echo "Appending minimal protected packages to protected-packages.txt..." && \
-    cat >> /usr/share/rakuos/protected-packages.txt << 'EOF'
 
-# Minimal packages (from rakuos-minimal/build_files/build.sh)
 
-EOF
 
-RUN set -euo pipefail; \
-    FACTORY_VAR_ROOT="/usr/share/factory/var" && \
-    UPPER_DIR="$FACTORY_VAR_ROOT/lib/rakuos/overlay/upper" && \
-    WORK_DIR="$FACTORY_VAR_ROOT/lib/rakuos/overlay/work" && \
-    STATE_FILE="$FACTORY_VAR_ROOT/lib/rakuos/overlay.state" && \
-    DIRTY_FILE="$FACTORY_VAR_ROOT/lib/rakuos/overlay.dirty" && \
-    FACTORY_RUM_RPMDB="$FACTORY_VAR_ROOT/lib/rakuos/rum-rpmdb" && \
-    \
-    installroot="$(mktemp -d /var/tmp/rakuos-overlay-installroot.XXXXXX)" && \
-    trap 'rm -rf "$installroot"' EXIT && \
-    \
-    echo "[rakuos] Prebaking overlay packages into installroot via rum..." && \
-    rum install --installroot "$installroot" -y --refresh firefox && \
-    rum remove --installroot "$installroot" -y firefox && \
-    rm -f "$installroot/usr/share/icons/default/index.theme" && \
-    \
-    echo "[rakuos] Copying prebaked /usr payload into overlay upper..." && \
-    rm -rf "$UPPER_DIR" "$WORK_DIR" && \
-    mkdir -p "$UPPER_DIR" "$WORK_DIR" && \
-    cp -a "$installroot/usr/." "$UPPER_DIR/" && \
-    \
-    echo "[rakuos] Copying prebaked rum overlay rpmdb into factory seed..." && \
-    rm -rf "$FACTORY_RUM_RPMDB" && \
-    mkdir -p "$(dirname "$FACTORY_RUM_RPMDB")" && \
-    cp -a "$installroot/var/lib/rakuos/rum-rpmdb" "$FACTORY_RUM_RPMDB" && \
-    \
-    if [ -d "$installroot/etc" ] && [ -n "$(ls -A "$installroot/etc" 2>/dev/null)" ]; then \
-        echo "[rakuos] Copying prebaked /etc payload into image..." && \
-        cp -a "$installroot/etc/." /etc/; \
-    fi && \
-    \
-    echo "prebaked-installroot" > "$STATE_FILE" && \
-    rm -f "$DIRTY_FILE" && \
-    echo "[rakuos] Overlay prebake complete." && \
-    \
-    echo "Generating base file manifest..." && \
-    /usr/libexec/rakuos/generate-base-manifest
+
+RUN dnf5 -y install dnf5-plugins
+RUN rpm --import https://repo.rakuos.org/pubkey.gpg
+RUN dnf5 -y config-manager addrepo --from-repofile=https://repo.rakuos.org/rakuos.repo
+RUN sed -i '/^\[rakuos-v3\]/,/^\[/ s/^enabled=0/enabled=1/' /etc/yum.repos.d/rakuos.repo
+
+
+
+dnf5 -y install rakuos-rum rum-dnf-shim rakuos-core
 
 
 

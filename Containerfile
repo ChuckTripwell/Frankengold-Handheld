@@ -19,9 +19,9 @@
 FROM quay.io/rakuos/rakuos-gamescope-v3:latest as build
 
 
-RUN dnf5 -y install selinux-policy-targeted selinux-policy policycoreutils libselinux-utils
-RUN echo 'SELINUX=permissive' > /etc/selinux/config
-RUN echo 'SELINUXTYPE=targeted' >> /etc/selinux/config
+#RUN dnf5 -y install selinux-policy-targeted selinux-policy policycoreutils libselinux-utils
+#RUN echo 'SELINUX=permissive' > /etc/selinux/config
+#RUN echo 'SELINUXTYPE=targeted' >> /etc/selinux/config
 
 
 

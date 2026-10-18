@@ -60,14 +60,7 @@ RUN echo "DBX_CONTAINER_HOME_PREFIX=~/distrobox" >> /usr/share/distrobox/distrob
 
 
 
-RUN dnf5 -y install dnf5-plugins
-RUN rpm --import https://repo.rakuos.org/pubkey.gpg
-RUN dnf5 -y config-manager addrepo --from-repofile=https://repo.rakuos.org/rakuos.repo
-RUN sed -i '/^\[rakuos-v3\]/,/^\[/ s/^enabled=0/enabled=1/' /etc/yum.repos.d/rakuos.repo
 
-
-
-RUN dnf5 -y install rakuos-rum rum-dnf-shim rakuos-core
 
 
 

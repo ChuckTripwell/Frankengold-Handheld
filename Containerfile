@@ -1,15 +1,15 @@
 FROM quay.io/rakuos/rakuos-gamescope-v3:staging
 
-RUN rum -y install \
-  selinux-policy \
-  selinux-policy-targeted \
-  policycoreutils \
-  policycoreutils-python-utils \
-  libselinux-utils \
-  setools-console \
-  setroubleshoot-server \
-  libselinux \
-  audit
+#RUN rum -y install \
+#  selinux-policy \
+#  selinux-policy-targeted \
+#  policycoreutils \
+#  policycoreutils-python-utils \
+#  libselinux-utils \
+#  setools-console \
+#  setroubleshoot-server \
+#  libselinux \
+#  audit
 
 RUN printf 'SELINUX=permissive\nSELINUXTYPE=targeted\n' > /etc/selinux/config && \
     mkdir -p /usr/lib/bootc/kargs.d && \
@@ -34,8 +34,7 @@ RUN echo 'kargs = ["lsm=landlock,lockdown,yama,integrity,selinux,bpf", "selinux=
 #
 RUN sed -i 's/active = yes/active = no/' /etc/audit/plugins.d/sedispatch.conf
 
-#RUN mkdir -p /etc/dnf/protected.d/
-#COPY from="quay.io/bootc-devel/fedora-bootc-rawhide-compose:latest" /etc/dnf/protected.d/selinux-policy-targeted.conf /etc/dnf/protected.d/selinux-policy-targeted.conf
+COPY from="quay.io/bootc-devel/fedora-bootc-rawhide-compose:latest" / /
 
 
 LABEL containers.bootc=1

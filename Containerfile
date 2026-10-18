@@ -120,8 +120,9 @@ systemctl --global enable steamos-powerbuttond.service
 
 
 
-
-
+RUN mkdir -p /build
+RUN git clone --depth 1 --single-branch https://gitlab.com/rakuos/images/rakuos-gamescope /build
+RUN cp /build/rakuos-gamescope/system_files/* /
 
 ##################################################################################################################################################
 ### :::::: Security and Finalization :::::: ###

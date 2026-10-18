@@ -40,7 +40,7 @@ RUN echo "DBX_CONTAINER_HOME_PREFIX=~/distrobox" >> /usr/share/distrobox/distrob
 
 # :::::: install preformence-related stuff :::::: 
 RUN dnf5 -y copr enable bieszczaders/kernel-cachyos-addons
-    RUN dnf5 -y install --allowerasing scx-scheds scx-tools scxctl cachyos-settings uksmd scx-manager
+    RUN dnf5 -y install --allowerasing scx-scheds scx-tools scxctl cachyos-settings scx-manager
 RUN dnf5 -y copr disable bieszczaders/kernel-cachyos-addons 
 
 # Set vm.max_map_count for stability/improved gaming performance

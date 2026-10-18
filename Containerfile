@@ -72,6 +72,6 @@ RUN printf "systemdsystemconfdir=/etc/systemd/system\nsystemdsystemunitdir=/usr/
       dracut --force --no-hostonly --reproducible --zstd --verbose --kver "$KERNEL_VERSION"  "/usr/lib/modules/$KERNEL_VERSION/initramfs.img"'
 #
 #  :::::: finish :::::: 
-#RUN rm -rf /usr/etc
+RUN rm -rf /usr/etc
 LABEL containers.bootc 1
-#RUN bootc container lint
+RUN bootc container lint || true

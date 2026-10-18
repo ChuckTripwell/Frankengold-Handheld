@@ -34,14 +34,14 @@ RUN echo 'kargs = ["lsm=landlock,lockdown,yama,integrity,selinux,bpf", "selinux=
 #
 RUN sed -i 's/active = yes/active = no/' /etc/audit/plugins.d/sedispatch.conf
 
-FROM scratch AS test
+FROM scratch AS build
 
 RUN mkdir -p /system_build
 COPY from="quay.io/bootc-devel/fedora-bootc-rawhide-compose:latest" / /system_build/
 COPY from="base" / /system_build/
 
 FROM scratch AS final
-COPY from="test" /system_build/* /
+COPY from="build" /system_build/* /
 
 LABEL containers.bootc=1
 

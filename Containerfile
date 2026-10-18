@@ -1,7 +1,7 @@
 ##################################################################################################################################################
 ### :::::: Pull CachyOS :::::: ###
 ##################################################################################################################################################
-FROM docker.io/pkgforge/cachyos-base:x86_64 AS cachy
+FROM docker.io/pkgforge/cachyos-base:x86_64 AS cachyos
 
 # :::::: prepare the kernel :::::: 
 RUN rm -rf /lib/modules/*
@@ -14,12 +14,12 @@ RUN pacman -S --disable-sandbox --noconfirm vulkan-tools vulkan-icd-loader lib32
 ##################################################################################################################################################
 ### :::::: Pull Ublue-OS :::::: ###
 ##################################################################################################################################################
-FROM ghcr.io/ublue-os/bazzite-deck:latest AS ublue
+FROM ghcr.io/ublue-os/bazzite-deck:latest
 
 # :::::: forcefully remove and replace kernel :::::: 
 RUN rm -rf /lib/modules
-COPY --from=cachy /lib/modules /lib/modules
-COPY --from=cachy /usr/share/licenses/ /usr/share/licenses/
+COPY --from=cachyos /lib/modules /lib/modules
+COPY --from=cachyos /usr/share/licenses/ /usr/share/licenses/
 
 ##################################################################################################################################################
 ### :::::: Modifications :::::: ###
@@ -35,75 +35,15 @@ RUN echo "DBX_CONTAINER_HOME_PREFIX=~/distrobox" >> /usr/share/distrobox/distrob
 # :::::: install preformence-related stuff :::::: 
 RUN dnf5 -y copr enable bieszczaders/kernel-cachyos-addons
     RUN dnf5 -y install --allowerasing scx-scheds scx-tools scxctl cachyos-settings uksmd scx-manager
-RUN dnf5 -y copr disable bieszczaders/kernel-cachyos-addons
-
-
-
+RUN dnf5 -y copr disable bieszczaders/kernel-cachyos-addons 
 
 # Set vm.max_map_count for stability/improved gaming performance
 # https://wiki.archlinux.org/title/Gaming#Increase_vm.max_map_count
   RUN echo -e "vm.max_map_count = 2147483642" > /etc/sysctl.d/80-gamecompatibility.conf
 
-
-
-
-
-
-
-
-# :::::: install rum from rakuos (experimental for now...) :::::: 
-
-RUN dnf5 -y install dnf5-plugins
-RUN rpm --import https://repo.rakuos.org/pubkey.gpg
-RUN dnf5 -y config-manager addrepo --from-repofile=https://repo.rakuos.org/rakuos.repo
-RUN sed -i '/^\[rakuos-v3\]/,/^\[/ s/^enabled=0/enabled=1/' /etc/yum.repos.d/rakuos.repo
-
-RUN dnf5 -y install rakuos-rum rum-dnf-shim
-
-
-
-
-RUN REPO_OWNERS=$(rpm -qf --qf '%{NAME}\n' /usr/share/dnf5/repos.d/*.repo /etc/yum.repos.d/*.repo 2>/dev/null | grep -v 'not owned' | sort -u || true) && \
-    if [ -n "$REPO_OWNERS" ]; then \
-        rum reinstall -y $REPO_OWNERS || echo "WARNING: couldn't reinstall $REPO_OWNERS; moving their repo files instead"; \
-    fi
-
-RUN mkdir -p /usr/share/rum/repos.d
-
-RUN for repo in /usr/share/dnf5/repos.d/*.repo /etc/yum.repos.d/*.repo; do \
-    [ -e "$repo" ] || continue; \
-    mv -f "$repo" /usr/share/rum/repos.d/; \
-done
-
-
-RUN shipped_repo_files() { \
-    local dir; \
-    for dir in /usr/share/rum/repos.d /etc/yum.repos.d /usr/share/dnf5/repos.d; do \
-        ls "$dir/$1" 2>/dev/null || true; \
-    done; \
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 ##################################################################################################################################################
 ### :::::: Security and Finalization :::::: ###
 ##################################################################################################################################################
-
-# :::::: protect base packages :::::: 
-RUN rum mark -y dependency '*'
-
 # :::::: Fix SELinux :::::: 
 #
 RUN sed -i 's/^SELINUX=permissive/SELINUX=enforcing/' /etc/selinux/config
@@ -125,10 +65,7 @@ RUN printf "systemdsystemconfdir=/etc/systemd/system\nsystemdsystemunitdir=/usr/
       sh -c 'export KERNEL_VERSION="$(basename "$(find /usr/lib/modules -maxdepth 1 -type d | grep -v -E "*.img" | tail -n 1)")" && \
       dracut --force --no-hostonly --reproducible --zstd --verbose --kver "$KERNEL_VERSION"  "/usr/lib/modules/$KERNEL_VERSION/initramfs.img"'
 #
-
-
 #  :::::: finish :::::: 
-
-# RUN bootc container lint
-
+#RUN rm -rf /usr/etc
 LABEL containers.bootc 1
+#RUN bootc container lint

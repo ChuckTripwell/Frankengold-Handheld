@@ -1,7 +1,7 @@
 ##################################################################################################################################################
 ### :::::: Pull CachyOS :::::: ###
 ##################################################################################################################################################
-FROM docker.io/pkgforge/cachyos-base:x86_64 AS cachyos
+FROM docker.io/pkgforge/cachyos-base:x86_64 AS cachy
 
 # :::::: prepare the kernel :::::: 
 RUN rm -rf /lib/modules/*
@@ -14,12 +14,12 @@ RUN pacman -S --disable-sandbox --noconfirm vulkan-tools vulkan-icd-loader lib32
 ##################################################################################################################################################
 ### :::::: Pull Ublue-OS :::::: ###
 ##################################################################################################################################################
-FROM ghcr.io/ublue-os/bazzite-deck:latest AS build
+FROM ghcr.io/ublue-os/bazzite-deck:latest AS ublue
 
 # :::::: forcefully remove and replace kernel :::::: 
 RUN rm -rf /lib/modules
-COPY --from=cachyos /lib/modules /lib/modules
-COPY --from=cachyos /usr/share/licenses/ /usr/share/licenses/
+COPY --from=cachy /lib/modules /lib/modules
+COPY --from=cachy /usr/share/licenses/ /usr/share/licenses/
 
 ##################################################################################################################################################
 ### :::::: Modifications :::::: ###
@@ -47,11 +47,11 @@ RUN dnf5 -y copr disable bieszczaders/kernel-cachyos-addons
 
 
 
-FROM build AS final
 
 
 
 
+# :::::: install rum from rakuos (experimental for now...) :::::: 
 
 RUN dnf5 -y install dnf5-plugins
 RUN rpm --import https://repo.rakuos.org/pubkey.gpg
@@ -69,6 +69,8 @@ RUN for repo in /usr/share/dnf5/repos.d/*.repo /etc/yum.repos.d/*.repo; do ;    
 
 
 RUN shipped_repo_files() { ; local dir ; for dir in /usr/share/rum/repos.d /etc/yum.repos.d /usr/share/dnf5/repos.d ; do ; ls $dir/$1 2>/dev/null || true ; done ; }
+
+
 
 ##################################################################################################################################################
 ### :::::: Security and Finalization :::::: ###

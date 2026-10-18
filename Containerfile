@@ -36,13 +36,10 @@ FROM quay.io/rakuos/rakuos-gamescope-v3:staging AS base
 
 FROM scratch AS build
 
-RUN mkdir -p /system_build
-COPY --from="quay.io/bootc-devel/fedora-bootc-rawhide-compose:latest" / /system_build/
-RUN rm -rf /boot/* /usr/lib/modules/* /lib/modules/*
-COPY --from="base" / /system_build/
 
-FROM scratch AS final
-COPY --from="build" /system_build/* /
+COPY --from="quay.io/bootc-devel/fedora-bootc-rawhide-compose:latest" / /
+RUN rm -rf /boot/* /usr/lib/modules/* /lib/modules/*
+COPY --from="base" / /
 
 LABEL containers.bootc=1
 

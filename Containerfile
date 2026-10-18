@@ -1,5 +1,3 @@
-###curl -fsSL  | bash
-
 
 
 # Global build arg — available to all FROM lines for image tag resolution.
@@ -28,36 +26,20 @@ RUN mkdir -vp /nix
 RUN mkdir -vp /snap
 #COPY system_files /
 
-#RUN --mount=type=bind,from=ctx,source=/,target=/ctx \
-#    --mount=type=cache,dst=/var/cache \
-#    --mount=type=cache,dst=/var/log \
-#    --mount=type=tmpfs,dst=/tmp \
-#    --mount=type=secret,id=mok_key,target=/run/secrets/mok_key,required=false \
-#    /ctx/build-v3.sh && /ctx/drivers-v3.sh && /ctx/post-build.sh
-
-
-
-
-
-
-
 RUN git clone --depth 1 --single-branch https://gitlab.com/rakuos/images/rakuos-base/ /tmp/rakuos-base
-RUN mkdir -p /tmp/build
-RUN mv /tmp/rakuos-base/build_files/*-v3 /tmp/build/
-RUN mv /tmp/rakuos-base/system_files/* /
+RUN cp -rf /tmp/rakuos-base/system_files/* /
 
 
 
-RUN sed -i '/selinux/d' /tmp/build/*.sh
 
 
-
-RUN sh /tmp/build/build-v3.sh
-RUN sh /tmp/build/drivers-v3.sh
-RUN sh /tmp/build/post-build-v3.sh
-
-
-
+RUN --mount=type=bind,from=ctx,source=/,target=/ctx \
+    --mount=type=cache,dst=/var/cache \
+    --mount=type=cache,dst=/var/log \
+    --mount=type=tmpfs,dst=/tmp \
+    --mount=type=secret,id=mok_key,target=/run/secrets/mok_key,required=false \
+    #/ctx/build-v3.sh && /ctx/drivers-v3.sh && /ctx/post-build.sh
+    /ctx/rakuos.sh
 
 
 
@@ -67,7 +49,20 @@ RUN sh /tmp/build/post-build-v3.sh
 
 
 
-COPY system_files /
+
+RUN cp -rf /tmp/rakuos-base/system_files/* /
+
+
+
+
+
+
+
+
+
+
+
+
 # Clean up real runtime state (systemd units started mid-build, akmods/
 # cryptsetup/etc. lock and socket files) that only ever makes sense on a
 # live booted system, before the lint step inspects the committed image.
@@ -78,6 +73,10 @@ COPY system_files /
 RUN find /run -mindepth 1 -delete 2>/dev/null || true; \
     find /tmp -mindepth 1 -delete 2>/dev/null || true; \
     find /boot -mindepth 1 -delete 2>/dev/null || true
+
+
+
+FROM builder AS stage2
 
 # RUN bootc container lint
 

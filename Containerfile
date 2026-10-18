@@ -104,7 +104,7 @@ RUN printf "systemdsystemconfdir=/etc/systemd/system\nsystemdsystemunitdir=/usr/
 
 FROM quay.io/coreos/chunkah AS chunkah
 ARG CHUNKAH_CONFIG_STR
-RUN --mount=from=builder,src=/,target=/chunkah,ro \
+RUN --mount=from=ublue,src=/,target=/chunkah,ro \
     --mount=type=bind,target=/run/src,rw \
         chunkah build --prune /sysroot/ --max-layers 64 --threads 4 --compressed \
           --label ostree.commit- --label ostree.final-diffid- \

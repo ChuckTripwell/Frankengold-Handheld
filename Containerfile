@@ -14,7 +14,7 @@ RUN pacman -S --disable-sandbox --noconfirm vulkan-tools vulkan-icd-loader lib32
 ##################################################################################################################################################
 ### :::::: Pull Ublue-OS :::::: ###
 ##################################################################################################################################################
-FROM ghcr.io/ublue-os/bazzite-deck:latest AS ublue
+FROM ghcr.io/ublue-os/kinoite-main:latest AS ublue
 
 # :::::: forcefully remove and replace kernel :::::: 
 RUN rm -rf /lib/modules
@@ -84,9 +84,52 @@ RUN shipped_repo_files() { \
 }
 
 
+
+
+
+
+
+
+rum install -y --skip-broken --skip-unavailable akonadi-server \
+  ${RAKUOS_RELEASE_PKG} \
+  steam \
+  inputplumber \
+  wireplumber \
+  steam-devices \
+  powerbuttond \
+  gamescope \
+  gamescope-session \
+  gamescope-session-steam \
+  jupiter-fan-control \
+  jupiter-hw-support \
+  steamdeck-dsp \
+  steamdeck-firmware
+
+## Remove packages
+rum remove -y cardwire firefox
+
+
+systemctl enable inputplumber.service
+# steamdeck-dsp: copy the Deck's pipewire/wireplumber hardware profiles
+# (speaker DSP filter chain, mic, default-device rules) into /etc at boot
+systemctl enable pipewire-sysconf.service
+systemctl enable wireplumber-sysconf.service
+systemctl enable autologin-setup.service
+systemctl mask autologin-setup-plasma.service
+systemctl --global enable steamos-powerbuttond.service
+
+
+
+
+
+
 ##################################################################################################################################################
 ### :::::: Security and Finalization :::::: ###
 ##################################################################################################################################################
+
+# :::::: protect base packages :::::: 
+RUN rum mark -y dependency '*'
+
 # :::::: Fix SELinux :::::: 
 #
 RUN sed -i 's/^SELINUX=permissive/SELINUX=enforcing/' /etc/selinux/config

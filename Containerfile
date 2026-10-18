@@ -49,6 +49,10 @@ RUN dnf5 -y copr disable bieszczaders/kernel-cachyos-addons
 
 FROM build AS final
 
+
+
+
+
 RUN dnf5 -y install dnf5-plugins
 RUN rpm --import https://repo.rakuos.org/pubkey.gpg
 RUN dnf5 -y config-manager addrepo --from-repofile=https://repo.rakuos.org/rakuos.repo
@@ -58,8 +62,8 @@ RUN dnf5 -y install rakuos-rum rum-dnf-shim
 
 
 
-RUN REPO_OWNERS=$(rpm -qf --qf '%{NAME}\n' /usr/share/dnf5/repos.d/*.repo /etc/yum.repos.d/*.repo 2>/dev/null | grep -v 'not owned' | sort -u || true)
-RUN if [ -n "$REPO_OWNERS" ]; then ;    rum reinstall -y $REPO_OWNERS || echo "WARNING: couldn't reinstall $REPO_OWNERS; moving their repo files instead" ; fi
+RUN REPO_OWNERS=$(rpm -qf --qf '%{NAME}\n' /usr/share/dnf5/repos.d/*.repo /etc/yum.repos.d/*.repo 2>/dev/null | grep -v 'not owned' | sort -u || true) && \
+ if [ -n "$REPO_OWNERS" ]; then ;    rum reinstall -y $REPO_OWNERS || echo "WARNING: couldn't reinstall $REPO_OWNERS; moving their repo files instead" ; fi
 RUN mkdir -p /usr/share/rum/repos.d
 RUN for repo in /usr/share/dnf5/repos.d/*.repo /etc/yum.repos.d/*.repo; do ;    [ -e "$repo" ] || continue ;    mv -f "$repo" /usr/share/rum/repos.d/ ; done
 

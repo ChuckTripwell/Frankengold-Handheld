@@ -1,12 +1,93 @@
-FROM quay.io/bootc-devel/fedora-bootc-rawhide-compose:latest AS base
+###curl -fsSL  | bash
 
 
 
-RUN rm -rf /usr
-COPY --from="quay.io/rakuos/rakuos-gamescope-v3:staging" /usr /usr
+# Global build arg — available to all FROM lines for image tag resolution.
+# Must NOT have ENV here; ENV is a layer instruction and cannot precede FROM.
+ARG FEDORA_VERSION="${FEDORA_VERSION:-rawhide}"
+ARG CHUNKAH_CONFIG_STR
+
+# Allow build scripts to be referenced without being copied into the final image
+FROM scratch AS ctx
+COPY build_files /
+
+# Base Image
+FROM quay.io/bootc-devel/fedora-bootc-${FEDORA_VERSION}-minimal:latest AS builder
+# Re-declare ARG inside this stage so it is in scope, then persist it as an
+# environment variable for RUN scripts that read $FEDORA_VERSION at runtime.
+ARG FEDORA_VERSION
+ENV FEDORA_VERSION=${FEDORA_VERSION}
+# Set by CI to "1" on the staging branch so build-v3.sh installs
+# rakuos-release-staging instead of rakuos-release.
+ARG RAKUOS_STAGING="0"
+ENV RAKUOS_STAGING=${RAKUOS_STAGING}
+
+RUN rm -rf /opt && ln -s -T var/opt /opt
+RUN rm -rf /usr/local && ln -s -T ../var/usrlocal /usr/local
+RUN mkdir -vp /nix
+RUN mkdir -vp /snap
+#COPY system_files /
+
+#RUN --mount=type=bind,from=ctx,source=/,target=/ctx \
+#    --mount=type=cache,dst=/var/cache \
+#    --mount=type=cache,dst=/var/log \
+#    --mount=type=tmpfs,dst=/tmp \
+#    --mount=type=secret,id=mok_key,target=/run/secrets/mok_key,required=false \
+#    /ctx/build-v3.sh && /ctx/drivers-v3.sh && /ctx/post-build.sh
 
 
+
+
+
+
+
+RUN git clone --depth 1 --single-branch https://gitlab.com/rakuos/images/rakuos-base/ /tmp/rakuos-base
+RUN mkdir -p /tmp/build
+RUN mv /tmp/rakuos-base/build_files/*-v3 /tmp/build/
+RUN mv /tmp/rakuos-base/system_files/* /
+
+
+
+RUN sed -i '/selinux/d' /tmp/build/*.sh
+
+
+
+RUN sh /tmp/build/build-v3.sh
+RUN sh /tmp/build/drivers-v3.sh
+RUN sh /tmp/build/post-build-v3.sh
+
+
+
+
+
+
+
+
+
+
+
+
+COPY system_files /
+# Clean up real runtime state (systemd units started mid-build, akmods/
+# cryptsetup/etc. lock and socket files) that only ever makes sense on a
+# live booted system, before the lint step inspects the committed image.
+# This runs as its own RUN, after every mounted (--mount=type=secret/
+# cache/tmpfs) build step above has already finished and unmounted, so it
+# only ever touches plain files already baked into the layer — never a
+# live mount the build engine itself still has open.
+RUN find /run -mindepth 1 -delete 2>/dev/null || true; \
+    find /tmp -mindepth 1 -delete 2>/dev/null || true; \
+    find /boot -mindepth 1 -delete 2>/dev/null || true
+
+# RUN bootc container lint
+
+FROM quay.io/coreos/chunkah AS chunkah
+ARG CHUNKAH_CONFIG_STR
+RUN --mount=from=builder,src=/,target=/chunkah,ro \
+    --mount=type=bind,target=/run/src,rw \
+        chunkah build --prune /sysroot/ --max-layers 64 --threads 4 --compressed \
+          --label ostree.commit- --label ostree.final-diffid- \
+          > /run/src/out.ociarchive
+
+FROM oci-archive:out.ociarchive
 LABEL containers.bootc=1
-
-
-

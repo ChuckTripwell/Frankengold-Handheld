@@ -94,7 +94,7 @@ RUN mkdir -p /etc/selinux && \
 # 3. Apply advanced security kargs via bootc's kargs.d
 RUN mkdir -p /usr/lib/bootc/kargs.d && \
     echo 'kargs = ["lsm=landlock,lockdown,yama,integrity,selinux,bpf", "selinux=1", "enforcing=1", "selinux_dontaudit=0", "selinux_deny_unknown=1"]' > /usr/lib/bootc/kargs.d/10-rakuos.toml
-RUN KERNEL_VER=$(ls /lib/modules/) && dracut --force --host-only --no-hostonly-default-target --kver "$KERNEL_VER"
+RUN KERNEL_VER=$(ls /lib/modules/) && dracut --force --no-hostonly --kver "$KERNEL_VER"
 
 #
 # :::::: slot the kernel into place :::::: 

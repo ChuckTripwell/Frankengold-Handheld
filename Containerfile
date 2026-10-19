@@ -96,6 +96,8 @@ RUN mkdir -p /usr/lib/bootc/kargs.d && \
     echo 'kargs = ["lsm=landlock,lockdown,yama,integrity,selinux,bpf", "selinux=1", "enforcing=1", "selinux_dontaudit=0", "selinux_deny_unknown=1"]' > /usr/lib/bootc/kargs.d/10-rakuos.toml
 RUN KERNEL_VER=$(ls /lib/modules/) && dracut --force --no-hostonly --kver "$KERNEL_VER"
 
+RUN /usr/sbin/setfiles -F -r / /etc/selinux/targeted/contexts/files/file_contexts / || true
+
 #
 # :::::: slot the kernel into place :::::: 
 #RUN mkdir -p /var/tmp

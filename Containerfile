@@ -6,7 +6,7 @@ FROM ghcr.io/ublue-os/base-main:latest AS kernel
 # :::::: prepare the kernel :::::: 
 RUN rm -rf /lib/modules/*
 RUN dnf5 copr enable catpieleaf/kernel-p03
-RUN dnf5 -y install kernel-p03
+RUN dnf5 -y install kernel-p03-deck
 
 ##################################################################################################################################################
 ### :::::: Pull Ublue-OS :::::: ###

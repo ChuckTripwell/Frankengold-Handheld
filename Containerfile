@@ -98,6 +98,9 @@ RUN KERNEL_VER=$(ls /lib/modules/) && dracut --force --no-hostonly --kver "$KERN
 
 RUN /usr/sbin/setfiles -F -r / /etc/selinux/targeted/contexts/files/file_contexts / || true
 
+RUN rum -y install policycoreutils
+RUN fixfiles -F onboot
+
 #
 # :::::: slot the kernel into place :::::: 
 RUN mkdir -p /var/tmp

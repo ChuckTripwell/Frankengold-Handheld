@@ -103,6 +103,25 @@ RUN fixfiles -F onboot
 
 RUN mkdir -p /sys/fs/selinux
 
+
+RUN printf '%s\n' \
+  '[Unit]' \
+  'Description=Mount SELinux Security Filesystem' \
+  'DefaultDependencies=no' \
+  'ConditionSecurity=selinux' \
+  '' \
+  '[Mount]' \
+  'What=selinuxfs' \
+  'Where=/sys/fs/selinux' \
+  'Type=selinuxfs' \
+  'Options=nosuid,noexec,nodev' \
+  '' \
+  '[Install]' \
+  'WantedBy=local-fs.target' \
+  > /usr/lib/systemd/system/sys-kernel-security-selinux.mount
+
+RUN systemctl enable sys-kernel-security-selinux.mount
+
 #
 # :::::: slot the kernel into place :::::: 
 RUN mkdir -p /var/tmp

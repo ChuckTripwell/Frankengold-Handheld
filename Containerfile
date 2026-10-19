@@ -1,15 +1,15 @@
 ##################################################################################################################################################
 ### :::::: Pull CachyOS :::::: ###
 ##################################################################################################################################################
-FROM docker.io/pkgforge/cachyos-base:x86_64 AS cachyos
+#FROM docker.io/pkgforge/cachyos-base:x86_64 AS cachyos
 
 # :::::: prepare the kernel :::::: 
-RUN rm -rf /lib/modules/*
-RUN pacman -Sy --disable-sandbox --noconfirm
-RUN pacman -Sy --disable-sandbox --noconfirm archlinux-keyring cachyos-keyring
-RUN pacman -Sy --disable-sandbox --noconfirm
-RUN pacman -S --disable-sandbox --noconfirm linux-cachyos-deckify
-RUN pacman -S --disable-sandbox --noconfirm vulkan-tools vulkan-icd-loader lib32-vulkan-icd-loader dkms
+#RUN rm -rf /lib/modules/*
+#RUN pacman -Sy --disable-sandbox --noconfirm
+#RUN pacman -Sy --disable-sandbox --noconfirm archlinux-keyring cachyos-keyring
+#RUN pacman -Sy --disable-sandbox --noconfirm
+#RUN pacman -S --disable-sandbox --noconfirm linux-cachyos-deckify
+#RUN pacman -S --disable-sandbox --noconfirm vulkan-tools vulkan-icd-loader lib32-vulkan-icd-loader dkms
 
 ##################################################################################################################################################
 ### :::::: Pull Ublue-OS :::::: ###
@@ -26,9 +26,9 @@ FROM quay.io/rakuos/rakuos-gamescope-v3:latest as build
 
 
 # :::::: forcefully remove and replace kernel :::::: 
-RUN rm -rf /lib/modules
-COPY --from=cachyos /lib/modules /lib/modules
-COPY --from=cachyos /usr/share/licenses/ /usr/share/licenses/
+#RUN rm -rf /lib/modules
+#COPY --from=cachyos /lib/modules /lib/modules
+#COPY --from=cachyos /usr/share/licenses/ /usr/share/licenses/
 
 ##################################################################################################################################################
 ### :::::: Modifications :::::: ###
@@ -52,10 +52,14 @@ RUN echo "DBX_CONTAINER_HOME_PREFIX=~/distrobox" >> /usr/share/distrobox/distrob
 
 
 
+RUN rum copr enable catpieleaf/kernel-p03 
+
+RUN rum remove -y kernel-rakuos-deck*
 
 
+RUN rm -rf /boot/* /usr/lib/modules/* /lib/modules/*
 
-
+RUN rum inatall -y kernel-p03
 
 
 
@@ -80,56 +84,39 @@ RUN echo "DBX_CONTAINER_HOME_PREFIX=~/distrobox" >> /usr/share/distrobox/distrob
 
 
 # 1. Install core SELinux policy and utilities
-RUN dnf -y install \
-    selinux-policy-targeted \
-    selinux-policy \
-    policycoreutils \
-    libselinux-utils && \
-    dnf clean all
+#RUN dnf -y install \
+#    selinux-policy-targeted \
+#    selinux-policy \
+#    policycoreutils \
+#    libselinux-utils && \
+#    dnf clean all
 
 # 2. Configure default enforcing mode
 #RUN mkdir -p /etc/selinux && \
 #    echo -e "SELINUX=enforcing\nSELINUXTYPE=targeted" > /etc/selinux/config
 
 # 3. Apply advanced security kargs via bootc's kargs.d
-RUN mkdir -p /usr/lib/bootc/kargs.d && \
-    echo 'kargs = ["lsm=landlock,lockdown,yama,integrity,selinux,bpf", "selinux=1", "enforcing=1", "selinux_dontaudit=0", "selinux_deny_unknown=1"]' > /usr/lib/bootc/kargs.d/10-rakuos.toml
+#RUN mkdir -p /usr/lib/bootc/kargs.d && \
+#    echo 'kargs = ["lsm=landlock,lockdown,yama,integrity,selinux,bpf", "selinux=1", "enforcing=1", "selinux_dontaudit=0", "selinux_deny_unknown=1"]' > /usr/lib/bootc/kargs.d/10-rakuos.toml
 
 #RUN KERNEL_VER=$(ls /lib/modules/) && dracut --force --no-hostonly --kver "$KERNEL_VER"
 
 #RUN /usr/sbin/setfiles -F -r / /etc/selinux/targeted/contexts/files/file_contexts / || true
 
 
-RUN fixfiles -F onboot
+#RUN fixfiles -F onboot
 
 #RUN mkdir -p /sys/fs/selinux
 
 
-RUN printf '%s\n' \
-  '[Unit]' \
-  'Description=Mount SELinux Security Filesystem' \
-  'DefaultDependencies=no' \
-  'ConditionSecurity=selinux' \
-  '' \
-  '[Mount]' \
-  'What=selinuxfs' \
-  'Where=/sys/fs/selinux' \
-  'Type=selinuxfs' \
-  'Options=nosuid,noexec,nodev' \
-  '' \
-  '[Install]' \
-  'WantedBy=local-fs.target' \
-  > /usr/lib/systemd/system/sys-kernel-security-selinux.mount
-
-RUN systemctl enable sys-kernel-security-selinux.mount
 
 #
 # :::::: slot the kernel into place :::::: 
-RUN mkdir -p /var/tmp
-RUN printf "systemdsystemconfdir=/etc/systemd/system\nsystemdsystemunitdir=/usr/lib/systemd/system\n" | tee /usr/lib/dracut/dracut.conf.d/30-bootcrew-fix-bootc-module.conf && \
-      printf 'hostonly=no\nadd_dracutmodules+=" ostree bootc "' | tee /usr/lib/dracut/dracut.conf.d/30-bootcrew-bootc-modules.conf && \
-      sh -c 'export KERNEL_VERSION="$(basename "$(find /usr/lib/modules -maxdepth 1 -type d | grep -v -E "*.img" | tail -n 1)")" && \
-      dracut --force --no-hostonly --reproducible --zstd --verbose --kver "$KERNEL_VERSION"  "/usr/lib/modules/$KERNEL_VERSION/initramfs.img"'
+#RUN mkdir -p /var/tmp
+#RUN printf "systemdsystemconfdir=/etc/systemd/system\nsystemdsystemunitdir=/usr/lib/systemd/system\n" | tee /usr/lib/dracut/dracut.conf.d/30-bootcrew-fix-bootc-module.conf && \
+ #     printf 'hostonly=no\nadd_dracutmodules+=" ostree bootc "' | tee /usr/lib/dracut/dracut.conf.d/30-bootcrew-bootc-modules.conf && \
+#      sh -c 'export KERNEL_VERSION="$(basename "$(find /usr/lib/modules -maxdepth 1 -type d | grep -v -E "*.img" | tail -n 1)")" && \
+#      dracut --force --no-hostonly --reproducible --zstd --verbose --kver "$KERNEL_VERSION"  "/usr/lib/modules/$KERNEL_VERSION/initramfs.img"'
 #
 
 #  :::::: finish :::::: 

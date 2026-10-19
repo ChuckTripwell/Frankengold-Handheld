@@ -8,6 +8,20 @@ RUN rm -rf /lib/modules/*
 RUN dnf5 copr -y enable catpieleaf/kernel-p03
 RUN dnf5 -y install --setopt=tsflags=noscripts kernel-p03-deck
 
+RUN dnf -y install dnf-plugins-core \
+    && mkdir -p /rpms \
+    && dnf download \
+        --resolve \
+        --alldeps \
+        --destdir=/rpms \
+        selinux-policy \
+        selinux-policy-targeted \
+        libselinux \
+        libselinux-utils \
+        policycoreutils \
+        policycoreutils-python-utils \
+        audit
+
 ##################################################################################################################################################
 ### :::::: Pull Ublue-OS :::::: ###
 ##################################################################################################################################################
@@ -52,15 +66,11 @@ COPY --from=quay.io/fedora/fedora-bootc-minimal:rawhide \
     /etc/selinux/config \
     /etc/selinux/config
 
-RUN dnf5 -y install \
-        selinux-policy \
-        selinux-policy-targeted \
-        libselinux \
-        libselinux-utils \
-        policycoreutils \
-        policycoreutils-python-utils \
-        audit \
-    && dnf clean all
+COPY --from=rpm-download /rpms/ /rpms/
+
+RUN dnf -y install /rpms/*.rpm \
+    && dnf clean all \
+    && rm -rf /rpms
 
 RUN sed -i \
         -e 's/^SELINUX=.*/SELINUX=enforcing/' \

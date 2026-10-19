@@ -59,7 +59,7 @@ RUN rum remove -y kernel-rakuos-deck*
 
 RUN rm -rf /boot/* /usr/lib/modules/* /lib/modules/*
 
-RUN rum inatall -y kernel-p03
+RUN rum install -y kernel-p03
 
 
 

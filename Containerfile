@@ -88,8 +88,8 @@ RUN dnf -y install \
     dnf clean all
 
 # 2. Configure default enforcing mode
-RUN mkdir -p /etc/selinux && \
-    echo -e "SELINUX=enforcing\nSELINUXTYPE=targeted" > /etc/selinux/config
+#RUN mkdir -p /etc/selinux && \
+#    echo -e "SELINUX=enforcing\nSELINUXTYPE=targeted" > /etc/selinux/config
 
 # 3. Apply advanced security kargs via bootc's kargs.d
 RUN mkdir -p /usr/lib/bootc/kargs.d && \
@@ -131,6 +131,7 @@ RUN printf "systemdsystemconfdir=/etc/systemd/system\nsystemdsystemunitdir=/usr/
       sh -c 'export KERNEL_VERSION="$(basename "$(find /usr/lib/modules -maxdepth 1 -type d | grep -v -E "*.img" | tail -n 1)")" && \
       dracut --force --no-hostonly --reproducible --zstd --verbose --kver "$KERNEL_VERSION"  "/usr/lib/modules/$KERNEL_VERSION/initramfs.img"'
 #
+RUN touch /.autorelabel
 #  :::::: finish :::::: 
 RUN rm -rf /usr/etc
 ENV SELINUX=enforcing

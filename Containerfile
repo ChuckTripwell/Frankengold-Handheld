@@ -8,26 +8,10 @@ RUN rm -rf /lib/modules/*
 RUN dnf5 copr -y enable catpieleaf/kernel-p03
 RUN dnf5 -y install --setopt=tsflags=noscripts kernel-p03-deck
 
-RUN dnf -y install dnf-plugins-core \
-    && mkdir -p /rpms \
-    && dnf download \
-        --resolve \
-        --alldeps \
-        --destdir=/rpms \
-        selinux-policy \
-        selinux-policy-targeted \
-        libselinux \
-        libselinux-utils \
-        policycoreutils \
-        policycoreutils-python-utils \
-        audit
-
 ##################################################################################################################################################
 ### :::::: Pull Ublue-OS :::::: ###
 ##################################################################################################################################################
-#FROM ghcr.io/ublue-os/bazzite-deck:latest AS system
-FROM quay.io/rakuos/rakuos-gamescope-v3:staging AS system
-
+FROM ghcr.io/ublue-os/bazzite-deck:latest AS system
 
 # :::::: forcefully remove and replace kernel :::::: 
 RUN rm -rf /lib/modules
@@ -49,35 +33,15 @@ RUN echo "DBX_CONTAINER_HOME_PREFIX=~/distrobox" >> /usr/share/distrobox/distrob
 # https://wiki.archlinux.org/title/Gaming#Increase_vm.max_map_count
   RUN echo -e "vm.max_map_count = 2147483642" > /etc/sysctl.d/80-gamecompatibility.conf
 
+RUN dnf5 -y install dnf5-plugins
+RUN rpm --import https://repo.rakuos.org/pubkey.gpg
+RUN dnf5 -y config-manager addrepo --from-repofile=https://repo.rakuos.org/rakuos.repo
+
+RUN dnf5 -y install rakuos-rum rum-dnf-shim
+
 ##################################################################################################################################################
 ### :::::: Security and Finalization :::::: ###
 ##################################################################################################################################################
-
-# :::::: Fix SELinux :::::: 
-#
-
-
-RUN rum -y rm 'apparmor*' 
-
-
-#COPY --from=quay.io/fedora/fedora-bootc-minimal:rawhide \
-#    /etc/selinux/config \
-#    /etc/selinux/config
-
-COPY --from=rpm-download /rpms/ /rpms/
-
-RUN rum -y in /rpms/*.rpm \
-    && dnf clean all \
-    && rm -rf /rpms
-
-RUN sed -i \
-        -e 's/^SELINUX=.*/SELINUX=enforcing/' \
-        -e 's/^SELINUXTYPE=.*/SELINUXTYPE=targeted/' \
-        /etc/selinux/config
-
-#
-#
-
 
 # :::::: Fix SELinux :::::: 
 #

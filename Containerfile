@@ -57,18 +57,16 @@ RUN echo "DBX_CONTAINER_HOME_PREFIX=~/distrobox" >> /usr/share/distrobox/distrob
 #
 
 
-#RUN rum -y remove 'apparmor*' \
-#    && dnf -y autoremove \
-#    && dnf clean all
+RUN rum -y rm 'apparmor*' 
 
 
-COPY --from=quay.io/fedora/fedora-bootc-minimal:rawhide \
-    /etc/selinux/config \
-    /etc/selinux/config
+#COPY --from=quay.io/fedora/fedora-bootc-minimal:rawhide \
+#    /etc/selinux/config \
+#    /etc/selinux/config
 
 COPY --from=rpm-download /rpms/ /rpms/
 
-RUN rum -y install /rpms/*.rpm \
+RUN rum -y in /rpms/*.rpm \
     && dnf clean all \
     && rm -rf /rpms
 

@@ -45,16 +45,15 @@ RUN dnf5 -y install rakuos-rum rum-dnf-shim
 
 # :::::: Fix SELinux :::::: 
 #
-#RUN sed -i 's/^SELINUX=permissive/SELINUX=enforcing/' /etc/selinux/config
+RUN sed -i 's/^SELINUX=permissive/SELINUX=enforcing/' /etc/selinux/config || true
 #
-#RUN touch /etc/.autorelabel
 #
-RUN mkdir -p /usr/lib/bootc/kargs.d
-RUN echo 'kargs = ["lsm=landlock,lockdown,yama,integrity,selinux,bpf", "selinux=1", "enforcing=1", "selinux_dontaudit=0", "selinux_deny_unknown=1"]' > /usr/lib/bootc/kargs.d/90-security-overrides.toml
+#RUN mkdir -p /usr/lib/bootc/kargs.d
+#RUN echo 'kargs = ["lsm=landlock,lockdown,yama,integrity,selinux,bpf", "selinux=1", "enforcing=1", "selinux_dontaudit=0", "selinux_deny_unknown=1"]' > /usr/lib/bootc/kargs.d/90-security-overrides.toml
 #
 #RUN sed -i 's/active = yes/active = no/' /etc/audit/plugins.d/sedispatch.conf
 #
-RUN systemctl enable selinux-autorelabel-mark.service
+RUN fixfiles -F onboot
 #
 # :::::: slot the kernel into place :::::: 
 RUN mkdir -p /var/tmp

@@ -41,6 +41,13 @@ RUN echo "DBX_CONTAINER_HOME_PREFIX=~/distrobox" >> /usr/share/distrobox/distrob
 
 # :::::: Fix SELinux :::::: 
 #
+
+
+RUN dnf -y remove 'apparmor*' \
+    && dnf -y autoremove \
+    && dnf clean all
+
+
 COPY --from=quay.io/fedora/fedora-bootc-minimal:rawhide \
     /etc/selinux/config \
     /etc/selinux/config

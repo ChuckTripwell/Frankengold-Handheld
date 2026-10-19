@@ -53,10 +53,12 @@ RUN sed -i 's/active = yes/active = no/' /etc/audit/plugins.d/sedispatch.conf
 # :::::: slot the kernel into place :::::: 
 RUN mkdir -p /var/tmp
 RUN set -eu; \
-    install -d "/usr/lib/dracut/dracut.conf.d"; \
-    printf '%s\n' 'systemdsystemconfdir=/etc/systemd/system' 'systemdsystemunitdir=/usr/lib/systemd/system' > "/usr/lib/dracut/dracut.conf.d/30-bootcrew-fix-bootc-module.conf"; \
-    printf '%s\n' 'hostonly=no' 'add_dracutmodules+=" ostree bootc "' > "/usr/lib/dracut/dracut.conf.d/30-bootcrew-bootc-modules.conf"; \
-    dracut -f --reproducible --zstd -v --kver "$(ls /usr/lib/modules)" "/usr/lib/modules/$(ls /usr/lib/modules)/initramfs.img"
+    D=/usr/lib/dracut/dracut.conf.d; install -d "$D"; \
+    printf '%s\n' 'systemdsystemconfdir=/etc/systemd/system' 'systemdsystemunitdir=/usr/lib/systemd/system' > "$D/30-bootcrew-fix-bootc-module.conf"; \
+    printf '%s\n' 'hostonly=no' 'add_dracutmodules+=" ostree bootc "' > "$D/30-bootcrew-bootc-modules.conf"; \
+    K=$(ls /usr/lib/modules); \
+    depmod -a "$K"; \
+    dracut -f --reproducible --zstd -v --kver "$K" "/usr/lib/modules/$K/initramfs.img"
 #
 #  :::::: finish :::::: 
 RUN rm -rf /usr/etc

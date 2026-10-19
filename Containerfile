@@ -101,6 +101,8 @@ RUN /usr/sbin/setfiles -F -r / /etc/selinux/targeted/contexts/files/file_context
 RUN rum -y install policycoreutils
 RUN fixfiles -F onboot
 
+RUN mkdir -p /sys/fs/selinux
+
 #
 # :::::: slot the kernel into place :::::: 
 RUN mkdir -p /var/tmp

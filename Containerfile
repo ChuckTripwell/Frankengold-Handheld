@@ -11,7 +11,9 @@ RUN dnf5 -y install --setopt=tsflags=noscripts kernel-p03-deck
 ##################################################################################################################################################
 ### :::::: Pull Ublue-OS :::::: ###
 ##################################################################################################################################################
-FROM ghcr.io/ublue-os/bazzite-deck:latest AS system
+#FROM ghcr.io/ublue-os/bazzite-deck:latest AS system
+FROM quay.io/rakuos/rakuos-gamescope-v3:staging AS system
+
 
 # :::::: forcefully remove and replace kernel :::::: 
 RUN rm -rf /lib/modules
@@ -36,11 +38,37 @@ RUN echo "DBX_CONTAINER_HOME_PREFIX=~/distrobox" >> /usr/share/distrobox/distrob
 ##################################################################################################################################################
 ### :::::: Security and Finalization :::::: ###
 ##################################################################################################################################################
+
 # :::::: Fix SELinux :::::: 
 #
-RUN sed -i 's/^SELINUX=permissive/SELINUX=enforcing/' /etc/selinux/config
+COPY --from=quay.io/fedora/fedora-bootc-minimal:rawhide \
+    /etc/selinux/config \
+    /etc/selinux/config
+
+RUN dnf5 -y install \
+        selinux-policy \
+        selinux-policy-targeted \
+        libselinux \
+        libselinux-utils \
+        policycoreutils \
+        policycoreutils-python-utils \
+        audit \
+    && dnf clean all
+
+RUN sed -i \
+        -e 's/^SELINUX=.*/SELINUX=enforcing/' \
+        -e 's/^SELINUXTYPE=.*/SELINUXTYPE=targeted/' \
+        /etc/selinux/config
+
 #
-RUN touch /etc/.autorelabel
+#
+
+
+# :::::: Fix SELinux :::::: 
+#
+#RUN sed -i 's/^SELINUX=permissive/SELINUX=enforcing/' /etc/selinux/config
+#
+#RUN touch /etc/.autorelabel
 #
 RUN mkdir -p /usr/lib/bootc/kargs.d/
 #RUN sed -i 's|/\.autorelabel|/etc/.autorelabel|g' /usr/lib/systemd/system/selinux-autorelabel-mark.service

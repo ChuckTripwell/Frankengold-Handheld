@@ -57,9 +57,9 @@ RUN echo "DBX_CONTAINER_HOME_PREFIX=~/distrobox" >> /usr/share/distrobox/distrob
 #
 
 
-RUN dnf -y remove 'apparmor*' \
-    && dnf -y autoremove \
-    && dnf clean all
+#RUN rum -y remove 'apparmor*' \
+#    && dnf -y autoremove \
+#    && dnf clean all
 
 
 COPY --from=quay.io/fedora/fedora-bootc-minimal:rawhide \
@@ -68,7 +68,7 @@ COPY --from=quay.io/fedora/fedora-bootc-minimal:rawhide \
 
 COPY --from=rpm-download /rpms/ /rpms/
 
-RUN dnf -y install /rpms/*.rpm \
+RUN rum -y install /rpms/*.rpm \
     && dnf clean all \
     && rm -rf /rpms
 

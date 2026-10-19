@@ -1,15 +1,15 @@
 ##################################################################################################################################################
 ### :::::: Pull CachyOS :::::: ###
 ##################################################################################################################################################
-#FROM docker.io/pkgforge/cachyos-base:x86_64 AS cachyos
+FROM docker.io/pkgforge/cachyos-base:x86_64 AS cachyos
 
 # :::::: prepare the kernel :::::: 
-#RUN rm -rf /lib/modules/*
-#RUN pacman -Sy --disable-sandbox --noconfirm
-#RUN pacman -Sy --disable-sandbox --noconfirm archlinux-keyring cachyos-keyring
-#RUN pacman -Sy --disable-sandbox --noconfirm
-#RUN pacman -S --disable-sandbox --noconfirm linux-cachyos-deckify
-#RUN pacman -S --disable-sandbox --noconfirm vulkan-tools vulkan-icd-loader lib32-vulkan-icd-loader dkms
+RUN rm -rf /lib/modules/*
+RUN pacman -Sy --disable-sandbox --noconfirm
+RUN pacman -Sy --disable-sandbox --noconfirm archlinux-keyring cachyos-keyring
+RUN pacman -Sy --disable-sandbox --noconfirm
+RUN pacman -S --disable-sandbox --noconfirm linux-cachyos-deckify
+RUN pacman -S --disable-sandbox --noconfirm vulkan-tools vulkan-icd-loader lib32-vulkan-icd-loader dkms
 
 ##################################################################################################################################################
 ### :::::: Pull Ublue-OS :::::: ###
@@ -26,9 +26,9 @@ FROM quay.io/rakuos/rakuos-gamescope-v3:latest as build
 
 
 # :::::: forcefully remove and replace kernel :::::: 
-#RUN rm -rf /lib/modules
-#COPY --from=cachyos /lib/modules /lib/modules
-#COPY --from=cachyos /usr/share/licenses/ /usr/share/licenses/
+RUN rm -rf /lib/modules
+COPY --from=cachyos /lib/modules /lib/modules
+COPY --from=cachyos /usr/share/licenses/ /usr/share/licenses/
 
 ##################################################################################################################################################
 ### :::::: Modifications :::::: ###

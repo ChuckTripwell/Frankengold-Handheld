@@ -95,7 +95,14 @@ RUN echo "DBX_CONTAINER_HOME_PREFIX=~/distrobox" >> /usr/share/distrobox/distrob
 
 
 
-# Prebake explicit packages into the factory overlay (ostree-safe)
+# 1. Install rum and shim globally first so the binary exists in $PATH
+RUN dnf5 -y install dnf5-plugins && \
+    rpm --import https://repo.rakuos.org/pubkey.gpg && \
+    dnf5 -y config-manager addrepo --from-repofile=https://repo.rakuos.org/rakuos.repo && \
+    sed -i -e '/^\[rakuos-v3\]/,/^\[/ s/^enabled=0/enabled=1/' /etc/yum.repos.d/rakuos.repo && \
+    dnf5 -y install rakuos-rum rum-dnf-shim rakuos-core
+
+# 2. Now run the overlay prebake (rum is now available)
 RUN set -eo pipefail && \
     FACTORY_VAR="/usr/share/factory/var/lib/rakuos" && \
     UPPER_DIR="$FACTORY_VAR/overlay/upper" && \

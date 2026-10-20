@@ -59,6 +59,7 @@ RUN echo "DBX_CONTAINER_HOME_PREFIX=~/distrobox" >> /usr/share/distrobox/distrob
 
 
 
+
 RUN mkdir -p \
         /var/lib/rakuos/rum-overlay/usr \
         /var/lib/rakuos/rum-overlay/work \
@@ -84,6 +85,8 @@ RUN cat > /usr/lib/dracut/modules.d/96rum-overlay/mount-overlay-usr.sh <<'EOF'
 SYSROOT=/sysroot
 UPPER="$SYSROOT/var/lib/rakuos/rum-overlay/usr"
 WORK="$SYSROOT/var/lib/rakuos/rum-overlay/work"
+RPM_OVERLAY="$SYSROOT/var/lib/rakuos/rum-rpmdb"
+RPM_SYSTEM="$SYSROOT/usr/share/rpm"
 
 if grep -q " /sysroot/usr overlay " /proc/self/mountinfo 2>/dev/null; then
     exit 0
@@ -92,9 +95,14 @@ fi
 [ -d "$SYSROOT/usr" ] || exit 0
 mkdir -p "$UPPER" "$WORK"
 
+# Mount overlayfs over /usr
 mount -t overlay overlay \
     -o lowerdir=$SYSROOT/usr,upperdir=$UPPER,workdir=$WORK \
     $SYSROOT/usr
+
+# Bind-mount overlay rpmdb over system rpmdb (this makes dnf5/rpm use it automatically)
+mkdir -p "$SYSROOT/usr/share"
+mount --bind "$RPM_OVERLAY" "$RPM_SYSTEM"
 EOF
 
 RUN chmod +x /usr/lib/dracut/modules.d/96rum-overlay/module-setup.sh \

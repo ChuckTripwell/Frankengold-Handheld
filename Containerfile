@@ -97,8 +97,7 @@ RUN echo "DBX_CONTAINER_HOME_PREFIX=~/distrobox" >> /usr/share/distrobox/distrob
 
 
 
-# ── SELinux: reproduce Bazzite's enforcing + targeted setup ─────────────
-# 1) Install the exact policy RPMs Bazzite ships (Fedora stock targeted policy)
+# 1) Policy RPMs (same ones Bazzite ships)
 RUN dnf -y install \
         selinux-policy-targeted \
         policycoreutils \
@@ -106,26 +105,18 @@ RUN dnf -y install \
         libselinux-utils \
     && dnf clean all
 
-# 2) Force enforcing mode + targeted policy (same values Bazzite uses)
+# 2) Enforcing + targeted (Bazzite-exact config)
 RUN mkdir -p /etc/selinux \
-    && cat > /etc/selinux/config <<'EOF'
-SELINUX=enforcing
-SELINUXTYPE=targeted
-EOF
+    && printf 'SELINUX=enforcing\nSELINUXTYPE=targeted\n' > /etc/selinux/config
 
-# 3) Force a first-boot relabel so the tree gets correct labels.
-#    Marker file route (classic Fedora):
-RUN touch /.autorelabel
-
-#    bootc kernel-arg route (belt-and-suspenders; survives image updates):
-#    NOTE: use kargs.d/ if your bootc version uses a directory, else this file.
-RUN mkdir -p /usr/lib/bootc \
-    && touch /usr/lib/bootc/kargs.toml \
+# 3) First-boot relabel (marker + bootc karg)
+RUN touch /.autorelabel \
+    && mkdir -p /usr/lib/bootc \
     && echo 'kargs = ["autorelabel=1"]' > /usr/lib/bootc/kargs.toml
 
 
 
-
+RUN grep '^CONFIG_SECURITY_SELINUX=y' /boot/config-$(uname -r)   # on the system that built it
 
 
 

@@ -24,7 +24,7 @@ why not just use rakuos?
   I might actually move there in the future, but for now... 
 
 
-###Frankengold OS
+# Frankengold OS
 ___
 
 wait, why Frankengold? does it have anything to do with the doggo?

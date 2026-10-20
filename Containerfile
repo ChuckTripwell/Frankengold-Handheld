@@ -44,9 +44,6 @@ RUN echo "DBX_CONTAINER_HOME_PREFIX=~/distrobox" >> /usr/share/distrobox/distrob
 ##################################################################################################################################################
 
 
-COPY --from=ublue_os /usr/share/selinux/ /usr/share/selinux/
-COPY --from=ublue_os /usr/share/selinux-policy/ /usr/share/selinux-policy/
-COPY --from=ublue_os /usr/lib/selinux/ /usr/lib/selinux/
 
 
 # 1) Policy RPMs (same ones Bazzite ships)
@@ -89,6 +86,9 @@ RUN install -d /etc/systemd/system /etc/systemd/system/sysinit.target.wants \
 
 
 
+COPY --from=ublue_os /usr/share/selinux/ /usr/share/selinux/
+COPY --from=ublue_os /usr/share/selinux-policy/ /usr/share/selinux-policy/
+COPY --from=ublue_os /usr/lib/selinux/ /usr/lib/selinux/
 
 
 

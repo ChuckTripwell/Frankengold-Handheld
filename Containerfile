@@ -1,7 +1,7 @@
 ##################################################################################################################################################
 ### :::::: Pull Kernel:::::: ###
 ##################################################################################################################################################
-FROM ghcr.io/ublue-os/base-main:latest AS kernel
+FROM ghcr.io/ublue-os/base-main:latest AS ublue_os
 
 # :::::: prepare the kernel :::::: 
 RUN rm -rf /lib/modules/*
@@ -44,7 +44,9 @@ RUN echo "DBX_CONTAINER_HOME_PREFIX=~/distrobox" >> /usr/share/distrobox/distrob
 ##################################################################################################################################################
 
 
-
+COPY --from=ublue_os /usr/share/selinux/ /usr/share/selinux/
+COPY --from=ublue_os /usr/share/selinux-policy/ /usr/share/selinux-policy/
+COPY --from=ublue_os /usr/lib/selinux/ /usr/lib/selinux/
 
 
 # 1) Policy RPMs (same ones Bazzite ships)

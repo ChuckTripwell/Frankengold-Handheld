@@ -1,5 +1,9 @@
 it's Bazzite-deck, but with the p03 kernel.
 
+```
+sudo bootc switch --enforce-container-sigpolicy ghcr.io/chucktripwell/frankengold-handheld:latest
+```
+
 why?
 - because I think the kernel they used feels sluggish on the steamdeck
 

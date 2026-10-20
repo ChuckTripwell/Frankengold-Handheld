@@ -86,35 +86,38 @@ RUN rm -f /usr/bin/rpm-ostree
 
 
 
-RUN dnf5 -y install dnf5-plugins
-RUN rpm --import https://repo.rakuos.org/pubkey.gpg
-RUN dnf5 -y config-manager addrepo --from-repofile=https://repo.rakuos.org/rakuos.repo
-RUN dnf5 -y install rakuos-rum rum-dnf-shim
-
-RUN mkdir -p /var/lib/rakuos/rum-overlay/usr /var/lib/rakuos/rum-overlay/work /usr/lib/dracut/modules.d/96rum-overlay /etc/dracut.conf.d
-RUN chmod 755 /var/lib/rakuos
-
-RUN echo '#!/bin/bash' > /usr/lib/dracut/modules.d/96rum-overlay/module-setup.sh
-RUN echo 'check() { return 0; }' >> /usr/lib/dracut/modules.d/96rum-overlay/module-setup.sh
-RUN echo 'depends() { echo base rootfs-block; }' >> /usr/lib/dracut/modules.d/96rum-overlay/module-setup.sh
-RUN echo 'install() {' >> /usr/lib/dracut/modules.d/96rum-overlay/module-setup.sh
-RUN echo '    inst_hook pre-pivot 95 "$moddir/mount-overlay-usr.sh"' >> /usr/lib/dracut/modules.d/96rum-overlay/module-setup.sh
-RUN echo '    inst_multiple mount mkdir ls' >> /usr/lib/dracut/modules.d/96rum-overlay/module-setup.sh
-RUN echo '}' >> /usr/lib/dracut/modules.d/96rum-overlay/module-setup.sh
-RUN chmod +x /usr/lib/dracut/modules.d/96rum-overlay/module-setup.sh
-
-RUN echo '#!/bin/sh' > /usr/lib/dracut/modules.d/96rum-overlay/mount-overlay-usr.sh
-RUN echo 'SYSROOT=/sysroot' >> /usr/lib/dracut/modules.d/96rum-overlay/mount-overlay-usr.sh
-RUN echo 'UPPER="$SYSROOT/var/lib/rakuos/rum-overlay/usr"' >> /usr/lib/dracut/modules.d/96rum-overlay/mount-overlay-usr.sh
-RUN echo 'WORK="$SYSROOT/var/lib/rakuos/rum-overlay/work"' >> /usr/lib/dracut/modules.d/96rum-overlay/mount-overlay-usr.sh
-RUN echo 'if grep -q " /sysroot/usr overlay " /proc/self/mountinfo 2>/dev/null; then exit 0; fi' >> /usr/lib/dracut/modules.d/96rum-overlay/mount-overlay-usr.sh
-RUN echo '[ -d "$SYSROOT/usr" ] || exit 0' >> /usr/lib/dracut/modules.d/96rum-overlay/mount-overlay-usr.sh
-RUN echo 'mkdir -p "$UPPER" "$WORK"' >> /usr/lib/dracut/modules.d/96rum-overlay/mount-overlay-usr.sh
-RUN echo 'mount -t overlay overlay -o lowerdir=$SYSROOT/usr,upperdir=$UPPER,workdir=$WORK $SYSROOT/usr' >> /usr/lib/dracut/modules.d/96rum-overlay/mount-overlay-usr.sh
-RUN chmod +x /usr/lib/dracut/modules.d/96rum-overlay/mount-overlay-usr.sh
-
-RUN echo 'add_dracutmodules+=" rum-overlay "' > /etc/dracut.conf.d/96rum-overlay.conf
-RUN dracut --force --add rum-overlay
+FROM bazzite:latest AS builder
+USER root
+RUN dnf5 -y install dnf5-plugins && \
+    rpm --import https://repo.rakuos.org/pubkey.gpg && \
+    dnf5 -y config-manager addrepo --from-repofile=https://repo.rakuos.org/rakuos.repo && \
+    sed -i -e '/^\[rakuos-v3\]/,/^\[/ s/^enabled=0/enabled=1/' /etc/yum.repos.d/rakuos.repo && \
+    dnf5 -y install rakuos-rum rum-dnf-shim
+RUN FACTORY_VAR_ROOT="/usr/share/factory/var" && \
+    PACKAGES_LIST="$FACTORY_VAR_ROOT/lib/rakuos/packages.list" && \
+    UPPER_DIR="$FACTORY_VAR_ROOT/lib/rakuos/overlay/upper" && \
+    WORK_DIR="$FACTORY_VAR_ROOT/lib/rakuos/overlay/work" && \
+    STATE_FILE="$FACTORY_VAR_ROOT/lib/rakuos/overlay.state" && \
+    DIRTY_FILE="$FACTORY_VAR_ROOT/lib/rakuos/overlay.dirty" && \
+    FACTORY_RUM_RPMDB="$FACTORY_VAR_ROOT/lib/rakuos/rum-rpmdb" && \
+    mkdir -p "$FACTORY_VAR_ROOT/lib/rakuos" "$UPPER_DIR" "$WORK_DIR" && \
+    touch "$PACKAGES_LIST" && \
+    installroot="$(mktemp -d /var/tmp/rakuos-overlay-installroot.XXXXXX)" && \
+    trap 'rm -rf "$installroot"' EXIT && \
+    rum install --installroot "$installroot" -y --refresh firefox && \
+    rum remove --installroot "$installroot" -y firefox && \
+    rm -f "$installroot/usr/share/icons/default/index.theme" && \
+    rm -rf "$UPPER_DIR" "$WORK_DIR" && \
+    mkdir -p "$UPPER_DIR" "$WORK_DIR" && \
+    cp -a "$installroot/usr/." "$UPPER_DIR/" && \
+    rm -rf "$FACTORY_RUM_RPMDB" && \
+    mkdir -p "$(dirname "$FACTORY_RUM_RPMDB")" && \
+    cp -a "$installroot/var/lib/rakuos/rum-rpmdb" "$FACTORY_RUM_RPMDB" && \
+    if [[ -d "$installroot/etc" ]] && [[ -n "$(ls -A "$installroot/etc" 2>/dev/null)" ]]; then \
+        cp -a "$installroot/etc/." /etc/; \
+    fi && \
+    echo "prebaked-installroot" > "$STATE_FILE" && \
+    rm -f "$DIRTY_FILE"
 
 
 

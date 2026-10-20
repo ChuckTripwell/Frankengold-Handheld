@@ -1,7 +1,7 @@
 it's Bazzite-deck, but with the p03 kernel.
 
 why?
-- because I feel the kernel they used feels sluggish on the steamdeck
+- because I think the kernel they used feels sluggish on the steamdeck
 
 who is this for?
 - me! you want to use it, fine, but do not complain.

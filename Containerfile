@@ -95,27 +95,30 @@ RUN rm -f /usr/bin/rpm-ostree
 
 
 
+
 # Setup RakuOS repository and install rum + shim globally
 RUN dnf5 -y install dnf5-plugins && \
     rpm --import https://repo.rakuos.org/pubkey.gpg && \
     dnf5 -y config-manager addrepo --from-repofile=https://repo.rakuos.org/rakuos.repo && \
     sed -i -e '/^\[rakuos-v3\]/,/^\[/ s/^enabled=0/enabled=1/' /etc/yum.repos.d/rakuos.repo && \
-    dnf5 -y install rakuos-rum rum-dnf-shim
+    dnf5 -y install rakuos-rum rum-dnf-shim rakuos-core
 
-# Prebake overlay environment using the Firefox bootstrap cycle
+# Prebake explicit packages into the factory overlay (without manual multi-user symlinking)
 RUN set -eo pipefail && \
     FACTORY_VAR="/usr/share/factory/var/lib/rakuos" && \
     UPPER_DIR="$FACTORY_VAR/overlay/upper" && \
     WORK_DIR="$FACTORY_VAR/overlay/work" && \
     mkdir -p "$UPPER_DIR" "$WORK_DIR" && \
-    touch "$FACTORY_VAR/packages.list" && \
     \
     installroot="$(mktemp -d /var/tmp/rakuos-overlay-installroot.XXXXXX)" && \
     trap 'rm -rf "$installroot"' EXIT && \
     \
-    rum install --installroot "$installroot" -y --refresh firefox && \
-    rum remove --installroot "$installroot" -y firefox && \
-    rm -f "$installroot/usr/share/icons/default/index.theme" && \
+    RAKUOS_PKGS="rakuos-rum rakuos-core firefox" && \
+    echo "$RAKUOS_PKGS" | tr ' ' '\n' > "$FACTORY_VAR/packages.list" && \
+    \
+    if [ -n "$RAKUOS_PKGS" ]; then \
+        rum install --installroot "$installroot" -y --refresh $RAKUOS_PKGS; \
+    fi && \
     \
     rm -rf "$UPPER_DIR" "$WORK_DIR" && \
     mkdir -p "$UPPER_DIR" "$WORK_DIR" && \
@@ -129,13 +132,8 @@ RUN set -eo pipefail && \
         cp -a "$installroot/etc/." /etc/; \
     fi && \
     \
-    mkdir -p /etc/systemd/system/multi-user.target.wants && \
-    ln -sf /usr/lib/systemd/system/rakuos-overlay-sync.service /etc/systemd/system/multi-user.target.wants/rakuos-overlay-sync.service && \
-    \
     echo "prebaked-installroot" > "$FACTORY_VAR/overlay.state" && \
     rm -f "$FACTORY_VAR/overlay.dirty"
-
-
 
 
 

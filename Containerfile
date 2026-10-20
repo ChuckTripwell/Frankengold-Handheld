@@ -81,7 +81,7 @@ RUN install -d /etc/systemd/system /etc/systemd/system/sysinit.target.wants \
       '[Install]' \
       'WantedBy=sysinit.target' \
     > /etc/systemd/system/sys-fs-selinux.mount \
- && ln -sf ../sys-fs-selinux.mount /etc/systemd/system/sysinit.target.wants/sys-fs-selinux.mount
+ && ln -sf ../sys-fs-selinux.mount /etc/systemd/system/sysinit.target.wants/sys-fs-selinux.mount#
 
 
 
@@ -89,8 +89,8 @@ RUN mkdir -p /usr/share/selinux/
 COPY --from=ublue_os /usr/share/selinux/ /usr/share/selinux/
 #RUN mkdir -p /usr/share/selinux-policy/
 #COPY --from=ublue_os /usr/share/selinux-policy/ /usr/share/selinux-policy/
-RUN mkdir -p /usr/lib/selinux/
-COPY --from=ublue_os /usr/lib/selinux/ /usr/lib/selinux/
+#RUN mkdir -p /usr/lib/selinux/
+#COPY --from=ublue_os /usr/lib/selinux/ /usr/lib/selinux/
 
 
 

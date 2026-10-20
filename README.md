@@ -44,7 +44,7 @@ wait, did you say a pirate?
   these statements, I feel, fits the theme of piracy: pirates are known to be dynamic, and take stuff.
 
 you steal stuff?
-- no, I TAKE stuff. this is all open source. enjoy!
+- no, I TAKE stuff. this is all free and open source. enjoy!
 
 ```
 sudo bootc switch --enforce-container-sigpolicy ghcr.io/chucktripwell/frankengold-handheld:latest

@@ -33,29 +33,10 @@ RUN echo "DBX_CONTAINER_HOME_PREFIX=~/distrobox" >> /usr/share/distrobox/distrob
 # https://wiki.archlinux.org/title/Gaming#Increase_vm.max_map_count
   RUN echo -e "vm.max_map_count = 2147483642" > /etc/sysctl.d/80-gamecompatibility.conf
 
-RUN dnf5 -y install dnf5-plugins
-RUN rpm --import https://repo.rakuos.org/pubkey.gpg
-RUN dnf5 -y config-manager addrepo --from-repofile=https://repo.rakuos.org/rakuos.repo
-
-RUN dnf5 -y install rakuos-rum rum-dnf-shim
-
 ##################################################################################################################################################
 ### :::::: Security and Finalization :::::: ###
 ##################################################################################################################################################
 
-# :::::: Fix SELinux :::::: 
-#
-#RUN sed -i 's/^SELINUX=permissive/SELINUX=enforcing/' /etc/selinux/config || true
-#
-#
-#RUN mkdir -p /usr/lib/bootc/kargs.d
-#RUN echo 'kargs = ["lsm=landlock,lockdown,yama,integrity,selinux,bpf", "selinux=1", "enforcing=1", "selinux_dontaudit=0", "selinux_deny_unknown=1"]' > /usr/lib/bootc/kargs.d/90-security-overrides.toml
-#
-#RUN sed -i 's/active = yes/active = no/' /etc/audit/plugins.d/sedispatch.conf
-#
-#RUN fixfiles -F onboot
-#
-# :::::: slot the kernel into place :::::: 
 RUN mkdir -p /var/tmp
 RUN set -eu; \
     D=/usr/lib/dracut/dracut.conf.d; install -d "$D"; \

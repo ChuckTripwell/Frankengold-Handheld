@@ -58,7 +58,7 @@ RUN echo "DBX_CONTAINER_HOME_PREFIX=~/distrobox" >> /usr/share/distrobox/distrob
 
 
 
-
+RUN rm -f /usr/bin/rpm-ostree
 
 RUN mkdir -p \
         /var/lib/rakuos/rum-overlay/usr \

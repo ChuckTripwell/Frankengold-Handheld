@@ -35,3 +35,17 @@ wait, why Frankengold? does it have anything to do with the doggo?
 
 - because frankenyellow sounds lame, and I wanted something that sounds a bit like a pirate's name.
 It has nothing to do with the doggo. I only discovered the doggo after naming the OS. 10/10 doggo. would pet.
+
+wait, did you say a pirate?
+- yeah. the philosophy behind Frankengold-os is:
+  1. Be as dynamic as possible, this should be future-proof. 
+  2. take as much as you can from other projects, to save time.
+ 
+  these statements, I feel, fits the theme of piracy: pirates are known to be dynamic, and take stuff.
+
+you steal stuff?
+- no, I take stuff. this is all open source. enjoy!
+
+```
+sudo bootc switch --enforce-container-sigpolicy ghcr.io/chucktripwell/frankengold-handheld:latest
+```

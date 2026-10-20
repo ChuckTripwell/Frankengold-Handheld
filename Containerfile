@@ -45,7 +45,7 @@ RUN dnf5 -y install rakuos-rum rum-dnf-shim
 
 # :::::: Fix SELinux :::::: 
 #
-RUN sed -i 's/^SELINUX=permissive/SELINUX=enforcing/' /etc/selinux/config || true
+#RUN sed -i 's/^SELINUX=permissive/SELINUX=enforcing/' /etc/selinux/config || true
 #
 #
 #RUN mkdir -p /usr/lib/bootc/kargs.d
@@ -53,7 +53,7 @@ RUN sed -i 's/^SELINUX=permissive/SELINUX=enforcing/' /etc/selinux/config || tru
 #
 #RUN sed -i 's/active = yes/active = no/' /etc/audit/plugins.d/sedispatch.conf
 #
-RUN fixfiles -F onboot
+#RUN fixfiles -F onboot
 #
 # :::::: slot the kernel into place :::::: 
 RUN mkdir -p /var/tmp

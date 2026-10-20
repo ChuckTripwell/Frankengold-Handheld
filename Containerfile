@@ -88,6 +88,10 @@ RUN rm -f /usr/bin/rpm-ostree
 
 
 
+
+
+
+
 RUN dnf5 -y install dnf5-plugins && \
     rpm --import https://repo.rakuos.org/pubkey.gpg && \
     dnf5 -y config-manager addrepo --from-repofile=https://repo.rakuos.org/rakuos.repo && \
@@ -104,9 +108,8 @@ RUN FACTORY_VAR_ROOT="/usr/share/factory/var" && \
     touch "$PACKAGES_LIST" && \
     installroot="$(mktemp -d /var/tmp/rakuos-overlay-installroot.XXXXXX)" && \
     trap 'rm -rf "$installroot"' EXIT && \
-    rum install --installroot "$installroot" -y --refresh firefox && \
-    rum remove --installroot "$installroot" -y firefox && \
-    rm -f "$installroot/usr/share/icons/default/index.theme" && \
+    RAKUOS_PKGS=$(rum repoquery --disablerepo="*" --enablerepo="rakuos*" --qf "%{name}" 2>/dev/null | sort -u || true) && \
+    if [ -n "$RAKUOS_PKGS" ]; then rum install --installroot "$installroot" -y --refresh $RAKUOS_PKGS; fi && \
     rm -rf "$UPPER_DIR" "$WORK_DIR" && \
     mkdir -p "$UPPER_DIR" "$WORK_DIR" && \
     cp -a "$installroot/usr/." "$UPPER_DIR/" && \
@@ -116,9 +119,10 @@ RUN FACTORY_VAR_ROOT="/usr/share/factory/var" && \
     if [[ -d "$installroot/etc" ]] && [[ -n "$(ls -A "$installroot/etc" 2>/dev/null)" ]]; then \
         cp -a "$installroot/etc/." /etc/; \
     fi && \
+    mkdir -p /etc/systemd/system/multi-user.target.wants && \
+    ln -sf /usr/lib/systemd/system/rakuos-overlay-sync.service /etc/systemd/system/multi-user.target.wants/rakuos-overlay-sync.service && \
     echo "prebaked-installroot" > "$STATE_FILE" && \
     rm -f "$DIRTY_FILE"
-RUN systemctl enable rakuos-overlay-sync.service
 
 
 

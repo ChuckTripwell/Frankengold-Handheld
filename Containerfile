@@ -31,7 +31,7 @@ RUN touch /usr/share/distrobox/distrobox.conf
 RUN echo "DBX_CONTAINER_HOME_PREFIX=~/distrobox" >> /usr/share/distrobox/distrobox.conf
 
 # Set vm.max_map_count for stability/improved gaming performance
- https://wiki.archlinux.org/title/Gaming#Increase_vm.max_map_count
+# https://wiki.archlinux.org/title/Gaming#Increase_vm.max_map_count
   RUN echo -e "vm.max_map_count = 2147483642" > /etc/sysctl.d/80-gamecompatibility.conf
 
 

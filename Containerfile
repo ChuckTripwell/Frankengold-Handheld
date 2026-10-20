@@ -112,7 +112,7 @@ RUN set -eo pipefail && \
     installroot="$(mktemp -d /var/tmp/rakuos-overlay-installroot.XXXXXX)" && \
     trap 'rm -rf "$installroot"' EXIT && \
     \
-    RAKUOS_PKGS="rakuos-rum rakuos-core rakuos-settings rakuos-release rakuos-release-common" && \
+    RAKUOS_PKGS="rakuos-rum rakuos-core" && \
     DUMMY_PKG="firefox" && \
     \
     echo "$RAKUOS_PKGS" | tr ' ' '\n' > "$FACTORY_VAR/packages.list" && \

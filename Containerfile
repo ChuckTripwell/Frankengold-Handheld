@@ -43,6 +43,8 @@ RUN echo "DBX_CONTAINER_HOME_PREFIX=~/distrobox" >> /usr/share/distrobox/distrob
 ### :::::: Selinux :::::: ###
 ##################################################################################################################################################
 
+# tell Grub to add kargs - without them SELinux and nvidia-drivers might not work
+  RUN echo 'kargs = ["lsm=landlock,lockdown,yama,integrity,selinux,bpf", "selinux=1", "enforcing=0", "selinux_dontaudit=0", "selinux_deny_unknown=1", "apparmor=0"]' > /usr/lib/bootc/kargs.d/90-security-overrides.toml
 
 
 

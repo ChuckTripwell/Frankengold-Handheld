@@ -95,8 +95,6 @@ RUN echo "DBX_CONTAINER_HOME_PREFIX=~/distrobox" >> /usr/share/distrobox/distrob
 
 
 
-FROM bazzite:latest AS builder
-USER root
 
 # Setup RakuOS repository and install rum + shim globally
 RUN dnf5 -y install dnf5-plugins && \

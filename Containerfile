@@ -58,7 +58,6 @@ RUN echo "DBX_CONTAINER_HOME_PREFIX=~/distrobox" >> /usr/share/distrobox/distrob
 
 
 
-RUN rm -f /usr/bin/rpm-ostree
 
 
 
@@ -95,6 +94,9 @@ RUN rm -f /usr/bin/rpm-ostree
 
 
 
+
+FROM bazzite:latest AS builder
+USER root
 
 # Setup RakuOS repository and install rum + shim globally
 RUN dnf5 -y install dnf5-plugins && \
@@ -103,7 +105,7 @@ RUN dnf5 -y install dnf5-plugins && \
     sed -i -e '/^\[rakuos-v3\]/,/^\[/ s/^enabled=0/enabled=1/' /etc/yum.repos.d/rakuos.repo && \
     dnf5 -y install rakuos-rum rum-dnf-shim rakuos-core
 
-# Prebake explicit packages into the factory overlay (without manual multi-user symlinking)
+# Prebake explicit packages into the factory overlay (ostree-safe)
 RUN set -eo pipefail && \
     FACTORY_VAR="/usr/share/factory/var/lib/rakuos" && \
     UPPER_DIR="$FACTORY_VAR/overlay/upper" && \
@@ -127,10 +129,6 @@ RUN set -eo pipefail && \
     rm -rf "$FACTORY_VAR/rum-rpmdb" && \
     mkdir -p "$FACTORY_VAR/rum-rpmdb" && \
     if [ -d "$installroot/var/lib/rakuos/rum-rpmdb" ]; then cp -a "$installroot/var/lib/rakuos/rum-rpmdb/." "$FACTORY_VAR/rum-rpmdb/"; fi && \
-    \
-    if [ -d "$installroot/etc" ] && [ -n "$(ls -A "$installroot/etc" 2>/dev/null)" ]; then \
-        cp -a "$installroot/etc/." /etc/; \
-    fi && \
     \
     echo "prebaked-installroot" > "$FACTORY_VAR/overlay.state" && \
     rm -f "$FACTORY_VAR/overlay.dirty"

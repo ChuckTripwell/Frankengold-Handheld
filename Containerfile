@@ -16,7 +16,7 @@ FROM quay.io/rakuos/rakuos-gamescope-v3:staging AS system
 
 # :::::: forcefully remove and replace kernel :::::: 
 RUN rm -rf /lib/modules
-COPY --from=ublu_os /lib/modules /lib/modules
+COPY --from=ublue_os /lib/modules /lib/modules
 COPY --from=ublue_os /usr/share/licenses/ /usr/share/licenses/
 
 ##################################################################################################################################################

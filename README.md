@@ -22,3 +22,12 @@ why not just use rakuos?
   their firewall is busted too... silently blocking obviously
   harmless stuff, like kdeconnect...
   I might actually move there in the future, but for now... 
+
+
+Frankengold OS
+___
+
+wait, why Frankengold? does it have anything to do with the doggo?
+
+- because frankenyellow sounds lame, and I wanted something that sounds a bit like a pirate's name.
+It has nothing to do with the doggo. I only discovered the doggo after naming the OS. 10/10 doggo. would pet.

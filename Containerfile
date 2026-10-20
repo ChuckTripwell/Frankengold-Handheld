@@ -116,8 +116,6 @@ RUN touch /.autorelabel \
 
 
 
-RUN grep '^CONFIG_SECURITY_SELINUX=y' /boot/config-$(uname -r)   # on the system that built it
-
 
 
 

@@ -60,58 +60,73 @@ RUN echo "DBX_CONTAINER_HOME_PREFIX=~/distrobox" >> /usr/share/distrobox/distrob
 
 RUN rm -f /usr/bin/rpm-ostree
 
-RUN mkdir -p \
-        /var/lib/rakuos/rum-overlay/usr \
-        /var/lib/rakuos/rum-overlay/work \
-        /var/lib/rakuos/rum-rpmdb \
-    && chmod 755 /var/lib/rakuos
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+RUN mkdir -p /var/lib/rakuos/rum-overlay/usr /var/lib/rakuos/rum-overlay/work /var/lib/rakuos/rum-rpmdb /usr/lib/dracut/modules.d/96rum-overlay /etc/dracut.conf.d
+RUN chmod 755 /var/lib/rakuos
 RUN cp -a /usr/share/rpm /var/lib/rakuos/rum-rpmdb
 
-RUN mkdir -p /usr/lib/dracut/modules.d/96rum-overlay
+RUN echo '#!/bin/bash' > /usr/lib/dracut/modules.d/96rum-overlay/module-setup.sh
+RUN echo 'check() { return 0; }' >> /usr/lib/dracut/modules.d/96rum-overlay/module-setup.sh
+RUN echo 'depends() { echo base rootfs-block; }' >> /usr/lib/dracut/modules.d/96rum-overlay/module-setup.sh
+RUN echo 'install() {' >> /usr/lib/dracut/modules.d/96rum-overlay/module-setup.sh
+RUN echo '    inst_hook pre-pivot 97 "$moddir/mount-overlay-usr.sh"' >> /usr/lib/dracut/modules.d/96rum-overlay/module-setup.sh
+RUN echo '    inst_multiple mount mkdir ls' >> /usr/lib/dracut/modules.d/96rum-overlay/module-setup.sh
+RUN echo '}' >> /usr/lib/dracut/modules.d/96rum-overlay/module-setup.sh
+RUN chmod +x /usr/lib/dracut/modules.d/96rum-overlay/module-setup.sh
 
-RUN cat > /usr/lib/dracut/modules.d/96rum-overlay/module-setup.sh <<'EOF'
-#!/bin/bash
-check() { return 0; }
-depends() { echo base rootfs-block; }
-install() {
-    inst_hook pre-pivot 97 "$moddir/mount-overlay-usr.sh"
-    inst_multiple mount mkdir ls
-}
-EOF
+RUN echo '#!/bin/sh' > /usr/lib/dracut/modules.d/96rum-overlay/mount-overlay-usr.sh
+RUN echo 'SYSROOT=/sysroot' >> /usr/lib/dracut/modules.d/96rum-overlay/mount-overlay-usr.sh
+RUN echo 'UPPER="$SYSROOT/var/lib/rakuos/rum-overlay/usr"' >> /usr/lib/dracut/modules.d/96rum-overlay/mount-overlay-usr.sh
+RUN echo 'WORK="$SYSROOT/var/lib/rakuos/rum-overlay/work"' >> /usr/lib/dracut/modules.d/96rum-overlay/mount-overlay-usr.sh
+RUN echo 'RPM_OVERLAY="$SYSROOT/var/lib/rakuos/rum-rpmdb"' >> /usr/lib/dracut/modules.d/96rum-overlay/mount-overlay-usr.sh
+RUN echo 'RPM_SYSTEM="$SYSROOT/usr/share/rpm"' >> /usr/lib/dracut/modules.d/96rum-overlay/mount-overlay-usr.sh
+RUN echo '' >> /usr/lib/dracut/modules.d/96rum-overlay/mount-overlay-usr.sh
+RUN echo 'if grep -q " /sysroot/usr overlay " /proc/self/mountinfo 2>/dev/null; then' >> /usr/lib/dracut/modules.d/96rum-overlay/mount-overlay-usr.sh
+RUN echo '    exit 0' >> /usr/lib/dracut/modules.d/96rum-overlay/mount-overlay-usr.sh
+RUN echo 'fi' >> /usr/lib/dracut/modules.d/96rum-overlay/mount-overlay-usr.sh
+RUN echo '' >> /usr/lib/dracut/modules.d/96rum-overlay/mount-overlay-usr.sh
+RUN echo '[ -d "$SYSROOT/usr" ] || exit 0' >> /usr/lib/dracut/modules.d/96rum-overlay/mount-overlay-usr.sh
+RUN echo 'mkdir -p "$UPPER" "$WORK"' >> /usr/lib/dracut/modules.d/96rum-overlay/mount-overlay-usr.sh
+RUN echo '' >> /usr/lib/dracut/modules.d/96rum-overlay/mount-overlay-usr.sh
+RUN echo 'mount -t overlay overlay \' >> /usr/lib/dracut/modules.d/96rum-overlay/mount-overlay-usr.sh
+RUN echo '    -o lowerdir=$SYSROOT/usr,upperdir=$UPPER,workdir=$WORK \' >> /usr/lib/dracut/modules.d/96rum-overlay/mount-overlay-usr.sh
+RUN echo '    $SYSROOT/usr' >> /usr/lib/dracut/modules.d/96rum-overlay/mount-overlay-usr.sh
+RUN echo '' >> /usr/lib/dracut/modules.d/96rum-overlay/mount-overlay-usr.sh
+RUN echo 'mkdir -p "$SYSROOT/usr/share"' >> /usr/lib/dracut/modules.d/96rum-overlay/mount-overlay-usr.sh
+RUN echo 'mount --bind "$RPM_OVERLAY" "$RPM_SYSTEM"' >> /usr/lib/dracut/modules.d/96rum-overlay/mount-overlay-usr.sh
+RUN chmod +x /usr/lib/dracut/modules.d/96rum-overlay/mount-overlay-usr.sh
 
-RUN cat > /usr/lib/dracut/modules.d/96rum-overlay/mount-overlay-usr.sh <<'EOF'
-#!/bin/sh
-SYSROOT=/sysroot
-UPPER="$SYSROOT/var/lib/rakuos/rum-overlay/usr"
-WORK="$SYSROOT/var/lib/rakuos/rum-overlay/work"
-RPM_OVERLAY="$SYSROOT/var/lib/rakuos/rum-rpmdb"
-RPM_SYSTEM="$SYSROOT/usr/share/rpm"
-
-if grep -q " /sysroot/usr overlay " /proc/self/mountinfo 2>/dev/null; then
-    exit 0
-fi
-
-[ -d "$SYSROOT/usr" ] || exit 0
-mkdir -p "$UPPER" "$WORK"
-
-# Mount overlayfs over /usr
-mount -t overlay overlay \
-    -o lowerdir=$SYSROOT/usr,upperdir=$UPPER,workdir=$WORK \
-    $SYSROOT/usr
-
-# Bind-mount overlay rpmdb over system rpmdb (this makes dnf5/rpm use it automatically)
-mkdir -p "$SYSROOT/usr/share"
-mount --bind "$RPM_OVERLAY" "$RPM_SYSTEM"
-EOF
-
-RUN chmod +x /usr/lib/dracut/modules.d/96rum-overlay/module-setup.sh \
-           /usr/lib/dracut/modules.d/96rum-overlay/mount-overlay-usr.sh
-
-RUN mkdir -p /etc/dracut.conf.d \
-    && echo 'add_dracutmodules+=" rum-overlay "' > /etc/dracut.conf.d/96rum-overlay.conf
-
+RUN echo 'add_dracutmodules+=" rum-overlay "' > /etc/dracut.conf.d/96rum-overlay.conf
 RUN dracut --force --add rum-overlay
+
+
+
+
 
 
 

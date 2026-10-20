@@ -86,15 +86,19 @@ RUN rm -f /usr/bin/rpm-ostree
 
 
 
-RUN mkdir -p /var/lib/rakuos/rum-overlay/usr /var/lib/rakuos/rum-overlay/work /var/lib/rakuos/rum-rpmdb /usr/lib/dracut/modules.d/96rum-overlay /etc/dracut.conf.d
+RUN dnf5 -y install dnf5-plugins
+RUN rpm --import https://repo.rakuos.org/pubkey.gpg
+RUN dnf5 -y config-manager addrepo --from-repofile=https://repo.rakuos.org/rakuos.repo
+RUN dnf5 -y install rakuos-rum rum-dnf-shim
+
+RUN mkdir -p /var/lib/rakuos/rum-overlay/usr /var/lib/rakuos/rum-overlay/work /usr/lib/dracut/modules.d/96rum-overlay /etc/dracut.conf.d
 RUN chmod 755 /var/lib/rakuos
-RUN cp -a /usr/share/rpm /var/lib/rakuos/rum-rpmdb
 
 RUN echo '#!/bin/bash' > /usr/lib/dracut/modules.d/96rum-overlay/module-setup.sh
 RUN echo 'check() { return 0; }' >> /usr/lib/dracut/modules.d/96rum-overlay/module-setup.sh
 RUN echo 'depends() { echo base rootfs-block; }' >> /usr/lib/dracut/modules.d/96rum-overlay/module-setup.sh
 RUN echo 'install() {' >> /usr/lib/dracut/modules.d/96rum-overlay/module-setup.sh
-RUN echo '    inst_hook pre-pivot 97 "$moddir/mount-overlay-usr.sh"' >> /usr/lib/dracut/modules.d/96rum-overlay/module-setup.sh
+RUN echo '    inst_hook pre-pivot 95 "$moddir/mount-overlay-usr.sh"' >> /usr/lib/dracut/modules.d/96rum-overlay/module-setup.sh
 RUN echo '    inst_multiple mount mkdir ls' >> /usr/lib/dracut/modules.d/96rum-overlay/module-setup.sh
 RUN echo '}' >> /usr/lib/dracut/modules.d/96rum-overlay/module-setup.sh
 RUN chmod +x /usr/lib/dracut/modules.d/96rum-overlay/module-setup.sh
@@ -103,22 +107,10 @@ RUN echo '#!/bin/sh' > /usr/lib/dracut/modules.d/96rum-overlay/mount-overlay-usr
 RUN echo 'SYSROOT=/sysroot' >> /usr/lib/dracut/modules.d/96rum-overlay/mount-overlay-usr.sh
 RUN echo 'UPPER="$SYSROOT/var/lib/rakuos/rum-overlay/usr"' >> /usr/lib/dracut/modules.d/96rum-overlay/mount-overlay-usr.sh
 RUN echo 'WORK="$SYSROOT/var/lib/rakuos/rum-overlay/work"' >> /usr/lib/dracut/modules.d/96rum-overlay/mount-overlay-usr.sh
-RUN echo 'RPM_OVERLAY="$SYSROOT/var/lib/rakuos/rum-rpmdb"' >> /usr/lib/dracut/modules.d/96rum-overlay/mount-overlay-usr.sh
-RUN echo 'RPM_SYSTEM="$SYSROOT/usr/share/rpm"' >> /usr/lib/dracut/modules.d/96rum-overlay/mount-overlay-usr.sh
-RUN echo '' >> /usr/lib/dracut/modules.d/96rum-overlay/mount-overlay-usr.sh
-RUN echo 'if grep -q " /sysroot/usr overlay " /proc/self/mountinfo 2>/dev/null; then' >> /usr/lib/dracut/modules.d/96rum-overlay/mount-overlay-usr.sh
-RUN echo '    exit 0' >> /usr/lib/dracut/modules.d/96rum-overlay/mount-overlay-usr.sh
-RUN echo 'fi' >> /usr/lib/dracut/modules.d/96rum-overlay/mount-overlay-usr.sh
-RUN echo '' >> /usr/lib/dracut/modules.d/96rum-overlay/mount-overlay-usr.sh
+RUN echo 'if grep -q " /sysroot/usr overlay " /proc/self/mountinfo 2>/dev/null; then exit 0; fi' >> /usr/lib/dracut/modules.d/96rum-overlay/mount-overlay-usr.sh
 RUN echo '[ -d "$SYSROOT/usr" ] || exit 0' >> /usr/lib/dracut/modules.d/96rum-overlay/mount-overlay-usr.sh
 RUN echo 'mkdir -p "$UPPER" "$WORK"' >> /usr/lib/dracut/modules.d/96rum-overlay/mount-overlay-usr.sh
-RUN echo '' >> /usr/lib/dracut/modules.d/96rum-overlay/mount-overlay-usr.sh
-RUN echo 'mount -t overlay overlay \' >> /usr/lib/dracut/modules.d/96rum-overlay/mount-overlay-usr.sh
-RUN echo '    -o lowerdir=$SYSROOT/usr,upperdir=$UPPER,workdir=$WORK \' >> /usr/lib/dracut/modules.d/96rum-overlay/mount-overlay-usr.sh
-RUN echo '    $SYSROOT/usr' >> /usr/lib/dracut/modules.d/96rum-overlay/mount-overlay-usr.sh
-RUN echo '' >> /usr/lib/dracut/modules.d/96rum-overlay/mount-overlay-usr.sh
-RUN echo 'mkdir -p "$SYSROOT/usr/share"' >> /usr/lib/dracut/modules.d/96rum-overlay/mount-overlay-usr.sh
-RUN echo 'mount --bind "$RPM_OVERLAY" "$RPM_SYSTEM"' >> /usr/lib/dracut/modules.d/96rum-overlay/mount-overlay-usr.sh
+RUN echo 'mount -t overlay overlay -o lowerdir=$SYSROOT/usr,upperdir=$UPPER,workdir=$WORK $SYSROOT/usr' >> /usr/lib/dracut/modules.d/96rum-overlay/mount-overlay-usr.sh
 RUN chmod +x /usr/lib/dracut/modules.d/96rum-overlay/mount-overlay-usr.sh
 
 RUN echo 'add_dracutmodules+=" rum-overlay "' > /etc/dracut.conf.d/96rum-overlay.conf

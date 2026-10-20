@@ -86,7 +86,8 @@ RUN rm -f /usr/bin/rpm-ostree
 
 
 
-USER root
+
+
 RUN dnf5 -y install dnf5-plugins && \
     rpm --import https://repo.rakuos.org/pubkey.gpg && \
     dnf5 -y config-manager addrepo --from-repofile=https://repo.rakuos.org/rakuos.repo && \
@@ -117,6 +118,9 @@ RUN FACTORY_VAR_ROOT="/usr/share/factory/var" && \
     fi && \
     echo "prebaked-installroot" > "$STATE_FILE" && \
     rm -f "$DIRTY_FILE"
+RUN systemctl enable rakuos-overlay-sync.service
+
+
 
 
 

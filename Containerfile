@@ -86,7 +86,6 @@ RUN rm -f /usr/bin/rpm-ostree
 
 
 
-FROM bazzite:latest AS builder
 USER root
 RUN dnf5 -y install dnf5-plugins && \
     rpm --import https://repo.rakuos.org/pubkey.gpg && \

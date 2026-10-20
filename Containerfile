@@ -39,59 +39,9 @@ RUN echo "DBX_CONTAINER_HOME_PREFIX=~/distrobox" >> /usr/share/distrobox/distrob
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+##################################################################################################################################################
+### :::::: Selinux :::::: ###
+##################################################################################################################################################
 
 
 
@@ -114,50 +64,25 @@ RUN touch /.autorelabel \
     && mkdir -p /usr/lib/bootc \
     && echo 'kargs = ["autorelabel=1"]' > /usr/lib/bootc/kargs.toml
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+# ── SELinux fs early mount — enabled by symlink, no systemctl ────────────
+RUN install -d /etc/systemd/system /etc/systemd/system/sysinit.target.wants \
+ && printf '%s\n' \
+      '[Unit]' \
+      'Description=SELinux File System' \
+      'DefaultDependencies=no' \
+      'Before=sysinit.target local-fs.target' \
+      'ConditionSecurity=selinux' \
+      '' \
+      '[Mount]' \
+      'What=selinuxfs' \
+      'Where=/sys/fs/selinux' \
+      'Type=selinuxfs' \
+      'Options=defaults' \
+      '' \
+      '[Install]' \
+      'WantedBy=sysinit.target' \
+    > /etc/systemd/system/sys-fs-selinux.mount \
+ && ln -sf ../sys-fs-selinux.mount /etc/systemd/system/sysinit.target.wants/sys-fs-selinux.mount
 
 
 

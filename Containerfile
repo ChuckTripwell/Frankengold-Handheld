@@ -95,7 +95,6 @@ RUN echo "DBX_CONTAINER_HOME_PREFIX=~/distrobox" >> /usr/share/distrobox/distrob
 
 
 
-
 # Setup RakuOS repository and install rum + shim globally
 RUN dnf5 -y install dnf5-plugins && \
     rpm --import https://repo.rakuos.org/pubkey.gpg && \
@@ -113,12 +112,13 @@ RUN set -eo pipefail && \
     installroot="$(mktemp -d /var/tmp/rakuos-overlay-installroot.XXXXXX)" && \
     trap 'rm -rf "$installroot"' EXIT && \
     \
-    RAKUOS_PKGS="rakuos-rum rakuos-core firefox" && \
+    RAKUOS_PKGS="rakuos-rum rakuos-core rakuos-settings rakuos-release" && \
+    DUMMY_PKG="firefox" && \
+    \
     echo "$RAKUOS_PKGS" | tr ' ' '\n' > "$FACTORY_VAR/packages.list" && \
     \
-    if [ -n "$RAKUOS_PKGS" ]; then \
-        rum install --installroot "$installroot" -y --refresh $RAKUOS_PKGS; \
-    fi && \
+    rum install --installroot "$installroot" -y --refresh $RAKUOS_PKGS $DUMMY_PKG && \
+    rum remove --installroot "$installroot" -y $DUMMY_PKG && \
     \
     rm -rf "$UPPER_DIR" "$WORK_DIR" && \
     mkdir -p "$UPPER_DIR" "$WORK_DIR" && \

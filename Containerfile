@@ -92,39 +92,48 @@ RUN rm -f /usr/bin/rpm-ostree
 
 
 
+
+
+
+# Setup RakuOS repository and install rum + shim globally
 RUN dnf5 -y install dnf5-plugins && \
     rpm --import https://repo.rakuos.org/pubkey.gpg && \
     dnf5 -y config-manager addrepo --from-repofile=https://repo.rakuos.org/rakuos.repo && \
     sed -i -e '/^\[rakuos-v3\]/,/^\[/ s/^enabled=0/enabled=1/' /etc/yum.repos.d/rakuos.repo && \
     dnf5 -y install rakuos-rum rum-dnf-shim
-RUN FACTORY_VAR_ROOT="/usr/share/factory/var" && \
-    PACKAGES_LIST="$FACTORY_VAR_ROOT/lib/rakuos/packages.list" && \
-    UPPER_DIR="$FACTORY_VAR_ROOT/lib/rakuos/overlay/upper" && \
-    WORK_DIR="$FACTORY_VAR_ROOT/lib/rakuos/overlay/work" && \
-    STATE_FILE="$FACTORY_VAR_ROOT/lib/rakuos/overlay.state" && \
-    DIRTY_FILE="$FACTORY_VAR_ROOT/lib/rakuos/overlay.dirty" && \
-    FACTORY_RUM_RPMDB="$FACTORY_VAR_ROOT/lib/rakuos/rum-rpmdb" && \
-    mkdir -p "$FACTORY_VAR_ROOT/lib/rakuos" "$UPPER_DIR" "$WORK_DIR" && \
-    touch "$PACKAGES_LIST" && \
+
+# Prebake overlay environment using the Firefox bootstrap cycle
+RUN set -eo pipefail && \
+    FACTORY_VAR="/usr/share/factory/var/lib/rakuos" && \
+    UPPER_DIR="$FACTORY_VAR/overlay/upper" && \
+    WORK_DIR="$FACTORY_VAR/overlay/work" && \
+    mkdir -p "$UPPER_DIR" "$WORK_DIR" && \
+    touch "$FACTORY_VAR/packages.list" && \
+    \
     installroot="$(mktemp -d /var/tmp/rakuos-overlay-installroot.XXXXXX)" && \
     trap 'rm -rf "$installroot"' EXIT && \
-    RAKUOS_PKGS=$(rum repoquery --disablerepo="*" --enablerepo="rakuos*" --qf "%{name}" 2>/dev/null | sort -u || true) && \
-    if [ -n "$RAKUOS_PKGS" ]; then rum install --installroot "$installroot" -y --refresh $RAKUOS_PKGS; fi && \
+    \
+    rum install --installroot "$installroot" -y --refresh firefox && \
+    rum remove --installroot "$installroot" -y firefox && \
+    rm -f "$installroot/usr/share/icons/default/index.theme" && \
+    \
     rm -rf "$UPPER_DIR" "$WORK_DIR" && \
     mkdir -p "$UPPER_DIR" "$WORK_DIR" && \
-    cp -a "$installroot/usr/." "$UPPER_DIR/" && \
-    rm -rf "$FACTORY_RUM_RPMDB" && \
-    mkdir -p "$(dirname "$FACTORY_RUM_RPMDB")" && \
-    cp -a "$installroot/var/lib/rakuos/rum-rpmdb" "$FACTORY_RUM_RPMDB" && \
-    if [[ -d "$installroot/etc" ]] && [[ -n "$(ls -A "$installroot/etc" 2>/dev/null)" ]]; then \
+    if [ -d "$installroot/usr" ]; then cp -a "$installroot/usr/." "$UPPER_DIR/"; fi && \
+    \
+    rm -rf "$FACTORY_VAR/rum-rpmdb" && \
+    mkdir -p "$FACTORY_VAR/rum-rpmdb" && \
+    if [ -d "$installroot/var/lib/rakuos/rum-rpmdb" ]; then cp -a "$installroot/var/lib/rakuos/rum-rpmdb/." "$FACTORY_VAR/rum-rpmdb/"; fi && \
+    \
+    if [ -d "$installroot/etc" ] && [ -n "$(ls -A "$installroot/etc" 2>/dev/null)" ]; then \
         cp -a "$installroot/etc/." /etc/; \
     fi && \
+    \
     mkdir -p /etc/systemd/system/multi-user.target.wants && \
     ln -sf /usr/lib/systemd/system/rakuos-overlay-sync.service /etc/systemd/system/multi-user.target.wants/rakuos-overlay-sync.service && \
-    echo "prebaked-installroot" > "$STATE_FILE" && \
-    rm -f "$DIRTY_FILE"
-
-
+    \
+    echo "prebaked-installroot" > "$FACTORY_VAR/overlay.state" && \
+    rm -f "$FACTORY_VAR/overlay.dirty"
 
 
 

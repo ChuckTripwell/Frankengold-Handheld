@@ -95,13 +95,6 @@ RUN echo "DBX_CONTAINER_HOME_PREFIX=~/distrobox" >> /usr/share/distrobox/distrob
 
 
 
-# Setup RakuOS repository and install rum + shim globally
-RUN dnf5 -y install dnf5-plugins && \
-    rpm --import https://repo.rakuos.org/pubkey.gpg && \
-    dnf5 -y config-manager addrepo --from-repofile=https://repo.rakuos.org/rakuos.repo && \
-    sed -i -e '/^\[rakuos-v3\]/,/^\[/ s/^enabled=0/enabled=1/' /etc/yum.repos.d/rakuos.repo && \
-    dnf5 -y install rakuos-rum rum-dnf-shim rakuos-core
-
 # Prebake explicit packages into the factory overlay (ostree-safe)
 RUN set -eo pipefail && \
     FACTORY_VAR="/usr/share/factory/var/lib/rakuos" && \
@@ -112,12 +105,12 @@ RUN set -eo pipefail && \
     installroot="$(mktemp -d /var/tmp/rakuos-overlay-installroot.XXXXXX)" && \
     trap 'rm -rf "$installroot"' EXIT && \
     \
-    RAKUOS_PKGS="rakuos-rum rakuos-core rakuos-settings rakuos-release" && \
+    RAKUOS_PKGS="rakuos-rum rakuos-core rakuos-settings rakuos-release rakuos-release-common" && \
     DUMMY_PKG="firefox" && \
     \
     echo "$RAKUOS_PKGS" | tr ' ' '\n' > "$FACTORY_VAR/packages.list" && \
     \
-    rum install --installroot "$installroot" -y --refresh $RAKUOS_PKGS $DUMMY_PKG && \
+    rum install --installroot "$installroot" -y --refresh --allowerasing $RAKUOS_PKGS $DUMMY_PKG && \
     rum remove --installroot "$installroot" -y $DUMMY_PKG && \
     \
     rm -rf "$UPPER_DIR" "$WORK_DIR" && \
@@ -130,7 +123,6 @@ RUN set -eo pipefail && \
     \
     echo "prebaked-installroot" > "$FACTORY_VAR/overlay.state" && \
     rm -f "$FACTORY_VAR/overlay.dirty"
-
 
 
 

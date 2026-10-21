@@ -54,7 +54,9 @@ RUN dnf -y install \
         policycoreutils \
         policycoreutils-python-utils \
         libselinux-utils \
-    && dnf clean all
+        swtpm \
+        swtpm-selinux \
+      && dnf clean all
 
 # 2) Enforcing + targeted (Bazzite-exact config)
 RUN mkdir -p /etc/selinux \

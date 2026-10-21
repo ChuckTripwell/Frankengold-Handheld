@@ -52,6 +52,6 @@ depmod -a "$KERNEL_VERSION" &&
 dracut --force --no-hostonly --reproducible --zstd --verbose --kver "KERNELVERSION""/usr/lib/modules/KERNEL_VERSION/initramfs.img"
 #
 #  :::::: finish :::::: 
-RUN rm -rf /usr/etc
+#RUN rm -rf /usr/etc
 LABEL containers.bootc 1
 RUN bootc container lint

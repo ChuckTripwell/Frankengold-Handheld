@@ -45,13 +45,11 @@ RUN systemctl mask systemd-oomd
 #
 # :::::: slot the kernel into place :::::: 
 RUN mkdir -p /var/tmp
-RUN set -eu; \
-    D=/usr/lib/dracut/dracut.conf.d; install -d "$D"; \
-    printf '%s\n' 'systemdsystemconfdir=/etc/systemd/system' 'systemdsystemunitdir=/usr/lib/systemd/system' > "$D/30-bootcrew-fix-bootc-module.conf"; \
-    printf '%s\n' 'hostonly=no' 'add_dracutmodules+=" ostree bootc "' > "$D/30-bootcrew-bootc-modules.conf"; \
-    K=$(ls /usr/lib/modules); \
-    depmod -a "$K"; \
-    dracut -f --reproducible --zstd -v --kver "$K" "/usr/lib/modules/$K/initramfs.img"
+RUN printf "systemdsystemconfdir=/etc/systemd/system\nsystemdsystemunitdir=/usr/lib/systemd/system\n" > /usr/lib/dracut/dracut.conf.d/30-bootcrew-fix-bootc-module.conf &&
+printf 'hostonly=no\nadd_dracutmodules+=" ostree bootc "' > /usr/lib/dracut/dracut.conf.d/30-bootcrew-bootc-modules.conf &&
+KERNEL_VERSION="$(basename /usr/lib/modules/*)" &&
+depmod -a "$KERNEL_VERSION" &&
+dracut --force --no-hostonly --reproducible --zstd --verbose --kver "KERNELVERSION""/usr/lib/modules/KERNEL_VERSION/initramfs.img"
 #
 #  :::::: finish :::::: 
 RUN rm -rf /usr/etc

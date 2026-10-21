@@ -51,8 +51,8 @@ RUN dnf install -y \
         policycoreutils-python-utils \
     && dnf clean all
 
-#RUN sed -i 's/^SELINUX=.*/SELINUX=permissive/' /etc/selinux/config \
-#    && sed -i 's/^SELINUXTYPE=.*/SELINUXTYPE=targeted/' /etc/selinux/config
+RUN sed -i 's/^SELINUX=.*/SELINUX=permissive/' /etc/selinux/config \
+    && sed -i 's/^SELINUXTYPE=.*/SELINUXTYPE=targeted/' /etc/selinux/config
 
 #RUN test -f /etc/selinux/targeted/contexts/files/file_contexts
 
@@ -60,7 +60,7 @@ RUN dnf install -y \
 
 
 
-dockerfi
+
 RUN mkdir -p \
     /usr/local/libexec \
     /usr/lib/systemd/system/multi-user.target.wants

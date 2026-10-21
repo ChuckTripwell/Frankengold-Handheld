@@ -1,22 +1,25 @@
 ##################################################################################################################################################
-### :::::: Pull Kernel :::::: ###
+### :::::: Pull CachyOS :::::: ###
 ##################################################################################################################################################
-FROM ghcr.io/ublue-os/base-main:latest AS kernel
+FROM docker.io/pkgforge/cachyos-base:x86_64 AS cachyos
 
 # :::::: prepare the kernel :::::: 
 RUN rm -rf /lib/modules/*
-RUN dnf5 copr -y enable catpieleaf/kernel-p03
-RUN dnf5 -y install --setopt=tsflags=noscripts kernel-p03-deck
+RUN pacman -Sy --disable-sandbox --noconfirm
+RUN pacman -Sy --disable-sandbox --noconfirm archlinux-keyring cachyos-keyring
+RUN pacman -Sy --disable-sandbox --noconfirm
+RUN pacman -S --disable-sandbox --noconfirm linux-cachyos-deckify
+RUN pacman -S --disable-sandbox --noconfirm vulkan-tools vulkan-icd-loader lib32-vulkan-icd-loader dkms
 
 ##################################################################################################################################################
-### :::::: Pull System :::::: ###
+### :::::: Pull Ublue-OS :::::: ###
 ##################################################################################################################################################
-FROM ghcr.io/ublue-os/bazzite-deck:latest AS system
+FROM ghcr.io/ublue-os/bazzite-deck:latest
 
 # :::::: forcefully remove and replace kernel :::::: 
 RUN rm -rf /lib/modules
-COPY --from=kernel /lib/modules /lib/modules
-COPY --from=kernel /usr/share/licenses/ /usr/share/licenses/
+COPY --from=cachyos /lib/modules /lib/modules
+COPY --from=cachyos /usr/share/licenses/ /usr/share/licenses/
 
 ##################################################################################################################################################
 ### :::::: Modifications :::::: ###
@@ -35,9 +38,6 @@ RUN echo "DBX_CONTAINER_HOME_PREFIX=~/distrobox" >> /usr/share/distrobox/distrob
 # Set vm.max_map_count for stability/improved gaming performance
 # https://wiki.archlinux.org/title/Gaming#Increase_vm.max_map_count
   RUN echo -e "vm.max_map_count = 2147483642" > /etc/sysctl.d/80-gamecompatibility.conf
-
-RUN systemctl disable --now systemd-oomd
-RUN systemctl mask systemd-oomd
 
 ##################################################################################################################################################
 ### :::::: Security and Finalization :::::: ###

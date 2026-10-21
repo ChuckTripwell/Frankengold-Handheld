@@ -43,34 +43,18 @@ RUN echo "DBX_CONTAINER_HOME_PREFIX=~/distrobox" >> /usr/share/distrobox/distrob
 ### :::::: Selinux :::::: ###
 ##################################################################################################################################################
 
-# tell Grub to add kargs - without them SELinux and nvidia-drivers might not work
-  RUN echo 'kargs = ["lsm=landlock,lockdown,yama,integrity,selinux,bpf", "selinux=1", "enforcing=0", "selinux_dontaudit=0", "selinux_deny_unknown=1", "apparmor=0"]' > /usr/lib/bootc/kargs.d/90-security-overrides.toml
-
-
-
-RUN dnf -y install \
+RUN dnf install -y \
+        selinux-policy \
         selinux-policy-targeted \
         policycoreutils \
-        policycoreutils-python-utils \
         libselinux-utils \
-        swtpm \
-        swtpm-selinux \
-      && dnf clean all
+        policycoreutils-python-utils \
+    && dnf clean all
 
+RUN sed -i 's/^SELINUX=.*/SELINUX=permissive/' /etc/selinux/config \
+    && sed -i 's/^SELINUXTYPE=.*/SELINUXTYPE=targeted/' /etc/selinux/config
 
-
-
-
-
-
-
-
-
-
-
-RUN mkdir -p /usr/share/selinux/ 
-COPY --from=ublue_os /usr/share/selinux/ /usr/share/selinux/
-
+RUN test -f /etc/selinux/targeted/contexts/files/file_contexts
 
 
 

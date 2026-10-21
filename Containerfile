@@ -47,7 +47,8 @@ RUN systemctl mask systemd-oomd
 RUN mkdir -p /var/tmp
 RUN printf "systemdsystemconfdir=/etc/systemd/system\nsystemdsystemunitdir=/usr/lib/systemd/system\n" | tee /usr/lib/dracut/dracut.conf.d/30-bootcrew-fix-bootc-module.conf && \      
       printf 'hostonly=no\nadd_dracutmodules+=" ostree bootc "' | tee /usr/lib/dracut/dracut.conf.d/30-bootcrew-bootc-modules.conf && \      
-      sh -c 'export KERNEL_VERSION="$(basename "$(find /usr/lib/modules -maxdepth 1 -mindepth 1 -type d | tail -n 1)")" && \      
+      sh -c 'export KERNEL_VERSION="$(basename "$(find /usr/lib/modules -maxdepth 1 -mindepth 1 -type d | tail -n 1)")" && \
+      depmod -a "$KERNEL_VERSION" && \      
       dracut --force --no-hostonly --reproducible --zstd --verbose "/usr/lib/modules/$KERNEL_VERSION/initramfs.img" "$KERNEL_VERSION"'
 #
 #  :::::: finish :::::: 

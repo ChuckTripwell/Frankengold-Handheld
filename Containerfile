@@ -93,7 +93,8 @@ RUN ln -s ../selinux-enforce.service \
 
 
 
-
+RUN /sbin/restorecon -v /usr/bin/ostree
+RUN /sbin/restorecon -v /usr/bin/bootc
 
 
 

@@ -54,48 +54,54 @@ RUN dnf install -y \
 RUN sed -i 's/^SELINUX=.*/SELINUX=permissive/' /etc/selinux/config \
     && sed -i 's/^SELINUXTYPE=.*/SELINUXTYPE=targeted/' /etc/selinux/config
 
-#RUN test -f /etc/selinux/targeted/contexts/files/file_contexts
 
 
 
 
 
 
-RUN mkdir -p \
-    /usr/local/libexec \
-    /usr/lib/systemd/system/multi-user.target.wants
 
-RUN printf '%s\n' \
-    '#!/bin/sh' \
-    'set -eu' \
-    '/usr/sbin/selinuxenabled' \
-    '/usr/sbin/setenforce 1' \
-    > /usr/local/libexec/selinux-enforce \
-    && chmod 0755 /usr/local/libexec/selinux-enforce
+
+
+
+
+
+RUN mkdir -p /sys/fs/selinux && \
+    printf '%s\n' \
+      '[Unit]' \
+      'Description=SELinux filesystem' \
+      'DefaultDependencies=no' \
+      'After=local-fs-pre.target' \
+      'Before=local-fs.target' \
+      '' \
+      '[Mount]' \
+      'What=selinuxfs' \
+      'Where=/sys/fs/selinux' \
+      'Type=selinuxfs' \
+      'Options=nosuid,nodev,noexec,ro' \
+      '' \
+      '[Install]' \
+      'WantedBy=local-fs.target' \
+      > /etc/systemd/system/sys-fs-selinux.mount && \
+    systemctl enable sys-fs-selinux.mount
+
 
 RUN printf '%s\n' \
     '[Unit]' \
-    'Description=Enable SELinux enforcing mode after boot' \
+    'Description=Rebuild SELinux policy once' \
+    'ConditionPathExists=!/etc/selinux/.policy-rebuilt' \
     'After=local-fs.target' \
-    'ConditionSecurity=selinux' \
     '' \
     '[Service]' \
     'Type=oneshot' \
-    'ExecStart=/usr/local/libexec/selinux-enforce' \
+    'ExecStart=/usr/sbin/semodule -B' \
+    'ExecStartPost=/usr/bin/touch /etc/selinux/.policy-rebuilt' \
     'RemainAfterExit=yes' \
     '' \
     '[Install]' \
     'WantedBy=multi-user.target' \
-    > /usr/lib/systemd/system/selinux-enforce.service
-
-RUN ln -s ../selinux-enforce.service \
-    /usr/lib/systemd/system/multi-user.target.wants/selinux-enforce.service
-
-
-
-RUN /sbin/restorecon -v /usr/bin/ostree
-RUN /sbin/restorecon -v /usr/bin/bootc
-
+    > /etc/systemd/system/selinux-policy-rebuild.service \
+    && systemctl enable selinux-policy-rebuild.service
 
 
  

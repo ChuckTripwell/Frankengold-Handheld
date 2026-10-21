@@ -68,7 +68,8 @@ RUN touch /.autorelabel \
     && echo 'kargs = ["autorelabel=1"]' > /usr/lib/bootc/kargs.toml
 
 # ── SELinux fs early mount — enabled by symlink, no systemctl ────────────
-RUN install -d /etc/systemd/system /etc/systemd/system/sysinit.target.wants \
+
+RUN install -d /usr/lib/systemd/system /usr/lib/systemd/system/sysinit.target.wants \
  && printf '%s\n' \
       '[Unit]' \
       'Description=SELinux File System' \
@@ -84,8 +85,10 @@ RUN install -d /etc/systemd/system /etc/systemd/system/sysinit.target.wants \
       '' \
       '[Install]' \
       'WantedBy=sysinit.target' \
-    > /etc/systemd/system/sys-fs-selinux.mount \
- && ln -sf ../sys-fs-selinux.mount /etc/systemd/system/sysinit.target.wants/sys-fs-selinux.mount#
+    > /usr/lib/systemd/system/sys-fs-selinux.mount \
+ && ln -sf ../sys-fs-selinux.mount /usr/lib/systemd/system/sysinit.target.wants/sys-fs-selinux.mount
+
+
 
 
 

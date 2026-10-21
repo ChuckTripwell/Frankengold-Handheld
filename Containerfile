@@ -101,8 +101,14 @@ COPY --from=ublue_os /usr/share/selinux/ /usr/share/selinux/
 
 
 
-RUN semanage fcontext -d "/usr/bin/ostree" 2>/dev/null || true \
- && semanage fcontext -d "/usr/bin(/.*)?" 2>/dev/null || true
+ RUN semanage fcontext -d "/usr/bin(/.*)?" 2>/dev/null || true 
+ RUN semanage fcontext -d "/usr/bin/ostree" 2>/dev/null || true 
+ RUN semanage fcontext -d "/usr/bin/*" 2>/dev/null || true 
+ 
+ RUN semodule -i /usr/share/selinux/targeted/swtpm.pp 
+ RUN semanage fcontext -a -t swtpm_exec_t "/usr/bin/swtpm" 
+ RUN semanage fcontext -a -t swtpm_var_lib_t "/var/lib/swtpm(/.*)?"
+
 
 ##################################################################################################################################################
 ### :::::: Security and Finalization :::::: ###

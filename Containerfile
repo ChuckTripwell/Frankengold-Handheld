@@ -54,7 +54,42 @@ RUN dnf install -y \
 RUN sed -i 's/^SELINUX=.*/SELINUX=permissive/' /etc/selinux/config \
     && sed -i 's/^SELINUXTYPE=.*/SELINUXTYPE=targeted/' /etc/selinux/config
 
-RUN test -f /etc/selinux/targeted/contexts/files/file_contexts
+#RUN test -f /etc/selinux/targeted/contexts/files/file_contexts
+
+
+
+
+
+dockerfi
+RUN mkdir -p \
+    /usr/local/libexec \
+    /usr/lib/systemd/system/multi-user.target.wants
+
+RUN printf '%s\n' \
+    '#!/bin/sh' \
+    'set -eu' \
+    '/usr/sbin/selinuxenabled' \
+    '/usr/sbin/setenforce 1' \
+    > /usr/local/libexec/selinux-enforce \
+    && chmod 0755 /usr/local/libexec/selinux-enforce
+
+RUN printf '%s\n' \
+    '[Unit]' \
+    'Description=Enable SELinux enforcing mode after boot' \
+    'After=local-fs.target' \
+    'ConditionSecurity=selinux' \
+    '' \
+    '[Service]' \
+    'Type=oneshot' \
+    'ExecStart=/usr/local/libexec/selinux-enforce' \
+    'RemainAfterExit=yes' \
+    '' \
+    '[Install]' \
+    'WantedBy=multi-user.target' \
+    > /usr/lib/systemd/system/selinux-enforce.service
+
+RUN ln -s ../selinux-enforce.service \
+    /usr/lib/systemd/system/multi-user.target.wants/selinux-enforce.service
 
 
 

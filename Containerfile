@@ -101,7 +101,8 @@ COPY --from=ublue_os /usr/share/selinux/ /usr/share/selinux/
 
 
 
-
+RUN semanage fcontext -d "/usr/bin/ostree" 2>/dev/null || true \
+ && semanage fcontext -d "/usr/bin(/.*)?" 2>/dev/null || true
 
 ##################################################################################################################################################
 ### :::::: Security and Finalization :::::: ###

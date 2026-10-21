@@ -48,7 +48,6 @@ RUN echo "DBX_CONTAINER_HOME_PREFIX=~/distrobox" >> /usr/share/distrobox/distrob
 
 
 
-# 1) Policy RPMs (same ones Bazzite ships)
 RUN dnf -y install \
         selinux-policy-targeted \
         policycoreutils \
@@ -58,46 +57,9 @@ RUN dnf -y install \
         swtpm-selinux \
       && dnf clean all
 
-# 2) Enforcing + targeted (Bazzite-exact config)
-RUN mkdir -p /etc/selinux \
-    && printf 'SELINUX=enforcing\nSELINUXTYPE=targeted\n' > /etc/selinux/config
-
-# 3) First-boot relabel (marker + bootc karg)
-RUN touch /.autorelabel \
-    && mkdir -p /usr/lib/bootc \
-    && echo 'kargs = ["autorelabel=1"]' > /usr/lib/bootc/kargs.toml
-
-# ── SELinux fs early mount — enabled by symlink, no systemctl ────────────
-
-RUN install -d /usr/lib/systemd/system /usr/lib/systemd/system/sysinit.target.wants \
- && printf '%s\n' \
-      '[Unit]' \
-      'Description=SELinux File System' \
-      'DefaultDependencies=no' \
-      'Before=sysinit.target local-fs.target' \
-      'ConditionSecurity=selinux' \
-      '' \
-      '[Mount]' \
-      'What=selinuxfs' \
-      'Where=/sys/fs/selinux' \
-      'Type=selinuxfs' \
-      'Options=defaults' \
-      '' \
-      '[Install]' \
-      'WantedBy=sysinit.target' \
-    > /usr/lib/systemd/system/sys-fs-selinux.mount \
- && ln -sf ../sys-fs-selinux.mount /usr/lib/systemd/system/sysinit.target.wants/sys-fs-selinux.mount
 
 
 
-
-
-RUN mkdir -p /usr/share/selinux/ 
-COPY --from=ublue_os /usr/share/selinux/ /usr/share/selinux/
-#RUN mkdir -p /usr/share/selinux-policy/
-#COPY --from=ublue_os /usr/share/selinux-policy/ /usr/share/selinux-policy/
-#RUN mkdir -p /usr/lib/selinux/
-#COPY --from=ublue_os /usr/lib/selinux/ /usr/lib/selinux/
 
 
 
@@ -106,13 +68,17 @@ COPY --from=ublue_os /usr/share/selinux/ /usr/share/selinux/
 
 
 
- RUN semanage fcontext -d "/usr/bin(/.*)?" 2>/dev/null || true 
- RUN semanage fcontext -d "/usr/bin/ostree" 2>/dev/null || true 
- RUN semanage fcontext -d "/usr/bin/*" 2>/dev/null || true 
+RUN mkdir -p /usr/share/selinux/ 
+COPY --from=ublue_os /usr/share/selinux/ /usr/share/selinux/
+
+
+
+
+
+
+
+
  
- RUN semodule -i /usr/share/selinux/targeted/swtpm.pp 
- RUN semanage fcontext -a -t swtpm_exec_t "/usr/bin/swtpm" 
- RUN semanage fcontext -a -t swtpm_var_lib_t "/var/lib/swtpm(/.*)?"
 
 
 ##################################################################################################################################################
